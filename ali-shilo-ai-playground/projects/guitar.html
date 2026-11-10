@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>גיטרה Online - ללמוד גיטרה בקצב שלך</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        teal: {
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                        },
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Heebo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #0b0f19;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #14b8a6;
+        }
+        /* Pulse Animation for Metronome */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.98); opacity: 0.7; }
+            50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 16px rgba(20, 184, 166, 0.6)); }
+            100% { transform: scale(0.98); opacity: 0.7; }
+        }
+        .beat-active {
+            animation: pulse-ring 0.15s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-teal-500 selection:text-slate-950">
+
+    <!-- ========================================== -->
+    <!-- NAVIGATION BAR                             -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center shadow-md shadow-teal-900/30">
+                        <svg class="w-6 h-6 text-slate-950 fill-current" viewBox="0 0 24 24">
+                            <path d="M20.08,4.6a2,2,0,0,0-2.83,0L14.71,7.14a4.42,4.42,0,0,0-.73-.5A5,5,0,0,0,12,6.08V3a1,1,0,0,0-2,0V6.08a5,5,0,0,0-1.98.56A4.42,4.42,0,0,0,7.29,7.14L4.75,4.6A2,2,0,0,0,1.92,7.43L4,9.5A5.13,5.13,0,0,0,3,13a5,5,0,0,0,2.15,4.12l-1.3,1.3a1,1,0,1,0,1.42,1.42l1.3-1.3A5,5,0,0,0,11,21h2a5,5,0,0,0,4.43-2.46l1.3,1.3a1,1,0,0,0,1.42-1.42l-1.3-1.3A5,5,0,0,0,21,13a5.13,5.13,0,0,0-1-3.5l2.08-2.07A2,2,0,0,0,20.08,4.6ZM12,19a3,3,0,1,1,3-3A3,3,0,0,1,12,19Z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-xl font-black bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">גיטרה Online</span>
+                        <span class="block text-[10px] text-slate-400 font-light -mt-1">פלטפורמת למידה אינטראקטיבית</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex items-center space-x-1 space-x-reverse bg-slate-950/70 p-1.5 rounded-xl border border-slate-800">
+                    <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-teal-600 text-white shadow-sm">
+                        📚 הקורסים
+                    </button>
+                    <button onclick="switchTab('player')" id="nav-player" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all">
+                        🎸 נגן השיעורים
+                    </button>
+                    <button onclick="switchTab('toolbox')" id="nav-toolbox" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all">
+                        🧰 ארגז הכלים
+                    </button>
+                </nav>
+
+                <!-- User Badge / Quick Status -->
+                <div class="hidden sm:flex items-center space-x-3 space-x-reverse">
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                        מנוי פעיל
+                    </span>
+                    <!-- WhatsApp Share Button in Header -->
+                    <button onclick="shareOnWhatsApp()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-2 transition-all shadow-sm">
+                        <svg class="w-4 h-4 fill-current text-emerald-400" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.105 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                        </svg>
+                        <span>שתף ב-WhatsApp</span>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden border-b border-slate-800 bg-slate-900 px-4 pt-2 pb-4 space-y-1">
+            <button onclick="switchTab('home')" class="w-full text-right px-3 py-2.5 rounded-lg text-base font-medium text-slate-200 hover:bg-slate-800 flex items-center gap-2">
+                📚 הקורסים
+            </button>
+            <button onclick="switchTab('player')" class="w-full text-right px-3 py-2.5 rounded-lg text-base font-medium text-slate-200 hover:bg-slate-800 flex items-center gap-2">
+                🎸 נגן השיעורים
+            </button>
+            <button onclick="switchTab('toolbox')" class="w-full text-right px-3 py-2.5 rounded-lg text-base font-medium text-slate-200 hover:bg-slate-800 flex items-center gap-2">
+                🧰 ארגז הכלים (מטרונום ומילון)
+            </button>
+            <button onclick="shareOnWhatsApp()" class="w-full text-right px-3 py-2.5 rounded-lg text-base font-medium text-emerald-400 hover:bg-slate-800 flex items-center gap-2">
+                💬 שתף את האתר ב-WhatsApp
+            </button>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- MAIN APPLICATION CONTAINER                 -->
+    <!-- ========================================== -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ========================================== -->
+        <!-- SECTION 1: HOME & COURSE LIBRARY           -->
+        <!-- ========================================== -->
+        <section id="section-home" class="tab-content space-y-10">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950/40 border border-slate-800 p-8 sm:p-12 shadow-2xl">
+                <div class="absolute top-0 left-0 -ml-16 -mt-16 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute bottom-0 right-0 -mr-16 -mb-16 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 max-w-2xl space-y-6">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-500/10 text-teal-400 border border-teal-500/30">
+                        ⚡ התקדמות מובטחת מהשיעור הראשון
+                    </span>
+                    <h1 class="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight">
+                        ללמוד גיטרה <br>
+                        <span class="bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">בקצב שלך ובכיף שלך</span>
+                    </h1>
+                    <p class="text-slate-300 text-base sm:text-lg leading-relaxed font-light">
+                        מערכת אינטראקטיבית מלאה הכוללת נגן וידאו חכם עם טאבים מסונכרנים, מטרונום מדויק מבוסס Web Audio API, ומילון אקורדים אינטראקטיבי visual & audio.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick="switchTab('player')" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-bold hover:brightness-110 shadow-lg shadow-teal-500/25 transition-all transform hover:-translate-y-0.5">
+                            🎬 כניסה לנגן השיעורים
+                        </button>
+                        <button onclick="switchTab('toolbox')" class="px-6 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-semibold border border-slate-700 transition-all">
+                            🧰 פתח ארגז כלים
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Catalog Header & Difficulty Filters -->
+            <div class="space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">ספריית הקורסים</h2>
+                        <p class="text-slate-400 text-sm">סינון קורסים לפי רמת מיומנות</p>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="flex flex-wrap items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+                        <button onclick="filterCourses('all')" id="filter-all" class="filter-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-500 text-slate-950 transition-all">
+                            הכל
+                        </button>
+                        <button onclick="filterCourses('beginner')" id="filter-beginner" class="filter-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">
+                            🌱 מתחילים
+                        </button>
+                        <button onclick="filterCourses('intermediate')" id="filter-intermediate" class="filter-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">
+                            🔥 בינוניים
+                        </button>
+                        <button onclick="filterCourses('advanced')" id="filter-advanced" class="filter-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">
+                            🚀 מתקדמים
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Course Cards Grid Container -->
+                <div id="course-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2"></div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: INTERACTIVE LESSON PLAYER -->
+        <section id="section-player" class="tab-content hidden space-y-6">
+            <!-- Player Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div>
+                    <span id="player-course-level" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                        מתחילים
+                    </span>
+                    <h2 id="player-lesson-title" class="text-2xl font-bold text-white mt-1">שיעור 1: מעברים חלקים בין אקורדים (Am, C, G)</h2>
+                    <p class="text-slate-400 text-xs mt-0.5">מתוך הקורס: יסודות הגיטרה האקוסטית • מדריך: דניאל לוי</p>
+                </div>
+                <div class="flex items-center gap-2 self-start md:self-auto">
+                    <!-- WhatsApp Share Lesson Button -->
+                    <button onclick="shareLessonOnWhatsApp()" class="text-xs px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 font-bold flex items-center gap-1.5 transition-all shadow-sm">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.105 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                        </svg>
+                        <span>שתף שיעור</span>
+                    </button>
+                    <button onclick="switchTab('home')" class="text-xs px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">
+                        ← חזרה לקורסים
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Interactive Player Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Video Display & Controls (8 cols) -->
+                <div class="lg:col-span-7 xl:col-span-8 space-y-4">
+                    <div class="relative bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl group">
+                        <!-- Video Canvas Display -->
+                        <div id="video-stage" class="relative aspect-video bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 flex flex-col items-center justify-center p-6 text-center select-none">
+                            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#14b8a6_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            
+                            <!-- Active Chord Visual Badge -->
+                            <div class="relative z-10 w-24 h-24 rounded-2xl bg-slate-900/90 border-2 border-teal-500/50 flex flex-col items-center justify-center mb-3 shadow-xl backdrop-blur-md">
+                                <span class="text-xs text-slate-400">אקורד נוכחי</span>
+                                <span id="current-chord-badge" class="text-3xl font-black text-teal-400">Am</span>
+                            </div>
+
+                            <p id="video-status-text" class="text-slate-300 text-sm font-medium z-10">לחץ Play כדי להתחיל את השיעור</p>
+                            <p class="text-xs text-slate-500 mt-1 z-10">קצב מומלץ לתרגול: 80 BPM</p>
+
+                            <!-- Overlay Play Button -->
+                            <button id="main-play-btn" onclick="togglePlayPause()" class="absolute inset-0 flex items-center justify-center bg-slate-950/40 backdrop-blur-[2px] transition-opacity hover:bg-slate-950/30">
+                                <div class="w-16 h-16 rounded-full bg-teal-500 text-slate-950 flex items-center justify-center shadow-lg shadow-teal-500/50 transform hover:scale-110 transition-transform">
+                                    <svg id="play-icon" class="w-8 h-8 fill-current ml-1" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                    <svg id="pause-icon" class="w-8 h-8 fill-current hidden" viewBox="0 0 24 24">
+                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Video Controls Toolbar -->
+                        <div class="bg-slate-900 px-4 py-3 border-t border-slate-800 space-y-3">
+                            <!-- Progress Bar & Time -->
+                            <div class="flex items-center gap-3">
+                                <span id="time-current" class="text-xs text-slate-400 font-mono w-10">00:00</span>
+                                <input type="range" id="video-seek" value="0" min="0" max="100" oninput="seekVideo(this.value)" class="w-full accent-teal-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+                                <span id="time-total" class="text-xs text-slate-400 font-mono w-10">04:30</span>
+                            </div>
+
+                            <!-- Controls Buttons -->
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <div class="flex items-center space-x-2 space-x-reverse">
+                                    <button onclick="togglePlayPause()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1">
+                                        <span>▶/⏸</span>
+                                        <span id="btn-play-text">נגן</span>
+                                    </button>
+                                </div>
+
+                                <!-- Playback Speed Controls (0.5x, 0.75x, 1x, 1.25x) -->
+                                <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                                    <span class="text-[11px] text-slate-500 px-1 font-medium">מהירות:</span>
+                                    <button onclick="setSpeed(0.5)" class="speed-btn text-xs px-2 py-1 rounded text-slate-400 hover:text-white">0.5x</button>
+                                    <button onclick="setSpeed(0.75)" class="speed-btn text-xs px-2 py-1 rounded text-slate-400 hover:text-white">0.75x</button>
+                                    <button onclick="setSpeed(1.0)" class="speed-btn active-speed text-xs px-2 py-1 rounded bg-teal-500 text-slate-950 font-bold">1x</button>
+                                    <button onclick="setSpeed(1.25)" class="speed-btn text-xs px-2 py-1 rounded text-slate-400 hover:text-white">1.25x</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side Panel: Interactive Lyrics, Tabs & Lesson Chords (4 cols) -->
+                <div class="lg:col-span-5 xl:col-span-4 space-y-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-xl">
+                        <div class="flex border-b border-slate-800 pb-2 gap-2">
+                            <button onclick="switchPlayerTab('tabs')" id="player-tab-btn-tabs" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition-all">
+                                📜 מילים וטאבים
+                            </button>
+                            <button onclick="switchPlayerTab('chords')" id="player-tab-btn-chords" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-200 transition-all">
+                                🎸 אקורדים בשיעור
+                            </button>
+                        </div>
+
+                        <!-- Subtab 1: Song Tablature & Interactive Chords -->
+                        <div id="player-subtab-tabs" class="space-y-4">
+                            <div class="flex items-center justify-between text-xs text-slate-400">
+                                <span>תרגול: "צלילי גיטרה"</span>
+                                <span>סולם: Am</span>
+                            </div>
+
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs leading-loose space-y-4 max-h-[340px] overflow-y-auto">
+                                <div>
+                                    <div class="text-teal-400 font-bold space-x-6 space-x-reverse">
+                                        <button onclick="playChordSound('Am')" class="hover:underline hover:text-teal-300">Am</button>
+                                        <button onclick="playChordSound('C')" class="hover:underline hover:text-teal-300">C</button>
+                                    </div>
+                                    <div class="text-slate-200">צעד אחד בדרך שוב עולה</div>
+                                </div>
+                                <div>
+                                    <div class="text-teal-400 font-bold space-x-6 space-x-reverse">
+                                        <button onclick="playChordSound('G')" class="hover:underline hover:text-teal-300">G</button>
+                                        <button onclick="playChordSound('Am')" class="hover:underline hover:text-teal-300">Am</button>
+                                    </div>
+                                    <div class="text-slate-200">צלילים של גיטרה ברוח מהדהדים</div>
+                                </div>
+                                <div>
+                                    <div class="text-teal-400 font-bold space-x-6 space-x-reverse">
+                                        <button onclick="playChordSound('F')" class="hover:underline hover:text-teal-300">F</button>
+                                        <button onclick="playChordSound('C')" class="hover:underline hover:text-teal-300">C</button>
+                                        <button onclick="playChordSound('G')" class="hover:underline hover:text-teal-300">G</button>
+                                    </div>
+                                    <div class="text-slate-200">כל האקורדים מתחברים יחד לשיר אחד</div>
+                                </div>
+
+                                <!-- Tab Snippet -->
+                                <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-[11px] text-teal-300 font-mono overflow-x-auto dir-ltr">
+                                    <div class="text-[10px] text-slate-500 mb-1 text-right dir-rtl">טאב פריטה:</div>
+                                    e|-------0-----------0-------|<br>
+                                    B|-----1---1-------1---1-----|<br>
+                                    G|---2-------2---0-------0---|<br>
+                                    D|-2-----------2-------------|<br>
+                                    A|---------------------------|<br>
+                                    E|---------------------------|
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab 2: Chords Quick Preview -->
+                        <div id="player-subtab-chords" class="hidden space-y-3">
+                            <p class="text-xs text-slate-400">לחץ לשמיעת האקורד:</p>
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div onclick="playChordSound('Am')" class="bg-slate-950 p-3 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer text-center">
+                                    <span class="text-lg font-black text-teal-400">Am</span>
+                                    <span class="block text-[11px] text-slate-400">לה מינור</span>
+                                </div>
+                                <div onclick="playChordSound('C')" class="bg-slate-950 p-3 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer text-center">
+                                    <span class="text-lg font-black text-teal-400">C</span>
+                                    <span class="block text-[11px] text-slate-400">דו מאז'ור</span>
+                                </div>
+                                <div onclick="playChordSound('G')" class="bg-slate-950 p-3 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer text-center">
+                                    <span class="text-lg font-black text-teal-400">G</span>
+                                    <span class="block text-[11px] text-slate-400">סול מאז'ור</span>
+                                </div>
+                                <div onclick="playChordSound('F')" class="bg-slate-950 p-3 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer text-center">
+                                    <span class="text-lg font-black text-teal-400">F</span>
+                                    <span class="block text-[11px] text-slate-400">פה מאז'ור</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 3: MUSICIAN'S TOOLBOX              -->
+        <!-- (METRONOME + CHORD DICTIONARY)             -->
+        <!-- ========================================== -->
+        <section id="section-toolbox" class="tab-content hidden space-y-10">
+            <!-- Toolbox Sub-Header Nav -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div>
+                    <h2 class="text-3xl font-black text-white">ארגז הכלים לנגן</h2>
+                    <p class="text-slate-400 text-sm">כל הכלים האינטראקטיביים שאתה צריך לתרגול יומי</p>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800 self-start sm:self-auto">
+                    <button onclick="switchToolboxTab('metronome')" id="toolbox-btn-metronome" class="px-4 py-2 rounded-lg text-xs font-bold bg-teal-500 text-slate-950 transition-all">
+                        ⏱️ מטרונום
+                    </button>
+                    <button onclick="switchToolboxTab('chords')" id="toolbox-btn-chords" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">
+                        📖 מילון אקורדים
+                    </button>
+                </div>
+            </div>
+
+            <!-- TOOLBOX SUB-SECTION 1: METRONOME -->
+            <div id="toolbox-view-metronome" class="max-w-2xl mx-auto space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8 text-center relative overflow-hidden">
+                    <!-- Glowing BPM Visual Ring -->
+                    <div id="metronome-glow" class="w-44 h-44 mx-auto rounded-full bg-teal-500/10 border-4 border-teal-500/30 flex flex-col items-center justify-center transition-all duration-100 shadow-inner">
+                        <span id="bpm-display" class="text-6xl font-black text-white tracking-tight">120</span>
+                        <span class="text-xs font-bold text-teal-400 uppercase tracking-widest mt-1">BPM</span>
+                    </div>
+
+                    <!-- Beat Flashing Dots -->
+                    <div class="flex items-center justify-center gap-3" id="beat-dots">
+                        <div class="beat-dot w-4 h-4 rounded-full bg-slate-800 border border-slate-700 transition-all"></div>
+                        <div class="beat-dot w-4 h-4 rounded-full bg-slate-800 border border-slate-700 transition-all"></div>
+                        <div class="beat-dot w-4 h-4 rounded-full bg-slate-800 border border-slate-700 transition-all"></div>
+                        <div class="beat-dot w-4 h-4 rounded-full bg-slate-800 border border-slate-700 transition-all"></div>
+                    </div>
+
+                    <!-- BPM Controls Slider -->
+                    <div class="space-y-4 max-w-md mx-auto">
+                        <div class="flex items-center justify-between gap-3">
+                            <button onclick="changeBpm(-5)" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center">-5</button>
+                            <button onclick="changeBpm(-1)" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center">-1</button>
+                            <input type="range" id="bpm-slider" min="40" max="220" value="120" oninput="updateBpm(this.value)" class="w-full accent-teal-500 h-2 bg-slate-800 rounded-lg cursor-pointer">
+                            <button onclick="changeBpm(1)" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center">+1</button>
+                            <button onclick="changeBpm(5)" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center">+5</button>
+                        </div>
+                    </div>
+
+                    <!-- Start/Stop & Tap Tempo -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <button id="metronome-start-btn" onclick="toggleMetronome()" class="w-full sm:w-48 py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:brightness-110 text-slate-950 font-black text-lg shadow-lg shadow-teal-500/20 transition-all transform hover:scale-105">
+                            ▶ התחל
+                        </button>
+                        <button onclick="tapTempo()" class="w-full sm:w-36 py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-all">
+                            👆 Tap Tempo
+                        </button>
+                    </div>
+
+                    <!-- Time Signature Selection -->
+                    <div class="pt-6 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span>משקל:</span>
+                            <button onclick="setTimeSignature(4)" id="ts-4" class="ts-btn px-3 py-1 rounded-md bg-teal-500 text-slate-950 font-bold">4/4</button>
+                            <button onclick="setTimeSignature(3)" id="ts-3" class="ts-btn px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300">3/4</button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="updateBpm(80)" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">80 BPM</button>
+                            <button onclick="updateBpm(120)" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">120 BPM</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOOLBOX SUB-SECTION 2: CHORD DICTIONARY -->
+            <div id="toolbox-view-chords" class="hidden space-y-8 max-w-4xl mx-auto">
+                <!-- Chord Selectors -->
+                <div class="flex flex-wrap items-center justify-center gap-2">
+                    <button onclick="selectChord('C')" id="chord-btn-C" class="chord-select-btn px-5 py-2.5 rounded-xl font-bold bg-teal-500 text-slate-950 transition-all shadow-md">C</button>
+                    <button onclick="selectChord('G')" id="chord-btn-G" class="chord-select-btn px-5 py-2.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:border-teal-500/50 transition-all">G</button>
+                    <button onclick="selectChord('Am')" id="chord-btn-Am" class="chord-select-btn px-5 py-2.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:border-teal-500/50 transition-all">Am</button>
+                    <button onclick="selectChord('F')" id="chord-btn-F" class="chord-select-btn px-5 py-2.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:border-teal-500/50 transition-all">F</button>
+                    <button onclick="selectChord('D')" id="chord-btn-D" class="chord-select-btn px-5 py-2.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:border-teal-500/50 transition-all">D</button>
+                    <button onclick="selectChord('Em')" id="chord-btn-Em" class="chord-select-btn px-5 py-2.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:border-teal-500/50 transition-all">Em</button>
+                </div>
+
+                <!-- Chord Detail Container -->
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                    <!-- Fretboard Visualizer (SVG) -->
+                    <div class="md:col-span-6 bg-slate-950 rounded-2xl p-6 border border-slate-800 flex flex-col items-center justify-center">
+                        <div class="text-xs text-slate-500 mb-2">דיאגרמת צוואר הגיטרה (סריגים 1-4)</div>
+                        <div id="fretboard-svg-container" class="w-full max-w-[240px] h-[300px] flex justify-center">
+                            <!-- SVG injected dynamically -->
+                        </div>
+                        <div class="flex justify-between w-full max-w-[200px] text-[10px] text-slate-500 font-mono mt-2 px-1 dir-ltr">
+                            <span>E (6)</span>
+                            <span>A (5)</span>
+                            <span>D (4)</span>
+                            <span>G (3)</span>
+                            <span>B (2)</span>
+                            <span>e (1)</span>
+                        </div>
+                    </div>
+
+                    <!-- Chord Details & Audio Play -->
+                    <div class="md:col-span-6 space-y-6">
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <h3 id="chord-name-display" class="text-4xl font-black text-teal-400">C Major</h3>
+                                <span id="chord-hebrew-name" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">דו מאז'ור</span>
+                            </div>
+                            <p id="chord-desc" class="text-slate-400 text-sm mt-2 leading-relaxed">
+                                אקורד יסוד מרכזי בגיטרה. דורש מתיחה קלה של האצבעות על פני 3 סריגים.
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <h4 class="text-xs font-bold text-teal-400 uppercase tracking-wider">הנחיות מיקום אצבעות:</h4>
+                            <ul id="finger-guide-list" class="text-xs text-slate-300 space-y-1.5 font-medium">
+                                <!-- Guide steps injected dynamically -->
+                            </ul>
+                        </div>
+
+                        <div>
+                            <button onclick="playSelectedChordSound()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-extrabold text-base shadow-lg shadow-teal-500/20 hover:brightness-110 transition-all flex items-center justify-center gap-3">
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                </svg>
+                                🔊 שמע פריטת אקורד
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-3">
+            <div class="flex justify-center items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-teal-500 flex items-center justify-center text-slate-950 font-bold text-xs">G</div>
+                <span class="font-bold text-white text-base">גיטרה Online</span>
+            </div>
+            <p class="text-xs text-slate-400">אב-טיפוס אינטראקטיבי ללמידת גיטרה בעברית • כל הזכויות שמורות © 2026</p>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT LOGIC ENGINE                    -->
+    <!-- ========================================== -->
+    <script>
+        /* Course Library Data */
+        const COURSES = [
+            {
+                id: 'c1',
+                title: 'יסודות הגיטרה האקוסטית',
+                level: 'beginner',
+                levelName: 'מתחילים',
+                badgeClass: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
+                lessonsCount: 12,
+                duration: '2 שעות',
+                image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=80',
+                description: 'למד לאחוז בגיטרה, לקרוא טאבים ולנגן את 4 האקורדים הראשונים שלך.'
+            },
+            {
+                id: 'c2',
+                title: 'שירים ראשונים בגיטרה',
+                level: 'beginner',
+                levelName: 'מתחילים',
+                badgeClass: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
+                lessonsCount: 10,
+                duration: '1.5 שעות',
+                image: 'https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=600&q=80',
+                description: 'תרגול מעשי של שירים ישראליים ולועזיים מוכרים במינימום אקורדים.'
+            },
+            {
+                id: 'c3',
+                title: 'טכניקות פריטה ומקצבים',
+                level: 'intermediate',
+                levelName: 'בינוניים',
+                badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+                lessonsCount: 15,
+                duration: '3 שעות',
+                image: 'https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?auto=format&fit=crop&w=600&q=80',
+                description: 'שליטה בפריטות 4/4, 3/4, פריטת אצבעות (Fingerpicking) ומקצבי רוק.'
+            },
+            {
+                id: 'c4',
+                title: 'אקורדי בארה (Barre Chords)',
+                level: 'intermediate',
+                levelName: 'בינוניים',
+                badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+                lessonsCount: 8,
+                duration: '2 שעות',
+                image: 'https://images.unsplash.com/photo-1550291652-6ea9114a47b1?auto=format&fit=crop&w=600&q=80',
+                description: 'טכניקה לבניית כוח באצבע 1 ומעבר לאקורדים מורכבים בצוואר הגיטרה.'
+            },
+            {
+                id: 'c5',
+                title: 'סולו וסולמות בלוז ורוק',
+                level: 'advanced',
+                levelName: 'מתקדמים',
+                badgeClass: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+                lessonsCount: 18,
+                duration: '4.5 שעות',
+                image: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=600&q=80',
+                description: 'הפנטטוניק, Bending, Hammer-ons ואילתור סולואים מתקדמים.'
+            },
+            {
+                id: 'c6',
+                title: 'תיאוריה מוזיקלית לגיטריסטים',
+                level: 'advanced',
+                levelName: 'מתקדמים',
+                badgeClass: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+                lessonsCount: 14,
+                duration: '3.5 שעות',
+                image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80',
+                description: 'הבנת סולמות, בניית אקורדים 7th ומהלכים הרמוניים מורכבים.'
+            }
+        ];
+
+        /* Chord Dictionary Data */
+        const CHORDS_DATA = {
+            'C': {
+                name: 'C Major',
+                hebrewName: 'דו מאז\'ור',
+                desc: 'אקורד יסוד מרכזי בגיטרה. דורש מתיחה קלה של האצבעות על פני 3 סריגים.',
+                guide: [
+                    'אצבע 1: סריג 1, מיתר 2 (B)',
+                    'אצבע 2: סריג 2, מיתר 4 (D)',
+                    'אצבע 3: סריג 3, מיתר 5 (A)',
+                    'מיתר 6 (E נמוך): לא מנוגן (✕)'
+                ],
+                frets: [-1, 3, 2, 0, 1, 0],
+                fingers: [0, 3, 2, 0, 1, 0],
+                frequencies: [130.81, 164.81, 196.00, 261.63, 329.63]
+            },
+            'G': {
+                name: 'G Major',
+                hebrewName: 'סול מאז\'ור',
+                desc: 'אקורד מלא ועשיר המשתמש בכל 6 המיתרים. מופיע ברוב השירים הבסיסיים.',
+                guide: [
+                    'אצבע 1: סריג 2, מיתר 5 (A)',
+                    'אצבע 2: סריג 3, מיתר 6 (E)',
+                    'אצבע 3: סריג 3, מיתר 1 (e גבוה)'
+                ],
+                frets: [3, 2, 0, 0, 0, 3],
+                fingers: [2, 1, 0, 0, 0, 3],
+                frequencies: [98.00, 123.47, 146.83, 196.00, 246.94, 392.00]
+            },
+            'Am': {
+                name: 'A Minor',
+                hebrewName: 'לה מינור',
+                desc: 'אקורד מינורי נעים ועדין. קל מאוד לנגינה ומהווה בסיס לשירים רבים.',
+                guide: [
+                    'אצבע 1: סריג 1, מיתר 2 (B)',
+                    'אצבע 2: סריג 2, מיתר 4 (D)',
+                    'אצבע 3: סריג 2, מיתר 3 (G)',
+                    'מיתר 6 (E נמוך): לא מנוגן (✕)'
+                ],
+                frets: [-1, 0, 2, 2, 1, 0],
+                fingers: [0, 0, 2, 3, 1, 0],
+                frequencies: [110.00, 164.81, 220.00, 261.63, 329.63]
+            },
+            'F': {
+                name: 'F Major',
+                hebrewName: 'פה מאז\'ור',
+                desc: 'אקורד בארה בסיסי. דורש לחיצה יציבה על מיתרים 1 ו-2 בעזרת אצבע 1.',
+                guide: [
+                    'אצבע 1: סריג 1, מיתרים 1 ו-2',
+                    'אצבע 2: סריג 2, מיתר 3 (G)',
+                    'אצבע 3: סריג 3, מיתר 4 (D)'
+                ],
+                frets: [-1, -1, 3, 2, 1, 1],
+                fingers: [0, 0, 3, 2, 1, 1],
+                frequencies: [146.83, 174.61, 261.63, 349.23]
+            },
+            'D': {
+                name: 'D Major',
+                hebrewName: 'רה מאז\'ור',
+                desc: 'אקורד בהיר ומלא חיים המנוגן בעיקר על 4 המיתרים התחתונים.',
+                guide: [
+                    'אצבע 1: סריג 2, מיתר 3 (G)',
+                    'אצבע 2: סריג 2, מיתר 1 (e)',
+                    'אצבע 3: סריג 3, מיתר 2 (B)',
+                    'מיתרים 5 ו-6: לא מנוגנים (✕)'
+                ],
+                frets: [-1, -1, 0, 2, 3, 2],
+                fingers: [0, 0, 0, 1, 3, 2],
+                frequencies: [146.83, 220.00, 293.66, 369.99]
+            },
+            'Em': {
+                name: 'E Minor',
+                hebrewName: 'מי מינור',
+                desc: 'האקורד הקל ביותר לנגינה בגיטרה - דורש 2 אצבעות בלבד בסריג השני!',
+                guide: [
+                    'אצבע 2: סריג 2, מיתר 5 (A)',
+                    'אצבע 3: סריג 2, מיתר 4 (D)',
+                    'כל שאר המיתרים פתוחים'
+                ],
+                frets: [0, 2, 2, 0, 0, 0],
+                fingers: [0, 2, 3, 0, 0, 0],
+                frequencies: [82.41, 123.47, 146.83, 196.00, 246.94, 329.63]
+            }
+        };
+
+        /* State Variables */
+        let currentTab = 'home';
+        let currentToolboxTab = 'metronome';
+        let currentChordKey = 'C';
+
+        // Audio Context
+        let audioCtx = null;
+
+        // Metronome State
+        let isMetronomePlaying = false;
+        let bpm = 120;
+        let beatsPerMeasure = 4;
+        let currentBeat = 0;
+        let metronomeTimer = null;
+        let tapTimes = [];
+
+        // Video Player State
+        let isVideoPlaying = false;
+        let videoProgress = 0;
+        let videoTimer = null;
+        let playbackSpeed = 1.0;
+
+        /* Initialization */
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCourseGrid('all');
+            renderFretboardSVG('C');
+            updateFingerGuide('C');
+        });
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioCtxClass();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        /* Navigation Tab Switching */
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            const target = document.getElementById(`section-${tabId}`);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-300');
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-300');
+                activeBtn.classList.add('bg-teal-600', 'text-white', 'shadow-sm');
+            }
+
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        /* Course Catalog Filtering */
+        function filterCourses(level) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-500', 'text-slate-950');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById(`filter-${level}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('bg-teal-500', 'text-slate-950');
+            }
+            renderCourseGrid(level);
+        }
+
+        function renderCourseGrid(filter) {
+            const grid = document.getElementById('course-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const filtered = filter === 'all' ? COURSES : COURSES.filter(c => c.level === filter);
+
+            filtered.forEach(c => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-slate-700 transition-all flex flex-col group";
+                card.innerHTML = `
+                    <div class="relative aspect-video overflow-hidden">
+                        <img src="${c.image}" alt="${c.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold border ${c.badgeClass} backdrop-blur-md">
+                            ${c.levelName}
+                        </span>
+                    </div>
+                    <div class="p-5 flex-grow flex flex-col justify-between space-y-4">
+                        <div class="space-y-2">
+                            <h3 class="text-lg font-bold text-white group-hover:text-teal-400 transition-colors">${c.title}</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">${c.description}</p>
+                        </div>
+                        <div class="space-y-4 pt-2 border-t border-slate-800/80">
+                            <div class="flex items-center justify-between text-xs text-slate-400">
+                                <span>📚 ${c.lessonsCount} שיעורים</span>
+                                <span>⏱️ ${c.duration}</span>
+                            </div>
+                            <button onclick="loadCourseToPlayer('${c.id}')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-teal-500 hover:text-slate-950 text-teal-400 font-bold text-xs transition-all">
+                                התחל ללמוד ←
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function loadCourseToPlayer(courseId) {
+            const course = COURSES.find(c => c.id === courseId);
+            if (course) {
+                document.getElementById('player-lesson-title').innerText = `שיעור 1: מתוך ${course.title}`;
+                document.getElementById('player-course-level').innerText = course.levelName;
+            }
+            switchTab('player');
+        }
+
+        /* Video Lesson Player Functions */
+        function togglePlayPause() {
+            isVideoPlaying = !isVideoPlaying;
+            const statusText = document.getElementById('video-status-text');
+            const playIcon = document.getElementById('play-icon');
+            const pauseIcon = document.getElementById('pause-icon');
+            const btnText = document.getElementById('btn-play-text');
+
+            if (isVideoPlaying) {
+                statusText.innerText = "מנגן כעת: תרגול אקורדים 4/4";
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                btnText.innerText = "השהה";
+
+                videoTimer = setInterval(() => {
+                    if (videoProgress < 100) {
+                        videoProgress += 0.5 * playbackSpeed;
+                        document.getElementById('video-seek').value = videoProgress;
+                        updateVideoTimeDisplay();
+
+                        const chords = ['Am', 'C', 'G', 'F'];
+                        const idx = Math.floor(videoProgress / 25) % chords.length;
+                        document.getElementById('current-chord-badge').innerText = chords[idx];
+                    } else {
+                        videoProgress = 0;
+                        togglePlayPause();
+                    }
+                }, 200);
+            } else {
+                statusText.innerText = "מושהה - לחץ Play להמשך";
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                btnText.innerText = "נגן";
+                clearInterval(videoTimer);
+            }
+        }
+
+        function seekVideo(val) {
+            videoProgress = parseFloat(val);
+            updateVideoTimeDisplay();
+        }
+
+        function updateVideoTimeDisplay() {
+            const totalSec = 270;
+            const currentSec = Math.floor((videoProgress / 100) * totalSec);
+            const mins = Math.floor(currentSec / 60).toString().padStart(2, '0');
+            const secs = (currentSec % 60).toString().padStart(2, '0');
+            document.getElementById('time-current').innerText = `${mins}:${secs}`;
+        }
+
+        function setSpeed(speed) {
+            playbackSpeed = speed;
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-500', 'text-slate-950', 'font-bold');
+                btn.classList.add('text-slate-400');
+            });
+            event.target.classList.remove('text-slate-400');
+            event.target.classList.add('bg-teal-500', 'text-slate-950', 'font-bold');
+        }
+
+        function switchPlayerTab(tab) {
+            document.getElementById('player-subtab-tabs').classList.toggle('hidden', tab !== 'tabs');
+            document.getElementById('player-subtab-chords').classList.toggle('hidden', tab !== 'chords');
+
+            const btnTabs = document.getElementById('player-tab-btn-tabs');
+            const btnChords = document.getElementById('player-tab-btn-chords');
+
+            if (tab === 'tabs') {
+                btnTabs.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition-all";
+                btnChords.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-200 transition-all";
+            } else {
+                btnChords.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-teal-500 text-slate-950 transition-all";
+                btnTabs.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-200 transition-all";
+            }
+        }
+
+        /* Toolbox Sub-Nav */
+        function switchToolboxTab(subtab) {
+            currentToolboxTab = subtab;
+            document.getElementById('toolbox-view-metronome').classList.toggle('hidden', subtab !== 'metronome');
+            document.getElementById('toolbox-view-chords').classList.toggle('hidden', subtab !== 'chords');
+
+            const btnMetro = document.getElementById('toolbox-btn-metronome');
+            const btnChords = document.getElementById('toolbox-btn-chords');
+
+            if (subtab === 'metronome') {
+                btnMetro.className = "px-4 py-2 rounded-lg text-xs font-bold bg-teal-500 text-slate-950 transition-all";
+                btnChords.className = "px-4 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all";
+            } else {
+                btnChords.className = "px-4 py-2 rounded-lg text-xs font-bold bg-teal-500 text-slate-950 transition-all";
+                btnMetro.className = "px-4 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all";
+            }
+        }
+
+        /* Metronome Logic */
+        function toggleMetronome() {
+            isMetronomePlaying = !isMetronomePlaying;
+            const btn = document.getElementById('metronome-start-btn');
+
+            if (isMetronomePlaying) {
+                btn.innerText = "⏸ עוצר";
+                btn.className = "w-full sm:w-48 py-4 rounded-2xl bg-rose-500 hover:bg-rose-400 text-white font-black text-lg shadow-lg shadow-rose-500/20 transition-all transform hover:scale-105";
+                currentBeat = 0;
+                scheduleNextClick();
+            } else {
+                btn.innerText = "▶ התחל";
+                btn.className = "w-full sm:w-48 py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:brightness-110 text-slate-950 font-black text-lg shadow-lg shadow-teal-500/20 transition-all transform hover:scale-105";
+                clearTimeout(metronomeTimer);
+            }
+        }
+
+        function scheduleNextClick() {
+            if (!isMetronomePlaying) return;
+
+            playMetronomeClick(currentBeat === 0);
+            animateBeatPulse(currentBeat);
+
+            currentBeat = (currentBeat + 1) % beatsPerMeasure;
+            const intervalMs = (60 / bpm) * 1000;
+            metronomeTimer = setTimeout(scheduleNextClick, intervalMs);
+        }
+
+        function playMetronomeClick(isFirstBeat) {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = isFirstBeat ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(isFirstBeat ? 880 : 440, ctx.currentTime);
+
+                gain.gain.setValueAtTime(1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.05);
+            } catch (e) {}
+        }
+
+        function animateBeatPulse(beatIndex) {
+            const glow = document.getElementById('metronome-glow');
+            glow.classList.add('beat-active');
+            setTimeout(() => glow.classList.remove('beat-active'), 150);
+
+            const dots = document.querySelectorAll('.beat-dot');
+            dots.forEach((dot, idx) => {
+                if (idx === beatIndex) {
+                    dot.className = "beat-dot w-4 h-4 rounded-full bg-teal-400 shadow-lg shadow-teal-500/80 scale-125 transition-all";
+                } else {
+                    dot.className = "beat-dot w-4 h-4 rounded-full bg-slate-800 border border-slate-700 transition-all";
+                }
+            });
+        }
+
+        function updateBpm(val) {
+            bpm = Math.min(220, Math.max(40, parseInt(val)));
+            document.getElementById('bpm-display').innerText = bpm;
+            document.getElementById('bpm-slider').value = bpm;
+        }
+
+        function changeBpm(delta) {
+            updateBpm(bpm + delta);
+        }
+
+        function setTimeSignature(ts) {
+            beatsPerMeasure = ts;
+            document.querySelectorAll('.ts-btn').forEach(btn => {
+                btn.className = "ts-btn px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300";
+            });
+            document.getElementById(`ts-${ts}`).className = "ts-btn px-3 py-1 rounded-md bg-teal-500 text-slate-950 font-bold";
+
+            const dotsContainer = document.getElementById('beat-dots');
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < ts; i++) {
+                const d = document.createElement('div');
+                d.className = "beat-dot w-4 h-4 rounded-full bg-slate-800 border border-slate-700 transition-all";
+                dotsContainer.appendChild(d);
+            }
+        }
+
+        function tapTempo() {
+            const now = Date.now();
+            tapTimes.push(now);
+            if (tapTimes.length > 4) tapTimes.shift();
+
+            if (tapTimes.length > 1) {
+                const intervals = [];
+                for (let i = 1; i < tapTimes.length; i++) {
+                    intervals.push(tapTimes[i] - tapTimes[i - 1]);
+                }
+                const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+                const calcBpm = Math.round(60000 / avgInterval);
+                updateBpm(calcBpm);
+            }
+        }
+
+        /* Chord Dictionary SVG & Audio Functions */
+        function selectChord(chordKey) {
+            currentChordKey = chordKey;
+            
+            document.querySelectorAll('.chord-select-btn').forEach(btn => {
+                btn.className = "chord-select-btn px-5 py-2.5 rounded-xl font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:border-teal-500/50 transition-all";
+            });
+            document.getElementById(`chord-btn-${chordKey}`).className = "chord-select-btn px-5 py-2.5 rounded-xl font-bold bg-teal-500 text-slate-950 transition-all shadow-md";
+
+            const data = CHORDS_DATA[chordKey];
+            document.getElementById('chord-name-display').innerText = data.name;
+            document.getElementById('chord-hebrew-name').innerText = data.hebrewName;
+            document.getElementById('chord-desc').innerText = data.desc;
+
+            updateFingerGuide(chordKey);
+            renderFretboardSVG(chordKey);
+        }
+
+        function updateFingerGuide(chordKey) {
+            const list = document.getElementById('finger-guide-list');
+            list.innerHTML = '';
+            CHORDS_DATA[chordKey].guide.forEach(step => {
+                const li = document.createElement('li');
+                li.innerText = `• ${step}`;
+                list.appendChild(li);
+            });
+        }
+
+        function renderFretboardSVG(chordKey) {
+            const chord = CHORDS_DATA[chordKey];
+            const container = document.getElementById('fretboard-svg-container');
+            
+            const width = 220;
+            const height = 280;
+            const numFrets = 4;
+            const startY = 45;
+            const fretSpacing = 50;
+            const startX = 25;
+            const stringSpacing = 34;
+
+            let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="select-none">`;
+
+            // Nut
+            svg += `<rect x="${startX - 2}" y="${startY - 8}" width="${stringSpacing * 5 + 4}" height="8" fill="#cbd5e1" rx="2"/>`;
+
+            // Frets
+            for (let i = 0; i <= numFrets; i++) {
+                const y = startY + i * fretSpacing;
+                svg += `<line x1="${startX}" y1="${y}" x2="${startX + stringSpacing * 5}" y2="${y}" stroke="#475569" stroke-width="2"/>`;
+            }
+
+            // Strings
+            for (let i = 0; i < 6; i++) {
+                const x = startX + i * stringSpacing;
+                const thickness = 3.2 - (i * 0.4);
+                svg += `<line x1="${x}" y1="${startY}" x2="${x}" y2="${startY + numFrets * fretSpacing}" stroke="#94a3b8" stroke-width="${thickness}"/>`;
+            }
+
+            // Muted / Open string status
+            chord.frets.forEach((fret, idx) => {
+                const x = startX + idx * stringSpacing;
+                const y = startY - 18;
+                if (fret === 0) {
+                    svg += `<circle cx="${x}" cy="${y}" r="5" stroke="#14b8a6" stroke-width="2" fill="none"/>`;
+                } else if (fret === -1) {
+                    svg += `<text x="${x}" y="${y + 4}" font-size="13" font-weight="bold" fill="#ef4444" text-anchor="middle">✕</text>`;
+                }
+            });
+
+            // Finger Dots
+            chord.frets.forEach((fret, idx) => {
+                if (fret > 0) {
+                    const x = startX + idx * stringSpacing;
+                    const y = startY + (fret - 0.5) * fretSpacing;
+                    const fingerNum = chord.fingers[idx];
+
+                    svg += `<circle cx="${x}" cy="${y}" r="11" fill="#14b8a6"/>`;
+                    if (fingerNum > 0) {
+                        svg += `<text x="${x}" y="${y + 4}" font-size="11" font-weight="extrabold" fill="#020617" text-anchor="middle">${fingerNum}</text>`;
+                    }
+                }
+            });
+
+            svg += `</svg>`;
+            container.innerHTML = svg;
+        }
+
+        function playSelectedChordSound() {
+            playChordSound(currentChordKey);
+        }
+
+        function playChordSound(chordKey) {
+            try {
+                const ctx = getAudioContext();
+                const chord = CHORDS_DATA[chordKey];
+                if (!chord || !chord.frequencies) return;
+
+                chord.frequencies.forEach((freq, idx) => {
+                    setTimeout(() => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+                        const filter = ctx.createBiquadFilter();
+                        filter.type = 'lowpass';
+                        filter.frequency.setValueAtTime(1100, ctx.currentTime);
+
+                        gain.gain.setValueAtTime(0, ctx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.6);
+
+                        osc.connect(filter);
+                        filter.connect(gain);
+                        gain.connect(ctx.destination);
+
+                        osc.start();
+                        osc.stop(ctx.currentTime + 1.6);
+                    }, idx * 35);
+                });
+            } catch (e) {}
+        }
+
+        /* WhatsApp Sharing Logic */
+        function shareOnWhatsApp(customMessage) {
+            const defaultMsg = "רוצה ללמוד לנגן בגיטרה? 🎸 הצטרף אליי ללמידה בחינם ב-'גיטרה Online'! 🎶";
+            const message = customMessage || defaultMsg;
+            const currentUrl = window.location.href;
+            const fullText = encodeURIComponent(`${message}\n\n${currentUrl}`);
+            window.open(`https://api.whatsapp.com/send?text=${fullText}`, '_blank');
+        }
+
+        function shareLessonOnWhatsApp() {
+            const lessonTitle = document.getElementById('player-lesson-title').innerText;
+            const message = `🎸 אני לומד עכשיו את השיעור: "${lessonTitle}" ב-גיטרה Online! בוא ללמוד איתי:`;
+            shareOnWhatsApp(message);
+        }
+    </script>
+</body>
+</html>

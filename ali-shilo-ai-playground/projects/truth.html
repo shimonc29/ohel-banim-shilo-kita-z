@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אמת או חובה!</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Heebo -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            purple: '#6d28d9',
+                            pink: '#ec4899',
+                            cyan: '#06b6d4',
+                            dark: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-short': 'bounce 0.8s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .glass-modal {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .glow-truth {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);
+        }
+
+        .glow-dare {
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.4);
+        }
+
+        /* Wheel Styles */
+        #wheelCanvas {
+            transition: transform 4s cubic-bezier(0.15, 0.99, 0.15, 1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.4);
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between min-h-screen p-4 md:p-8 select-none overflow-x-hidden">
+
+    <!-- Header Section -->
+    <header class="max-w-4xl w-full mx-auto flex items-center justify-between py-2 px-4 glass-card rounded-2xl mb-6 shadow-xl">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-pink-500 flex items-center justify-[#center] justify-center text-white text-xl font-black shadow-lg">
+                🔥
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400">
+                    אמת או חובה!
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">המשחק שיעשה לכם את הערב</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button onclick="openManageModal()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition flex items-center gap-2 border border-slate-700">
+                <i class="fa-solid fa-gear text-pink-400"></i>
+                <span class="hidden md:inline">ניהול תוכן</span>
+            </button>
+            <button onclick="openPlayersModal()" class="px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-purple-900/30">
+                <i class="fa-solid fa-users"></i>
+                <span id="playerCountBadge">2 שחקנים</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="max-w-4xl w-full mx-auto flex-1 flex flex-col justify-center items-center relative z-10">
+        
+        <!-- Step 1: Spin Wheel for Player Selection -->
+        <div id="step-spin-player" class="w-full flex flex-col items-center justify-center py-4">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white mb-2">מי התור שלו?</h2>
+                <p class="text-slate-300 text-sm md:text-base">סובבו את הגלגל כדי לבחור את השחקן הבא!</p>
+            </div>
+
+            <!-- Quick Add Player Form directly on Main Screen -->
+            <div class="w-full max-w-sm mb-4 px-4 flex gap-2">
+                <input type="text" id="quickPlayerInput" placeholder="הכנס שם שחקן/ית..." 
+                    onkeydown="if(event.key === 'Enter') addQuickPlayer()"
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 text-sm shadow-inner">
+                <button onclick="addQuickPlayer()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm transition shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>הוסף</span>
+                </button>
+            </div>
+
+            <!-- Wheel Container -->
+            <div class="relative w-72 h-72 md:w-80 md:h-80 my-4 flex items-center justify-center">
+                <!-- Pointer -->
+                <div class="absolute -top-4 z-20 text-yellow-400 text-3xl filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)]">
+                    <i class="fa-solid fa-location-pin fa-rotate-180"></i>
+                </div>
+                
+                <canvas id="wheelCanvas" width="320" height="320" class="w-full h-full rounded-full shadow-2xl border-4 border-slate-700/50"></canvas>
+                
+                <!-- Center Button -->
+                <button onclick="spinWheel()" id="spinBtn" class="absolute z-10 w-20 h-20 rounded-full bg-slate-900 border-4 border-pink-500 text-white font-black text-lg shadow-xl hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center gap-1 group">
+                    <i class="fa-solid fa-play text-pink-400 group-hover:scale-125 transition"></i>
+                    <span class="text-xs tracking-wider">סובב</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Select Truth or Dare -->
+        <div id="step-choose-type" class="w-full hidden flex-col items-center justify-center py-6 text-center animate-fade-in">
+            <!-- Selected Player Badge -->
+            <div class="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-slate-800/80 border border-purple-500/40 mb-8 shadow-inner">
+                <span class="text-slate-400 text-sm">התור של:</span>
+                <span id="activePlayerName" class="text-xl font-black text-pink-400">ישראל</span>
+                <span class="text-2xl" id="activePlayerEmoji">👑</span>
+            </div>
+
+            <h3 class="text-3xl md:text-4xl font-black text-white mb-8">מה בא לך לבחור?</h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg px-4">
+                <!-- Truth Button -->
+                <button onclick="selectChoice('truth')" class="glass-card group p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:border-cyan-400 hover:glow-truth transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-3xl text-white shadow-lg group-hover:scale-110 transition">
+                        <i class="fa-solid fa-comment-dots"></i>
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-black text-cyan-300">אמת</span>
+                        <span class="text-xs text-slate-400">שאלה שחובה לענות עליה ביושר</span>
+                    </div>
+                </button>
+
+                <!-- Dare Button -->
+                <button onclick="selectChoice('dare')" class="glass-card group p-6 rounded-3xl flex flex-col items-center justify-center gap-4 hover:border-pink-500 hover:glow-dare transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-3xl text-white shadow-lg group-hover:scale-110 transition">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-black text-pink-400">חובה</span>
+                        <span class="text-xs text-slate-400">משימה מאתגרת ומצחיקה</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Show Challenge Card -->
+        <div id="step-show-card" class="w-full hidden flex-col items-center justify-center py-4">
+            <div class="w-full max-w-xl glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl border-t border-white/20">
+                
+                <!-- Top Indicator -->
+                <div class="flex items-center justify-between border-b border-slate-700/60 pb-4 mb-6">
+                    <div class="flex items-center gap-2">
+                        <span id="cardPlayerEmoji" class="text-xl">👑</span>
+                        <span id="cardPlayerName" class="font-bold text-slate-200">ישראל</span>
+                    </div>
+                    <span id="cardCategoryBadge" class="px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                        אמת
+                    </span>
+                </div>
+
+                <!-- Main Content Prompt -->
+                <div class="min-h-[160px] flex items-center justify-center text-center my-4">
+                    <p id="challengeText" class="text-xl md:text-2xl font-bold leading-relaxed text-white">
+                        מה הדבר הכי מביך שקרה לך בבית הספר?
+                    </p>
+                </div>
+
+                <!-- Optional Timer UI (shown if needed) -->
+                <div id="timerContainer" class="hidden my-4 flex-col items-center justify-center">
+                    <div class="text-4xl font-black text-yellow-400 font-mono mb-2" id="timerDisplay">00:30</div>
+                    <div class="flex gap-2">
+                        <button onclick="startTimer()" id="startTimerBtn" class="px-4 py-1.5 rounded-lg bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 text-xs font-bold hover:bg-yellow-500/30">
+                            <i class="fa-solid fa-play ml-1"></i> התחל טיימר
+                        </button>
+                        <button onclick="resetTimer()" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 text-xs font-bold hover:bg-slate-600">
+                            איפוס
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bottom Actions -->
+                <div class="mt-8 pt-4 border-t border-slate-700/60 flex flex-wrap sm:flex-nowrap gap-3">
+                    <button onclick="drawAnotherCard()" class="w-full sm:w-1/2 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold transition border border-slate-700 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>חלף שאלה</span>
+                    </button>
+                    <button onclick="completeTurn()" class="w-full sm:w-1/2 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-sm font-bold transition shadow-lg shadow-teal-900/40 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check"></i>
+                        <span>בוצע! התור הבא</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+            <!-- Players Modal -->
+    <div id="playersModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="glass-modal w-full max-w-md rounded-3xl p-6 shadow-2xl relative border border-slate-700 animate-fade-in">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users text-purple-400"></i>
+                    ניהול שחקנים
+                </h3>
+                <button onclick="closePlayersModal()" class="text-slate-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Add Player Form -->
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="newPlayerInput" placeholder="שם השחקן/ית..." 
+                    onkeydown="if(event.key === 'Enter') addPlayer()"
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-sm">
+                <button onclick="addPlayer()" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm transition">
+                    הוסף
+                </button>
+            </div>
+
+            <!-- Action buttons for clear all players -->
+            <div class="flex justify-between items-center mb-2 px-1">
+                <span class="text-xs text-slate-400">רשימת השחקנים:</span>
+                <button onclick="removeAllPlayers()" class="text-xs text-rose-400 hover:text-rose-300 font-bold transition flex items-center gap-1">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>העלם את כל השמות</span>
+                </button>
+            </div>
+
+            <!-- Players List -->
+            <div id="playersList" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar mb-6 pr-1">
+                <!-- Players inserted here dynamically -->
+            </div>
+
+            <button onclick="closePlayersModal()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-slate-700 transition">
+                סגור ושמור
+            </button>
+        </div>
+    </div>
+
+    <!-- Content Management Modal -->
+    <div id="manageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="glass-modal w-full max-w-lg rounded-3xl p-6 shadow-2xl relative border border-slate-700 animate-fade-in max-h-[90vh] flex flex-col">
+            
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-pink-400"></i>
+                    הגדרות ותוכן המשחק
+                </h3>
+                <button onclick="closeManageModal()" class="text-slate-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Category Selector -->
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-400 mb-2">ערכת שאלות פעילה:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setPack('family')" id="packFamilyBtn" class="py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2">
+                        <span>👨‍👩‍👧‍👦 לכל המשפחה</span>
+                    </button>
+                    <button onclick="setPack('party')" id="packPartyBtn" class="py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2">
+                        <span>🎉 מסיבה וחברים</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add Custom Prompt -->
+            <div class="mb-4 p-3 rounded-2xl bg-slate-900/50 border border-slate-800">
+                <span class="block text-xs font-semibold text-slate-300 mb-2">הוסף שאלה / משימה משלך:</span>
+                <div class="flex gap-2 mb-2">
+                    <select id="customTypeSelect" class="bg-slate-800 text-slate-200 text-xs rounded-xl px-2 border border-slate-700">
+                        <option value="truth">אמת</option>
+                        <option value="dare">חובה</option>
+                    </select>
+                    <input type="text" id="customPromptInput" placeholder="הקלד/י כאן..." class="flex-1 bg-slate-800 text-white text-xs rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-pink-500">
+                </div>
+                <button onclick="addCustomPrompt()" class="w-full py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold transition">
+                    הוסף למשחק
+                </button>
+            </div>
+
+            <!-- Prompt Count Stats -->
+            <div class="flex justify-between text-xs text-slate-400 px-1 mb-2">
+                <span>סה"כ שאלות אמת: <strong id="truthCount" class="text-cyan-400">0</strong></span>
+                <span>סה"כ משימות חובה: <strong id="dareCount" class="text-pink-400">0</strong></span>
+            </div>
+
+            <button onclick="closeManageModal()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-slate-700 transition mt-auto">
+                סגור
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Notification Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden px-6 py-3 rounded-2xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 shadow-2xl transition duration-300">
+        הודעה
+    </div>
+
+    <!-- Audio Effects (Web Audio API Synthesizer) -->
+    <script>
+        // Sound FX Engine using Web Audio API
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'tick') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'win') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                }
+            } catch(e) { console.log('Audio disabled/not supported'); }
+        }
+    </script>
+
+    <!-- Main Game Logic Script -->
+    <script>
+        // ================= GAME DATA =================
+        const EMOJIS = ['👑', '⭐', '🔥', '🚀', '🎨', '🦁', '🍕', '🎉', '💎', '🦄'];
+
+        const DEFAULT_PACKS = {
+            family: {
+                truth: [
+                    "מה המאכל שאת/ה הכי שונא/ת שאימא או אבא מכינים?",
+                    "אם היית יכול/ה לקבל כוח על אחד, מה הוא היה ולמה?",
+                    "מה המעשה הכי מצחיק שסבתא או סבא עשו פעם?",
+                    "מהו הסרט שאת/ה יכול/ה לראות 100 פעמים ולא יימאס לך?",
+                    "אם היית יכול/ה להחליף מקום עם מישהו מהמשפחה ליום אחד, במי היית בוחר/ת?",
+                    "מהי הסוכריה או החטיף הסודי שאת/ה הכי אוהב/ת?",
+                    "מה המקום הכי יפה שטיילת בו אי פעם?",
+                    "אם היית מוצא/ת 1,000 שקלים ברחוב, מה היית עושה איתם?",
+                    "מהו הפחד הכי מצחיק או מוזר שלך?",
+                    "איזה מקצוע בבית הספר את/ה הכי אוהב/ת ואיזה הכי פחות?"
+                ],
+                dare: [
+                    "תעשה/י חיקוי של מישהו מהנוכחים בחדר עד שינחשו מי זה!",
+                    "תשיר/י את הפזמון של השיר האהוב עליך בקול של אופרה!",
+                    "תעשה/י 10 שכיבות סמיכה או 10 קפיצות כוכב במקום.",
+                    "דבר/י במבטא מצחיק (אנגלי/צרפתי/רוסי) במשך 2 התורות הבאים!",
+                    "תן/י מחמאה כנה לכל אחד מהמשתתפים בחדר.",
+                    "נסה/י לגעת באף עם הלשון במשך 15 שניות.",
+                    "ספר/י את הבדיחה הכי מצחיקה שאת/ה מכיר/ה!",
+                    "תעשה/י פרצוף הכי מצחיק שאת/ה יכול/ה וצלם/י סלפי.",
+                    "תפסל/י חיה כלשהי באוויר בעזרת הידיים עד שינחשו מה זו.",
+                    "תעשה/י תנועת ריקוד משוגעת במשך 20 שניות!"
+                ]
+            },
+            party: {
+                truth: [
+                    "מה הדבר הכי מביך שקרה לך מול כל הכיתה או החברים?",
+                    "מי היה הקראש הראשון שלך ואיפה זה היה?",
+                    "מהו השקר הכי גדול שסילפת כדי לצאת מתירוץ?",
+                    "מהי הפדיחה הכי גדולה שקצתה לך ברשתות החברתיות?",
+                    "מה המנהג הכי מוזר שלך שרק מעטים יודעים עליו?",
+                    "איזה שיר את/ה אוהב/ת בסתר ולא נעים לך להודות בזה?",
+                    "אם היית חייב/ת למחוק אפליקציה אחת מהטלפון לכל החיים, מה זו היתה?",
+                    "מה המעשה הכי נועז שעשית בחיים שלך?",
+                    "על מה הוצאת כסף לאחרונה ואת/ה מתחרט/ת על זה?",
+                    "מה הרושם הראשוני שהיה לך על האדם שיושב מימינך?"
+                ],
+                dare: [
+                    "שלח/י אימוג'י של חציל 🍆 או קוף 🙈 לאיש הקשר החמישי בוואטסאפ בלי להסביר!",
+                    "תן/י לשחקן שמימינך לעצב לך תסרוקת חדשה ומצחיקה.",
+                    "תן/י למישהו לכתוב משהו מצחיק בסטורי שלך באינסטגרם/טיקטוק.",
+                    "תעשה/י הליכת סרטן מקצה אחד של החדר לקצה השני.",
+                    "תאכל/י כפית של רוטב חריף / חרדל / לימון סחוט בלי לעשות פרצוף!",
+                    "נסה/י למכור חפץ אקראי בחדר לשאר השחקנים כאילו זה מוצר מטורף.",
+                    "תציג/י סצנה מתוך סרט דרמטי בשיא הרצינות במשך 30 שניות.",
+                    "תן/י לכולם להסתכל בתמונות האחרונות בגלריה שלך בטלפון במשך 15 שניות.",
+                    "תקרא/י בקול רם את ההודעה האחרונה שקיבלת בוואטסאפ.",
+                    "תעשה/י סרטון טיקטוק קצר ומצחיק ביחד עם השחקן שמשמאלך!"
+                ]
+            }
+        };
+
+        // Current App State
+        let state = {
+            players: [],
+            activePack: 'family', // 'family' or 'party'
+            customPrompts: { truth: [], dare: [] },
+            selectedPlayer: null,
+            currentType: null, // 'truth' or 'dare'
+            currentPrompt: '',
+            wheelAngle: 0,
+            isSpinning: false,
+            timerInterval: null,
+            timerSeconds: 30
+        };
+
+        // ================= INITIALIZATION =================
+        window.onload = function() {
+            renderPlayersList();
+            updateStats();
+            drawWheel();
+            updatePackUI();
+
+            // Handle Window Resize for Wheel Canvas
+            window.addEventListener('resize', () => drawWheel());
+        };
+
+        // ================= WHEEL FUNCTIONS =================
+        function drawWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const numPlayers = state.players.length;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = width / 2 - 10;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (numPlayers === 0) {
+                // Empty Wheel State
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#334155';
+                ctx.fill();
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 16px Heebo';
+                ctx.textAlign = 'center';
+                ctx.fillText('הוסף שחקנים', centerX, centerY);
+                return;
+            }
+
+            const arcSize = (2 * Math.PI) / numPlayers;
+            const colors = ['#ec4899', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
+
+            for (let i = 0; i < numPlayers; i++) {
+                const angle = i * arcSize;
+                
+                // Draw Sector
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Draw Text & Emoji
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + arcSize / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 16px Heebo';
+                
+                const playerText = `${state.players[i].emoji} ${state.players[i].name}`;
+                // Truncate if too long
+                const truncated = playerText.length > 12 ? playerText.substring(0, 10) + '..' : playerText;
+                ctx.fillText(truncated, radius - 20, 5);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            if (state.isSpinning) return;
+            if (state.players.length < 1) {
+                showToast('יש להוסיף לפחות שחקן אחד!');
+                openPlayersModal();
+                return;
+            }
+
+            playSound('click');
+            state.isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+
+            const canvas = document.getElementById('wheelCanvas');
+            const numPlayers = state.players.length;
+            
+            // Random spin (min 5 full rotations + random offset)
+            const extraRotations = 5 + Math.floor(Math.random() * 5);
+            const randomSector = Math.floor(Math.random() * numPlayers);
+            const arcSize = 360 / numPlayers;
+            
+            // Calculate total degree to stop pointer at selected sector
+            // Subtraction aligns sector to top pointer (270 deg / -90 deg)
+            const targetDegree = (extraRotations * 360) + (360 - (randomSector * arcSize)) - (arcSize / 2);
+            
+            state.wheelAngle += targetDegree;
+            canvas.style.transform = `rotate(${state.wheelAngle}deg)`;
+
+            // Sound simulation during spin
+            let ticks = 0;
+            const tickInterval = setInterval(() => {
+                playSound('tick');
+                ticks++;
+                if (ticks > 25) clearInterval(tickInterval);
+            }, 120);
+
+            // Wait for CSS animation finish
+            setTimeout(() => {
+                state.isSpinning = false;
+                document.getElementById('spinBtn').disabled = false;
+                
+                // Set active player
+                state.selectedPlayer = state.players[randomSector];
+                playSound('win');
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+
+                // Move to next step
+                showStep('step-choose-type');
+                document.getElementById('activePlayerName').innerText = state.selectedPlayer.name;
+                document.getElementById('activePlayerEmoji').innerText = state.selectedPlayer.emoji;
+
+            }, 4000);
+        }
+
+        // ================= GAME FLOW =================
+        function showStep(stepId) {
+            ['step-spin-player', 'step-choose-type', 'step-show-card'].forEach(id => {
+                const el = document.getElementById(id);
+                if (id === stepId) {
+                    el.classList.remove('hidden');
+                    el.classList.add('flex');
+                } else {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
+            });
+        }
+
+        function selectChoice(type) {
+            playSound('click');
+            state.currentType = type;
+
+            const categoryBadge = document.getElementById('cardCategoryBadge');
+            if (type === 'truth') {
+                categoryBadge.innerText = 'אמת 💬';
+                categoryBadge.className = 'px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+            } else {
+                categoryBadge.innerText = 'חובה ⚡';
+                categoryBadge.className = 'px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-pink-500/20 text-pink-400 border border-pink-500/30';
+            }
+
+            document.getElementById('cardPlayerName').innerText = state.selectedPlayer.name;
+            document.getElementById('cardPlayerEmoji').innerText = state.selectedPlayer.emoji;
+
+            drawAnotherCard();
+            showStep('step-show-card');
+        }
+
+        function drawAnotherCard() {
+            playSound('click');
+            const type = state.currentType;
+            const builtInList = DEFAULT_PACKS[state.activePack][type];
+            const customList = state.customPrompts[type];
+            const combinedList = [...builtInList, ...customList];
+
+            if (combinedList.length === 0) {
+                document.getElementById('challengeText').innerText = 'לא נשארו שאלות בקטגוריה זו!';
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * combinedList.length);
+            state.currentPrompt = combinedList[randomIndex];
+
+            const challengeEl = document.getElementById('challengeText');
+            challengeEl.innerText = state.currentPrompt;
+
+            // Show timer option for Dares
+            const timerContainer = document.getElementById('timerContainer');
+            if (type === 'dare') {
+                timerContainer.classList.remove('hidden');
+                timerContainer.classList.add('flex');
+                resetTimer();
+            } else {
+                timerContainer.classList.add('hidden');
+                timerContainer.classList.remove('flex');
+            }
+        }
+
+        function completeTurn() {
+            playSound('win');
+            confetti({ particleCount: 70, spread: 70, origin: { y: 0.7 } });
+            resetTimer();
+            showStep('step-spin-player');
+        }
+
+        // ================= TIMER LOGIC =================
+        function startTimer() {
+            if (state.timerInterval) return;
+            playSound('click');
+            
+            const btn = document.getElementById('startTimerBtn');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            state.timerInterval = setInterval(() => {
+                state.timerSeconds--;
+                updateTimerDisplay();
+
+                if (state.timerSeconds <= 5 && state.timerSeconds > 0) {
+                    playSound('tick');
+                }
+
+                if (state.timerSeconds <= 0) {
+                    clearInterval(state.timerInterval);
+                    state.timerInterval = null;
+                    playSound('win');
+                    showToast('הזמן נגמר! ⏰');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                }
+            }, 1000);
+        }
+
+        function resetTimer() {
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+                state.timerInterval = null;
+            }
+            state.timerSeconds = 30;
+            updateTimerDisplay();
+            const btn = document.getElementById('startTimerBtn');
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
+
+        function updateTimerDisplay() {
+            const min = Math.floor(state.timerSeconds / 60).toString().padStart(2, '0');
+            const sec = (state.timerSeconds % 60).toString().padStart(2, '0');
+            const display = document.getElementById('timerDisplay');
+            if (display) display.innerText = `${min}:${sec}`;
+        }
+
+        // ================= PLAYER MANAGEMENT =================
+        function renderPlayersList() {
+            const container = document.getElementById('playersList');
+            const badge = document.getElementById('playerCountBadge');
+            badge.innerText = `${state.players.length} שחקנים`;
+
+            if (state.players.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-500 text-xs py-4">אין שחקנים ברשימה</div>';
+                drawWheel();
+                return;
+            }
+
+            container.innerHTML = state.players.map((player, index) => `
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="text-lg">${player.emoji}</span>
+                        <span class="font-bold text-slate-200">${escapeHtml(player.name)}</span>
+                    </div>
+                    <button onclick="removePlayer(${index})" class="text-slate-500 hover:text-rose-400 p-1 transition">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            drawWheel();
+        }
+
+        function addPlayer() {
+            const input = document.getElementById('newPlayerInput');
+            const name = input.value.trim();
+            if (!name) return;
+
+            const randomEmoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+            state.players.push({ name, emoji: randomEmoji });
+            input.value = '';
+            
+            playSound('click');
+            renderPlayersList();
+        }
+
+        function removePlayer(index) {
+            playSound('click');
+            state.players.splice(index, 1);
+            renderPlayersList();
+        }
+
+        function removeAllPlayers() {
+            if (state.players.length === 0) return;
+            playSound('click');
+            state.players = [];
+            renderPlayersList();
+            showToast('כל השמות הוסרו בהצלחה');
+        }
+
+        function addQuickPlayer() {
+            const input = document.getElementById('quickPlayerInput');
+            const name = input.value.trim();
+            if (!name) return;
+
+            const randomEmoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+            state.players.push({ name, emoji: randomEmoji });
+            input.value = '';
+            
+            playSound('click');
+            renderPlayersList();
+            showToast(`השחקן/ית "${name}" נוספ/ה בהצלחה!`);
+        }
+
+        function openPlayersModal() {
+            playSound('click');
+            document.getElementById('playersModal').classList.remove('hidden');
+        }
+
+        function closePlayersModal() {
+            playSound('click');
+            document.getElementById('playersModal').classList.add('hidden');
+        }
+
+        // ================= PACK & CONTENT MANAGEMENT =================
+        function setPack(packName) {
+            playSound('click');
+            state.activePack = packName;
+            updatePackUI();
+            updateStats();
+            showToast(`נבחרה ערכת: ${packName === 'family' ? 'לכל המשפחה' : 'מסיבה וחברים'}`);
+        }
+
+        function updatePackUI() {
+            const familyBtn = document.getElementById('packFamilyBtn');
+            const partyBtn = document.getElementById('packPartyBtn');
+
+            if (state.activePack === 'family') {
+                familyBtn.className = 'py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-transparent shadow-md';
+                partyBtn.className = 'py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 bg-slate-900 text-slate-400 border-slate-700 hover:bg-slate-800';
+            } else {
+                partyBtn.className = 'py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-transparent shadow-md';
+                familyBtn.className = 'py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 bg-slate-900 text-slate-400 border-slate-700 hover:bg-slate-800';
+            }
+        }
+
+        function addCustomPrompt() {
+            const typeSelect = document.getElementById('customTypeSelect');
+            const input = document.getElementById('customPromptInput');
+            const type = typeSelect.value;
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            state.customPrompts[type].push(text);
+            input.value = '';
+            
+            playSound('win');
+            updateStats();
+            showToast('השאלה נוספה בהצלחה למשחק!');
+        }
+
+        function updateStats() {
+            const truthTotal = DEFAULT_PACKS[state.activePack].truth.length + state.customPrompts.truth.length;
+            const dareTotal = DEFAULT_PACKS[state.activePack].dare.length + state.customPrompts.dare.length;
+
+            document.getElementById('truthCount').innerText = truthTotal;
+            document.getElementById('dareCount').innerText = dareTotal;
+        }
+
+        function openManageModal() {
+            playSound('click');
+            document.getElementById('manageModal').classList.remove('hidden');
+        }
+
+        function closeManageModal() {
+            playSound('click');
+            document.getElementById('manageModal').classList.add('hidden');
+        }
+
+        // ================= UTILS =================
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+    </script>
+</body>
+</html>

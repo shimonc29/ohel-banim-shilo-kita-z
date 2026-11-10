@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subway Surfers 3D Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Rubik', sans-serif;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            user-select: none;
+        }
+        .game-font {
+            font-family: 'Fredoka One', cursive;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body class="relative w-screen h-screen">
+
+    <!-- HUD / ממשק משתמש -->
+    <div id="ui-container" class="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 z-10">
+        <!-- למעלה: ניקוד ומטבעות -->
+        <div class="flex justify-between items-center w-full">
+            <div class="flex items-center gap-3 bg-black/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/10 shadow-lg">
+                <span class="text-amber-400 text-2xl">🪙</span>
+                <span id="score-coins" class="text-white game-font text-2xl tracking-wider">0</span>
+            </div>
+            <div class="flex items-center gap-3 bg-black/40 backdrop-blur-md px-6 py-2.5 rounded-2xl border border-white/10 shadow-lg">
+                <span class="text-slate-400 text-sm font-bold uppercase tracking-wider">ציון</span>
+                <span id="score-distance" class="text-emerald-400 game-font text-2xl tracking-wider">000000</span>
+            </div>
+        </div>
+
+        <!-- מסך פתיחה / משחק נעצר -->
+        <div id="start-screen" class="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center pointer-events-auto transition-all duration-300">
+            <div class="bg-gradient-to-br from-indigo-900/90 to-purple-900/90 border-2 border-indigo-500/50 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center mx-4">
+                <h1 class="game-font text-4xl md:text-5xl text-amber-400 drop-shadow-[0_4px_10px_rgba(245,158,11,0.5)] mb-3">רצים ברכבת!</h1>
+                <p class="text-indigo-200 text-sm md:text-base mb-6 leading-relaxed">התחמק ממכשולים, קפוץ מעל רכבות, ואסוף כמה שיותר מטבעות זהב!</p>
+                
+                <div class="bg-black/30 p-4 rounded-2xl mb-6 text-xs text-indigo-300 space-y-2 border border-white/5">
+                    <p>⬅️ ➡️ <b>חצים שמאל/ימין:</b> מעבר בין נתיבים</p>
+                    <p>⬆️ <b>חץ למעלה:</b> קפיצה</p>
+                    <p>⬇️ <b>חץ למטה:</b> גלגול / התכופפות</p>
+                </div>
+
+                <button id="start-btn" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white game-font text-xl rounded-2xl shadow-xl shadow-amber-500/30 transform hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer">
+                    התחל במשחק!
+                </button>
+            </div>
+        </div>
+
+        <!-- מסך הפסד (Game Over) -->
+        <div id="game-over-screen" class="absolute inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center pointer-events-none opacity-0 transition-all duration-300 z-20">
+            <div class="bg-gradient-to-br from-slate-900 to-red-950 border-2 border-red-500/40 p-8 rounded-3xl shadow-2xl max-w-md w-full text-center mx-4 pointer-events-auto">
+                <h2 class="game-font text-4xl text-red-500 mb-2 drop-shadow-[0_4px_10px_rgba(239,68,68,0.5)]">המשחק נגמר!</h2>
+                <p class="text-slate-300 text-sm mb-6">נתקלת במכשול בדרך...</p>
+                
+                <div class="bg-black/40 p-5 rounded-2xl mb-6 border border-white/5 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">ציון סופי:</span>
+                        <span id="final-score" class="game-font text-emerald-400 text-2xl">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">מטבעות שנאספו:</span>
+                        <span id="final-coins" class="game-font text-amber-400 text-2xl">0</span>
+                    </div>
+                </div>
+
+                <button id="restart-btn" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white game-font text-xl rounded-2xl shadow-xl shadow-emerald-500/30 transform hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer">
+                    שחק שוב
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // משתני ניהול משחק וגרפיקה
+        let scene, camera, renderer;
+        let player;
+        let obstacles = [];
+        let coins = [];
+        let decorElements = [];
+        let gameRunning = false;
+        let score = 0;
+        let coinCount = 0;
+        let gameSpeed = 0.6;
+        
+        // נתיבים: -3 (שמאל), 0 (אמצע), 3 (ימין)
+        const lanes = [-3, 0, 3];
+        let currentLaneIndex = 1; 
+
+        // מצבי שחקן (קפיצה, התכופפות)
+        let isJumping = false;
+        let jumpVelocity = 0;
+        let isSliding = false;
+        let slideTimer = 0;
+
+        // אתחול סביבת Three.js
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x12121e);
+            scene.fog = new THREE.FogExp2(0x12121e, 0.015);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 4, 8);
+            camera.lookAt(0, 1, -5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            // תאורה
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffedd5, 1.2);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            // יצירת מרכיבי עולם המשחק
+            createTracks();
+            createPlayer();
+
+            // האזנה לאירועי מקלדת
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('resize', onWindowResize);
+
+            // כפתורים
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', restartGame);
+
+            // רינדור ראשוני
+            animate();
+        }
+
+        // יצירת מסילות הרכבת והרקע (בניינים בצדדים)
+        function createTracks() {
+            // מסילה ראשית (3 נתיבים)
+            const trackGeo = new THREE.BoxGeometry(10, 0.2, 300);
+            const trackMat = new THREE.MeshStandardMaterial({ color: 0x27273a });
+            const track = new THREE.Mesh(trackGeo, trackMat);
+            track.position.set(0, -0.1, -100);
+            scene.add(track);
+
+            // פסים ברזל
+            for (let i of [-1.5, 1.5]) {
+                const railGeo = new THREE.BoxGeometry(0.2, 0.3, 300);
+                const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
+                const rail = new THREE.Mesh(railGeo, railMat);
+                rail.position.set(i, 0.1, -100);
+                scene.add(rail);
+            }
+
+            // בניינים ותאורה ברקע
+            for (let i = -150; i < 50; i += 15) {
+                createBuilding(-8, i);
+                createBuilding(8, i);
+            }
+        }
+
+        function createBuilding(x, z) {
+            const height = 15 + Math.random() * 20;
+            const width = 6 + Math.random() * 4;
+            const geo = new THREE.BoxGeometry(width, height, 10);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x1e1e2f, roughness: 0.9 });
+            const building = new THREE.Mesh(geo, mat);
+            building.position.set(x, height / 2 - 2, z);
+            scene.add(building);
+            decorElements.push(building);
+        }
+
+        // יצירת דמות השחקן
+        function createPlayer() {
+            const playerGroup = new THREE.Group();
+
+            // גוף
+            const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.5);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.9;
+            playerGroup.add(body);
+
+            // ראש
+            const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xfde047 });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 1.7;
+            playerGroup.add(head);
+
+            // כובע
+            const capGeo = new THREE.BoxGeometry(0.7, 0.2, 0.8);
+            const capMat = new THREE.MeshStandardMaterial({ color: 0xef4444 });
+            const cap = new THREE.Mesh(capGeo, capMat);
+            cap.position.set(0, 2.0, 0.1);
+            playerGroup.add(cap);
+
+            playerGroup.position.set(lanes[currentLaneIndex], 0, 0);
+            scene.add(playerGroup);
+            player = playerGroup;
+        }
+
+        // הוספת מכשולים (רכבות או מחסומים)
+        function spawnObstacle() {
+            if (!gameRunning) return;
+
+            const laneIdx = Math.floor(Math.random() * 3);
+            const isTrain = Math.random() > 0.4;
+            
+            let obsGroup = new THREE.Group();
+
+            if (isTrain) {
+                // רכבת גדולה
+                const trainGeo = new THREE.BoxGeometry(2.6, 3.2, 12);
+                const trainMat = new THREE.MeshStandardMaterial({ color: 0x991b1b });
+                const train = new THREE.Mesh(trainGeo, trainMat);
+                train.position.y = 1.6;
+                obsGroup.add(train);
+
+                // סימן אזהרה בחזית הרכבת (כמו בתמונה המקורית)
+                const signGeo = new THREE.PlaneGeometry(2, 2);
+                const canvasTag = document.createElement('canvas');
+                canvasTag.width = 128; canvasTag.height = 128;
+                const ctx = canvasTag.getContext('2d');
+                ctx.fillStyle = '#dc2626'; ctx.fillRect(0, 0, 128, 128);
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.moveTo(20, 40); ctx.lineTo(64, 90); ctx.lineTo(108, 40); ctx.fill();
+                
+                const texture = new THREE.CanvasTexture(canvasTag);
+                const signMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+                const sign = new THREE.Mesh(signGeo, signMat);
+                sign.position.set(0, 2.0, -6.05);
+                obsGroup.add(sign);
+            } else {
+                // מחסום נמוך (דורש קפיצה או כפיפה)
+                const barGeo = new THREE.BoxGeometry(2.6, 1.0, 0.8);
+                const barMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b });
+                const bar = new THREE.Mesh(barGeo, barMat);
+                bar.position.y = 0.5;
+                obsGroup.add(bar);
+            }
+
+            obsGroup.position.set(lanes[laneIdx], 0, -120);
+            obsGroup.userData = { isTrain: isTrain, lane: laneIdx };
+            scene.add(obsGroup);
+            obstacles.push(obsGroup);
+
+            // הוספת מטבעות בסביבת המכשול
+            if (Math.random() > 0.5) {
+                spawnCoinCluster(lanes[laneIdx], -100);
+            }
+        }
+
+        function spawnCoinCluster(x, z) {
+            for (let i = 0; i < 4; i++) {
+                const coinGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.1, 16);
+                const coinMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.8, roughness: 0.2 });
+                const coin = new THREE.Mesh(coinGeo, coinMat);
+                coin.rotation.x = Math.PI / 2;
+                coin.position.set(x, 1.0, z - (i * 2));
+                scene.add(coin);
+                coins.push(coin);
+            }
+        }
+
+        // טיפול במקלדת
+        function handleKeyDown(e) {
+            if (!gameRunning) return;
+
+            if (e.key === 'ArrowLeft' || e.key === 'a') {
+                if (currentLaneIndex > 0) {
+                    currentLaneIndex--;
+                }
+            } else if (e.key === 'ArrowRight' || e.key === 'd') {
+                if (currentLaneIndex < 2) {
+                    currentLaneIndex++;
+                }
+            } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') {
+                if (!isJumping && !isSliding) {
+                    isJumping = true;
+                    jumpVelocity = 0.35;
+                }
+            } else if (e.key === 'ArrowDown' || e.key === 's') {
+                if (!isJumping && !isSliding) {
+                    isSliding = true;
+                    slideTimer = 40; // משך זמן התכופפות
+                    player.scale.set(1, 0.5, 1);
+                }
+            }
+        }
+
+        // לוגיקה ראשית של לולאת המשחק
+        function update() {
+            if (!gameRunning) return;
+
+            // עדכון ניקוד
+            score += 1;
+            document.getElementById('score-distance').innerText = String(score).padStart(6, '0');
+
+            // החלקת מעבר נתיבים לשחקן
+            const targetX = lanes[currentLaneIndex];
+            player.position.x += (targetX - player.position.x) * 0.2;
+
+            // טיפול בקפיצה
+            if (isJumping) {
+                player.position.y += jumpVelocity;
+                jumpVelocity -= 0.02; // כוח משיכה
+                if (player.position.y <= 0) {
+                    player.position.y = 0;
+                    isJumping = false;
+                }
+            }
+
+            // טיפול בהתכופפות
+            if (isSliding) {
+                slideTimer--;
+                if (slideTimer <= 0) {
+                    isSliding = false;
+                    player.scale.set(1, 1, 1);
+                }
+            }
+
+            // תנועת מכשולים קדימה
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.position.z += gameSpeed;
+
+                // בדיקת התנגשות
+                // מרחק במישור Z קרוב לשחקן (z=0)
+                if (Math.abs(obs.position.z - player.position.z) < 1.0) {
+                    if (obs.userData.lane === currentLaneIndex) {
+                        // בדיקה האם השחקן קפץ מעל מחסום נמוך או התכופף
+                        let hit = true;
+                        if (!obs.userData.isTrain && isJumping && player.position.y > 1.0) {
+                            hit = false; // עבר מעל מחסום בקפיצה
+                        }
+                        if (hit) {
+                            gameOver();
+                        }
+                    }
+                }
+
+                // הסרת מכשולים שעברו את המסך
+                if (obs.position.z > 10) {
+                    scene.remove(obs);
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            // תנועת מטבעות ובדיקת איסוף
+            for (let i = coins.length - 1; i >= 0; i--) {
+                let coin = coins[i];
+                coin.position.z += gameSpeed;
+                coin.rotation.z += 0.05;
+
+                // בדיקת איסוף מטבע
+                const dx = coin.position.x - player.position.x;
+                const dz = coin.position.z - player.position.z;
+                const dy = coin.position.y - player.position.y;
+                
+                if (Math.abs(dx) < 0.8 && Math.abs(dz) < 1.0 && Math.abs(dy) < 1.2) {
+                    scene.remove(coin);
+                    coins.splice(i, 1);
+                    coinCount++;
+                    document.getElementById('score-coins').innerText = coinCount;
+                } else if (coin.position.z > 10) {
+                    scene.remove(coin);
+                    coins.splice(i, 1);
+                }
+            }
+
+            // הגברת מהירות הדרגתית
+            gameSpeed = 0.6 + Math.floor(score / 500) * 0.05;
+        }
+
+        // לולאת רינדור אנימציה
+        function animate() {
+            requestAnimationFrame(animate);
+            update();
+            renderer.render(scene, camera);
+        }
+
+        // יצירת מכשולים בקצב קבוע
+        let spawnerInterval = null;
+        function startGame() {
+            document.getElementById('start-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('start-screen').style.display = 'none';
+            }, 300);
+
+            gameRunning = true;
+            score = 0;
+            coinCount = 0;
+            gameSpeed = 0.6;
+            currentLaneIndex = 1;
+            player.position.set(0, 0, 0);
+
+            // ניקוי מכשולים קודמים
+            obstacles.forEach(obs => scene.remove(obs));
+            obstacles = [];
+            coins.forEach(c => scene.remove(c));
+            coins = [];
+
+            if (spawnerInterval) clearInterval(spawnerInterval);
+            spawnerInterval = setInterval(spawnObstacle, 1600);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(spawnerInterval);
+
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-coins').innerText = coinCount;
+
+            const goScreen = document.getElementById('game-over-screen');
+            goScreen.style.pointerEvents = 'auto';
+            goScreen.style.opacity = '1';
+        }
+
+        function restartGame() {
+            const goScreen = document.getElementById('game-over-screen');
+            goScreen.style.opacity = '0';
+            goScreen.style.pointerEvents = 'none';
+
+            startGame();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

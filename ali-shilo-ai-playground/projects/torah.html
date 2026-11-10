@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ספריית מקורות - תנ"ך ומשנה עם פירוש קהתי</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=Frank+Ruhl+Libre:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            800: '#92400e',
+                            900: '#78350f',
+                        },
+                        parchment: '#fcf8f2',
+                        darkBg: '#121212',
+                        darkCard: '#1e1e1e',
+                    },
+                    fontFamily: {
+                        torah: ['"Frank Ruhl Libre"', 'serif'],
+                        sans: ['Alef', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Alef', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .torah-text {
+            font-family: 'Frank Ruhl Libre', serif;
+            line-height: 1.8;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(180, 140, 90, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(180, 140, 90, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-parchment dark:bg-darkBg text-gray-900 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-30 bg-amber-900 text-amber-50 shadow-md border-b border-amber-700/50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <button id="sidebarToggleBtn" class="p-2 rounded-lg hover:bg-amber-800 focus:outline-none transition-colors" title="תפריט ניווט">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-book-bible text-2xl text-amber-300"></i>
+                    <h1 class="text-xl md:text-2xl font-bold font-torah tracking-wide">אוצר הספרים</h1>
+                </div>
+            </div>
+
+            <!-- Main Library Switcher Buttons -->
+            <div class="hidden md:flex bg-amber-950/60 p-1 rounded-xl border border-amber-700/40">
+                <button onclick="switchCategory('tanakh')" id="tab-tanakh" class="px-5 py-1.5 rounded-lg font-bold text-sm transition-all duration-200 bg-amber-700 text-white shadow">
+                    <i class="fa-solid fa-scroll me-1.5"></i>תנ"ך
+                </button>
+                <button onclick="switchCategory('mishna')" id="tab-mishna" class="px-5 py-1.5 rounded-lg font-bold text-sm transition-all duration-200 text-amber-200 hover:text-white">
+                    <i class="fa-solid fa-book-open me-1.5"></i>ש"ס משניות (קהתי)
+                </button>
+            </div>
+
+            <!-- Header Controls & Tools -->
+            <div class="flex items-center space-x-2 space-x-reverse">
+                <button id="rashiToggleBtn" onclick="toggleRashi()" class="px-2.5 py-1 rounded-lg bg-amber-800 text-amber-200 text-xs font-bold hover:bg-amber-700 transition" title="הצג/הסתר פירוש רש''י">
+                    <i class="fa-solid fa-feather-pointed me-1"></i>רש"י
+                </button>
+                <button id="kehatiToggleBtn" onclick="toggleKehati()" class="px-2.5 py-1 rounded-lg bg-amber-700 text-white text-xs font-bold hover:bg-amber-600 transition shadow hidden" title="הצג/הסתר פירוש קהתי">
+                    <i class="fa-solid fa-graduation-cap me-1"></i>ביאור קהתי
+                </button>
+                <button onclick="toggleSearchModal()" class="p-2 rounded-lg hover:bg-amber-800 transition" title="חיפוש באפליקציה">
+                    <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                </button>
+                <button onclick="toggleFontControls()" class="p-2 rounded-lg hover:bg-amber-800 transition" title="הגדרות טקסט">
+                    <i class="fa-solid fa-font text-lg"></i>
+                </button>
+                <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-amber-800 transition" title="מצב לילה/יום">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+                <button onclick="toggleBookmarksModal()" class="p-2 rounded-lg hover:bg-amber-800 transition text-amber-300" title="סימניות">
+                    <i class="fa-solid fa-bookmark text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Switcher Bar -->
+        <div class="flex md:hidden border-t border-amber-800/60 text-center text-sm font-semibold">
+            <button onclick="switchCategory('tanakh')" id="mobile-tab-tanakh" class="flex-1 py-2 bg-amber-800 text-white border-b-2 border-amber-300">תנ"ך</button>
+            <button onclick="switchCategory('mishna')" id="mobile-tab-mishna" class="flex-1 py-2 text-amber-200 hover:bg-amber-850">משניות עם קהתי</button>
+        </div>
+
+        <!-- Font Floating Control Bar -->
+        <div id="fontControls" class="hidden bg-amber-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 px-6 py-2 border-b border-amber-300 dark:border-zinc-700 flex items-center justify-between text-sm transition-all">
+            <span class="font-semibold">גודל גופן:</span>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button onclick="changeFontSize(-2)" class="px-3 py-1 bg-white dark:bg-zinc-700 border border-amber-300 dark:border-zinc-600 rounded font-bold hover:bg-amber-50">א-</button>
+                <span id="fontSizeDisplay" class="font-bold">22px</span>
+                <button onclick="changeFontSize(2)" class="px-3 py-1 bg-white dark:bg-zinc-700 border border-amber-300 dark:border-zinc-600 rounded font-bold hover:bg-amber-50">א+</button>
+            </div>
+            <div class="flex items-center space-x-2 space-x-reverse">
+                <span>גופן:</span>
+                <select id="fontSelect" onchange="changeFontFamily(this.value)" class="bg-white dark:bg-zinc-700 border border-amber-300 dark:border-zinc-600 rounded px-2 py-1">
+                    <option value="'Frank Ruhl Libre', serif">פרנק רוהל (קלאסי)</option>
+                    <option value="'Alef', sans-serif">אלף (מודרני)</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- App Container -->
+    <div class="flex-1 max-w-7xl w-full mx-auto flex overflow-hidden relative">
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-80 bg-white dark:bg-darkCard border-l border-amber-200 dark:border-zinc-800 flex flex-col transition-all duration-300 z-20 absolute md:relative inset-y-0 right-0 transform translate-x-full md:translate-x-0 shadow-lg md:shadow-none">
+            <div class="p-4 border-b border-amber-100 dark:border-zinc-800 bg-amber-50/50 dark:bg-zinc-900/50">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 id="sidebarTitle" class="font-bold text-amber-900 dark:text-amber-400 text-lg">ספרי תנ"ך</h2>
+                    <button onclick="closeSidebarMobile()" class="md:hidden text-gray-500 hover:text-gray-700">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="relative">
+                    <input type="text" id="bookSearchInput" oninput="filterBooksList()" placeholder="סינון מסכתות..." class="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg border border-amber-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <i class="fa-solid fa-filter absolute left-2.5 top-2.5 text-xs text-amber-600 dark:text-zinc-400"></i>
+                </div>
+            </div>
+
+            <div id="booksList" class="flex-1 overflow-y-auto p-3 space-y-1"></div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col h-[calc(100vh-60px)] md:h-[calc(100vh-65px)] overflow-hidden bg-parchment dark:bg-darkBg">
+            
+            <!-- Book/Chapter Top Indicator & Actions -->
+            <div class="bg-white/80 dark:bg-darkCard/80 backdrop-blur border-b border-amber-200 dark:border-zinc-800 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+                <div>
+                    <h2 id="currentLocationTitle" class="text-xl md:text-2xl font-bold font-torah text-amber-900 dark:text-amber-400">ברכות - פרק א'</h2>
+                    <p id="subLocationInfo" class="text-xs text-gray-500 dark:text-gray-400">משנה > סדר זרעים > ברכות</p>
+                </div>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <button onclick="shareToWhatsApp()" title="שתף בוואטסאפ" class="p-2 rounded-lg bg-green-50 dark:bg-green-950/40 border border-green-300 dark:border-green-800 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 transition flex items-center gap-1.5 text-xs font-bold">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <span class="hidden sm:inline">וואטסאפ</span>
+                    </button>
+                    <button onclick="bookmarkCurrentLocation()" title="שמור סימניה" class="p-2 rounded-lg bg-amber-50 dark:bg-zinc-800 border border-amber-200 dark:border-zinc-700 text-amber-800 dark:text-amber-400 hover:bg-amber-100 transition">
+                        <i id="bookmarkCurrentBtn" class="fa-regular fa-bookmark text-lg"></i>
+                    </button>
+                    <button onclick="copyCurrentText()" title="העתק טקסט" class="p-2 rounded-lg bg-amber-50 dark:bg-zinc-800 border border-amber-200 dark:border-zinc-700 text-amber-800 dark:text-amber-400 hover:bg-amber-100 transition">
+                        <i class="fa-regular fa-copy text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Text Display Container -->
+            <div id="textDisplayContainer" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6"></div>
+
+            <!-- Bottom Navigation Bar -->
+            <footer class="bg-white dark:bg-darkCard border-t border-amber-200 dark:border-zinc-800 px-6 py-3 flex justify-between items-center">
+                <button onclick="navigateChapter(-1)" id="prevChapterBtn" class="flex items-center space-x-2 space-x-reverse px-4 py-2 rounded-lg bg-amber-100 dark:bg-zinc-800 text-amber-900 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-zinc-700 transition font-medium text-sm">
+                    <i class="fa-solid fa-chevron-right"></i>
+                    <span>הקודם</span>
+                </button>
+
+                <div class="flex items-center space-x-2 space-x-reverse text-sm">
+                    <span class="text-gray-500 dark:text-gray-400">פרק:</span>
+                    <select id="chapterSelect" onchange="jumpToChapter(this.value)" class="bg-amber-50 dark:bg-zinc-800 border border-amber-300 dark:border-zinc-700 rounded px-3 py-1 font-bold text-amber-900 dark:text-amber-300 focus:outline-none"></select>
+                </div>
+
+                <button onclick="navigateChapter(1)" id="nextChapterBtn" class="flex items-center space-x-2 space-x-reverse px-4 py-2 rounded-lg bg-amber-100 dark:bg-zinc-800 text-amber-900 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-zinc-700 transition font-medium text-sm">
+                    <span>הבא</span>
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="searchModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-amber-200 dark:border-zinc-700">
+            <div class="p-4 border-b border-gray-200 dark:border-zinc-700 flex justify-between items-center bg-amber-50 dark:bg-zinc-800">
+                <h3 class="font-bold text-lg text-amber-900 dark:text-amber-300 flex items-center">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i>חיפוש במקורות
+                </h3>
+                <button onclick="toggleSearchModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-3">
+                <div class="flex gap-2">
+                    <input type="text" id="globalSearchInput" onkeydown="if(event.key==='Enter') executeSearch()" placeholder="הקלד מילת חיפוש..." class="flex-1 px-4 py-2.5 rounded-xl border border-amber-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    <button onclick="executeSearch()" class="px-6 py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold rounded-xl transition shadow">חיפוש</button>
+                </div>
+            </div>
+            <div id="searchResults" class="flex-1 overflow-y-auto p-4 border-t border-gray-100 dark:border-zinc-800 space-y-3">
+                <p class="text-center text-gray-500 py-8">הכנס מילת חיפוש ולחץ על חיפוש לקבלת תוצאות...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="bookmarksModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col overflow-hidden border border-amber-200 dark:border-zinc-700">
+            <div class="p-4 border-b border-gray-200 dark:border-zinc-700 flex justify-between items-center bg-amber-50 dark:bg-zinc-800">
+                <h3 class="font-bold text-lg text-amber-900 dark:text-amber-300 flex items-center">
+                    <i class="fa-solid fa-bookmark me-2 text-amber-600"></i>סימניות שמורות
+                </h3>
+                <button onclick="toggleBookmarksModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div id="bookmarksList" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-16 left-1/2 transform -translate-x-1/2 bg-amber-900 text-white px-5 py-2.5 rounded-full shadow-lg z-50 transition-opacity duration-300 opacity-0 pointer-events-none text-sm font-semibold flex items-center space-x-2 space-x-reverse">
+        <i id="toastIcon" class="fa-solid fa-check"></i>
+        <span id="toastMessage">הודעה</span>
+    </div>
+
+    <script>
+        const TANAKH_DATA = {
+            torah: { name: "תורה", books: [
+                { id: "genesis", name: "בראשית", chaptersCount: 50 },
+                { id: "exodus", name: "שמות", chaptersCount: 40 },
+                { id: "leviticus", name: "ויקרא", chaptersCount: 27 },
+                { id: "numbers", name: "במדבר", chaptersCount: 36 },
+                { id: "deuteronomy", name: "דברים", chaptersCount: 34 }
+            ]},
+            neviim: { name: "נביאים", books: [
+                { id: "joshua", name: "יהושע", chaptersCount: 24 },
+                { id: "judges", name: "שופטים", chaptersCount: 21 },
+                { id: "samuel1", name: "שמואל א", chaptersCount: 31 },
+                { id: "samuel2", name: "שמואל ב", chaptersCount: 24 },
+                { id: "kings1", name: "מלכים א", chaptersCount: 22 },
+                { id: "kings2", name: "מלכים ב", chaptersCount: 25 },
+                { id: "isaiah", name: "ישעיהו", chaptersCount: 66 },
+                { id: "jeremiah", name: "ירמיהו", chaptersCount: 52 },
+                { id: "ezekiel", name: "יחזקאל", chaptersCount: 48 },
+                { id: "hoshea", name: "הושע", chaptersCount: 14 },
+                { id: "joel", name: "יואל", chaptersCount: 4 },
+                { id: "amos", name: "עמוס", chaptersCount: 9 },
+                { id: "obadiah", name: "עובדיה", chaptersCount: 1 },
+                { id: "jonah", name: "יונה", chaptersCount: 4 },
+                { id: "micah", name: "מיכה", chaptersCount: 7 },
+                { id: "nahum", name: "נחום", chaptersCount: 3 },
+                { id: "habakkuk", name: "חבקוק", chaptersCount: 3 },
+                { id: "zephaniah", name: "צפניה", chaptersCount: 3 },
+                { id: "haggai", name: "חגי", chaptersCount: 2 },
+                { id: "zechariah", name: "זכריה", chaptersCount: 14 },
+                { id: "malachi", name: "מלאכי", chaptersCount: 3 }
+            ]},
+            ketuvim: { name: "כתובים", books: [
+                { id: "psalms", name: "תהילים", chaptersCount: 150 },
+                { id: "proverbs", name: "משלי", chaptersCount: 31 },
+                { id: "job", name: "איוב", chaptersCount: 42 },
+                { id: "songofsongs", name: "שיר השירים", chaptersCount: 8 },
+                { id: "ruth", name: "רות", chaptersCount: 4 },
+                { id: "lamentations", name: "איכה", chaptersCount: 5 },
+                { id: "ecclesiastes", name: "קהלת", chaptersCount: 12 },
+                { id: "esther", name: "אסתר", chaptersCount: 10 },
+                { id: "daniel", name: "דניאל", chaptersCount: 12 },
+                { id: "ezra", name: "עזרא", chaptersCount: 10 },
+                { id: "nehemiah", name: "נחמיה", chaptersCount: 13 },
+                { id: "chronicles1", name: "דברי הימים א", chaptersCount: 29 },
+                { id: "chronicles2", name: "דברי הימים ב", chaptersCount: 36 }
+            ]}
+        };
+
+        const MISHNA_DATA = {
+            zeraim: { name: "סדר זרעים", books: [
+                { id: "berakhot", name: "ברכות", chaptersCount: 9 },
+                { id: "peah", name: "פאה", chaptersCount: 8 },
+                { id: "demai", name: "דמאי", chaptersCount: 7 },
+                { id: "kilayim", name: "כלאים", chaptersCount: 9 },
+                { id: "sheviit", name: "שביעית", chaptersCount: 10 },
+                { id: "terumot", name: "תרומות", chaptersCount: 11 },
+                { id: "maaserot", name: "מעשרות", chaptersCount: 5 },
+                { id: "maaser_sheni", name: "מעשר שני", chaptersCount: 5 },
+                { id: "challah", name: "חלה", chaptersCount: 4 },
+                { id: "orlah", name: "ערלה", chaptersCount: 3 },
+                { id: "bikkurim", name: "ביכורים", chaptersCount: 4 }
+            ]},
+            moed: { name: "סדר מועד", books: [
+                { id: "shabbat", name: "שבת", chaptersCount: 24 },
+                { id: "eruvin", name: "עירובין", chaptersCount: 10 },
+                { id: "pesachim", name: "פסחים", chaptersCount: 10 },
+                { id: "sheqalim", name: "שקלים", chaptersCount: 8 },
+                { id: "yoma", name: "יומא", chaptersCount: 8 },
+                { id: "sukkah", name: "סוכה", chaptersCount: 5 },
+                { id: "beitzah", name: "ביצה", chaptersCount: 5 },
+                { id: "rosh_hashanah", name: "ראש השנה", chaptersCount: 4 },
+                { id: "taanit", name: "תענית", chaptersCount: 4 },
+                { id: "megillah", name: "מגילה", chaptersCount: 4 },
+                { id: "moed_katan", name: "מועד קטן", chaptersCount: 3 },
+                { id: "chagigah", name: "חגיגה", chaptersCount: 3 }
+            ]}
+        };
+
+        const SAMPLE_TEXTS = {
+            "berakhot_1": [
+                { 
+                    num: "מִשְׁנָה א'", 
+                    text: "מֵאֵימָתַי קוֹרִין אֶת שְׁמַע בְּעַרְבִית? מִשָּׁעָה שֶׁהַכֹּהֲנִים נִכְנָסִים לֶאֱכֹל בִּתְרוּמָתָן, עַד סוֹף הָאַשְׁמוּרָה הָרִאשׁוֹנָה, דִּבְרֵי רַבִּי אֱלִיעֶזֶר. וַחֲכָמִים אוֹמְרִים: עַד חֲצוֹת. רַבָּן גַּמְלִיאֵל אוֹמֵר: עַד שֶׁיַּעֲלֶה עַמּוּד הַשַּׁחַר.",
+                    kehati: "מאימתי קורין את שמע בערבית - מאיזה זמן בלילה מתחיל חיוב קריאת שמע של ערבית? משעה שהכהנים שנטמאו וטבלו נכנסים לאכול בתרומתן, והוא צאת הכוכבים. עד סוף האשמורה הראשונה - שליש הלילה."
+                },
+                { 
+                    num: "מִשְׁנָה ב'", 
+                    text: "מֵאֵימָתַי קוֹרִין אֶת שְׁמַע בְּשַׁחֲרִית? מִשֶּׁיַּכִּיר בֵּין תְּכֵלֶת לַלָּבָן. רַבִּי אֱלִיעֶזֶר אוֹמֵר: בֵּין תְּכֵלֶת לְכַרְתִּי.",
+                    kehati: "מאימתי קורין את שמע בשחרית - מאיזה זמן בבקר מתחיל חיוב קריאת שמע של שחרית? משיכיר בין תכלת ללבן - משיאור היום כל כך עד שיוכל אדם להבחין בין חוט של תכלת לחוט של לבן."
+                }
+            ]
+        };
+
+        const SEFARIA_MAP = {
+            genesis: "Genesis", exodus: "Exodus", leviticus: "Leviticus", numbers: "Numbers", deuteronomy: "Deuteronomy",
+            joshua: "Joshua", judges: "Judges", samuel1: "I_Samuel", samuel2: "II_Samuel", kings1: "I_Kings", kings2: "II_Kings",
+            isaiah: "Isaiah", jeremiah: "Jeremiah", ezekiel: "Ezekiel", hoshea: "Hosea", joel: "Joel", amos: "Amos",
+            obadiah: "Obadiah", jonah: "Jonah", micah: "Micah", nahum: "Nahum", habakkuk: "Habakkuk", zephaniah: "Zephaniah",
+            haggai: "Haggai", zechariah: "Zechariah", malachi: "Malachi", psalms: "Psalms", proverbs: "Proverbs", job: "Job",
+            songofsongs: "Song_of_Songs", ruth: "Ruth", lamentations: "Lamentations", ecclesiastes: "Ecclesiastes",
+            esther: "Esther", daniel: "Daniel", ezra: "Ezra", nehemiah: "Nehemiah", chronicles1: "I_Chronicles", chronicles2: "II_Chronicles",
+            // Mishnah
+            berakhot: "Mishnah_Berakhot", peah: "Mishnah_Peah", demai: "Mishnah_Demai", kilayim: "Mishnah_Kilayim",
+            sheviit: "Mishnah_Sheviit", terumot: "Mishnah_Terumot", maaserot: "Mishnah_Maaserot", maaser_sheni: "Mishnah_Maaser_Sheni",
+            challah: "Mishnah_Challah", orlah: "Mishnah_Orlah", bikkurim: "Mishnah_Bikkurim", shabbat: "Mishnah_Shabbat",
+            eruvin: "Mishnah_Eruvin", pesachim: "Mishnah_Pesachim", sheqalim: "Mishnah_Sheqalim", yoma: "Mishnah_Yoma",
+            sukkah: "Mishnah_Sukkah", beitzah: "Mishnah_Beitzah", rosh_hashanah: "Mishnah_Rosh_Hashanah", taanit: "Mishnah_Taanit",
+            megillah: "Mishnah_Megillah", moed_katan: "Mishnah_Moed_Kattan", chagigah: "Mishnah_Chagigah"
+        };
+
+        let currentState = {
+            category: 'mishna',
+            sectionKey: 'zeraim',
+            bookId: 'berakhot',
+            bookName: 'ברכות',
+            chapter: 1,
+            fontSize: 22,
+            fontFamily: "'Frank Ruhl Libre', serif",
+            darkMode: false,
+            showRashi: true,
+            showKehati: true,
+            bookmarks: [],
+            likes: {},
+            comments: {}
+        };
+
+        window.onload = function() {
+            loadSavedState();
+            renderCategory();
+            loadChapterContent();
+            setupEventListeners();
+        };
+
+        function loadSavedState() {
+            try {
+                const saved = localStorage.getItem('torah_app_state');
+                if (saved) {
+                    currentState = { ...currentState, ...JSON.parse(saved) };
+                }
+            } catch (e) {
+                console.warn('Load state error:', e);
+            }
+
+            if (currentState.darkMode) {
+                document.documentElement.classList.add('dark');
+                const themeIcon = document.getElementById('themeIcon');
+                if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-lg';
+            }
+            
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            if (fontSizeDisplay) fontSizeDisplay.innerText = `${currentState.fontSize}px`;
+            
+            const fontSelect = document.getElementById('fontSelect');
+            if (fontSelect) fontSelect.value = currentState.fontFamily;
+        }
+
+        function saveStateToLocalStorage() {
+            try {
+                localStorage.setItem('torah_app_state', JSON.stringify(currentState));
+            } catch (e) {
+                console.warn('Save state error:', e);
+            }
+        }
+
+        function switchCategory(cat) {
+            currentState.category = cat;
+            if (cat === 'tanakh') {
+                currentState.sectionKey = 'torah';
+                currentState.bookId = 'genesis';
+                currentState.bookName = 'בראשית';
+            } else {
+                currentState.sectionKey = 'zeraim';
+                currentState.bookId = 'berakhot';
+                currentState.bookName = 'ברכות';
+            }
+            currentState.chapter = 1;
+            renderCategory();
+            loadChapterContent();
+            saveStateToLocalStorage();
+        }
+
+        function renderCategory() {
+            const isTanakh = currentState.category === 'tanakh';
+            const dataSet = isTanakh ? TANAKH_DATA : MISHNA_DATA;
+            
+            const rashiBtn = document.getElementById('rashiToggleBtn');
+            const kehatiBtn = document.getElementById('kehatiToggleBtn');
+            if (isTanakh) {
+                if (rashiBtn) rashiBtn.classList.remove('hidden');
+                if (kehatiBtn) kehatiBtn.classList.add('hidden');
+            } else {
+                if (rashiBtn) rashiBtn.classList.add('hidden');
+                if (kehatiBtn) kehatiBtn.classList.remove('hidden');
+            }
+
+            const tabTanakh = document.getElementById('tab-tanakh');
+            const tabMishna = document.getElementById('tab-mishna');
+            if (isTanakh) {
+                if (tabTanakh) tabTanakh.className = "px-5 py-1.5 rounded-lg font-bold text-sm transition bg-amber-700 text-white shadow";
+                if (tabMishna) tabMishna.className = "px-5 py-1.5 rounded-lg font-bold text-sm transition text-amber-200 hover:text-white";
+                const title = document.getElementById('sidebarTitle');
+                if(title) title.innerText = 'ספרי תנ"ך';
+            } else {
+                if (tabMishna) tabMishna.className = "px-5 py-1.5 rounded-lg font-bold text-sm transition bg-amber-700 text-white shadow";
+                if (tabTanakh) tabTanakh.className = "px-5 py-1.5 rounded-lg font-bold text-sm transition text-amber-200 hover:text-white";
+                const title = document.getElementById('sidebarTitle');
+                if(title) title.innerText = 'ששת סדרי משנה';
+            }
+
+            const booksList = document.getElementById('booksList');
+            if (!booksList) return;
+            booksList.innerHTML = '';
+
+            Object.keys(dataSet).forEach(secKey => {
+                const section = dataSet[secKey];
+                const sectionHeader = document.createElement('div');
+                sectionHeader.className = "font-bold text-xs uppercase tracking-wider text-amber-800 dark:text-amber-400 mt-3 mb-1 px-2";
+                sectionHeader.innerText = section.name;
+                booksList.appendChild(sectionHeader);
+
+                section.books.forEach(book => {
+                    const isSelected = book.id === currentState.bookId;
+                    const bookDiv = document.createElement('div');
+                    bookDiv.className = `book-item p-2.5 rounded-xl cursor-pointer text-sm font-semibold transition-all flex justify-between items-center ${
+                        isSelected 
+                            ? 'bg-amber-800 text-white shadow-md' 
+                            : 'hover:bg-amber-100 dark:hover:bg-zinc-800 text-gray-800 dark:text-gray-200'
+                    }`;
+                    bookDiv.setAttribute('data-name', book.name);
+                    bookDiv.onclick = () => selectBook(secKey, book.id, book.name);
+
+                    bookDiv.innerHTML = `
+                        <span>${book.name}</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full ${isSelected ? 'bg-amber-900 text-amber-200' : 'bg-amber-200/50 dark:bg-zinc-700 text-amber-900 dark:text-amber-300'}">
+                            ${book.chaptersCount} פרקים
+                        </span>
+                    `;
+                    booksList.appendChild(bookDiv);
+                });
+            });
+        }
+
+        function selectBook(sectionKey, bookId, bookName) {
+            currentState.sectionKey = sectionKey;
+            currentState.bookId = bookId;
+            currentState.bookName = bookName;
+            currentState.chapter = 1;
+            renderCategory();
+            loadChapterContent();
+            closeSidebarMobile();
+            saveStateToLocalStorage();
+        }
+
+        async function loadChapterContent() {
+            const textContainer = document.getElementById('textDisplayContainer');
+            if (!textContainer) return;
+
+            const isTanakh = currentState.category === 'tanakh';
+            const dataSet = isTanakh ? TANAKH_DATA : MISHNA_DATA;
+            const currentBookObj = dataSet[currentState.sectionKey]?.books.find(b => b.id === currentState.bookId) || { chaptersCount: 1 };
+
+            document.getElementById('currentLocationTitle').innerText = `${currentState.bookName} - פרק ${toHebrewGematria(currentState.chapter)}'`;
+            document.getElementById('subLocationInfo').innerText = `${isTanakh ? 'תנ"ך' : 'משנה (עם ביאור קהתי)'} > ${dataSet[currentState.sectionKey]?.name || ''} > ${currentState.bookName}`;
+            
+            const chapterSelect = document.getElementById('chapterSelect');
+            if (chapterSelect) {
+                chapterSelect.innerHTML = '';
+                for (let i = 1; i <= currentBookObj.chaptersCount; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.innerText = toHebrewGematria(i);
+                    if (i === currentState.chapter) opt.selected = true;
+                    chapterSelect.appendChild(opt);
+                }
+            }
+
+            document.getElementById('prevChapterBtn').disabled = currentState.chapter <= 1;
+            document.getElementById('nextChapterBtn').disabled = currentState.chapter >= currentBookObj.chaptersCount;
+
+            updateBookmarkBtnState();
+
+            textContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-16 text-amber-800 dark:text-amber-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-3"></i>
+                    <p class="text-sm font-semibold">טוען משניות וביאור קהתי מ-Sefaria API...</p>
+                </div>
+            `;
+
+            const sefariaTitle = SEFARIA_MAP[currentState.bookId] || currentState.bookId;
+
+            try {
+                const response = await fetch(`https://www.sefaria.org/api/texts/${sefariaTitle}.${currentState.chapter}?context=0&commentary=0`);
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+
+                let verses = data.he || [];
+                let commentaryData = [];
+
+                if (isTanakh && currentState.showRashi) {
+                    try {
+                        const rashiRes = await fetch(`https://www.sefaria.org/api/texts/Rashi_on_${sefariaTitle}.${currentState.chapter}?context=0`);
+                        if (rashiRes.ok) {
+                            const rData = await rashiRes.json();
+                            commentaryData = rData.he || [];
+                        }
+                    } catch (e) { console.warn('Rashi fetch error:', e); }
+                } else if (!isTanakh && currentState.showKehati) {
+                    try {
+                        // הקריאה המפורשת לפירוש קהתי מ-Sefaria API
+                        const kehatiRes = await fetch(`https://www.sefaria.org/api/texts/Kehati_on_${sefariaTitle}.${currentState.chapter}?context=0`);
+                        if (kehatiRes.ok) {
+                            const kData = await kehatiRes.json();
+                            commentaryData = kData.he || [];
+                        }
+                    } catch (e) { console.warn('Kehati fetch error:', e); }
+                }
+
+                textContainer.innerHTML = '';
+                if (verses.length === 0) {
+                    renderFallbackText(textContainer);
+                    return;
+                }
+
+                verses.forEach((verseText, index) => {
+                    const itemDiv = renderVerseItem(index, verseText, commentaryData[index], isTanakh);
+                    textContainer.appendChild(itemDiv);
+                });
+
+            } catch (err) {
+                console.warn('API fetch failed, falling back to local dataset', err);
+                renderFallbackText(textContainer);
+            }
+        }
+
+        function renderVerseItem(index, verseText, commentary, isTanakh) {
+            const verseIdx = index + 1;
+            const verseKey = `${currentState.category}_${currentState.bookId}_${currentState.chapter}_${verseIdx}`;
+            const itemDiv = document.createElement('div');
+            itemDiv.className = "bg-white dark:bg-darkCard p-5 md:p-6 rounded-2xl shadow-sm border border-amber-200/70 dark:border-zinc-800 space-y-3 transition-all";
+
+            const itemNum = isTanakh ? toHebrewGematria(verseIdx) : `משנה ${toHebrewGematria(verseIdx)}`;
+            
+            const isLiked = !!currentState.likes[verseKey];
+            const likeCount = currentState.likes[verseKey] || 0;
+            const verseComments = currentState.comments[verseKey] || [];
+
+            let html = `
+                <div class="flex items-start space-x-3 space-x-reverse">
+                    <span class="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 bg-amber-100 dark:bg-zinc-800 text-amber-900 dark:text-amber-300 font-bold text-sm rounded-lg border border-amber-300 dark:border-zinc-700">
+                        ${itemNum}
+                    </span>
+                    <div class="torah-text flex-1 text-gray-900 dark:text-gray-100" style="font-size: ${currentState.fontSize}px; font-family: ${currentState.fontFamily};">
+                        ${verseText}
+                    </div>
+                </div>
+            `;
+
+            if (commentary) {
+                const commTitle = isTanakh ? 'רש"י' : 'קהתי (באדיבות ספריא)';
+                let commText = Array.isArray(commentary) ? commentary.join('<br>') : commentary;
+                commText = commText.replace(/<[^>]*>?/gm, ''); // ניקוי תגיות HTML
+
+                if (commText.trim().length > 0) {
+                    html += `
+                        <div class="mt-3 pt-3 border-t border-amber-100 dark:border-zinc-800/80 pr-4 border-r-4 border-r-amber-700 dark:border-r-amber-500 bg-amber-50/50 dark:bg-zinc-900/50 p-3.5 rounded-l-xl text-sm shadow-inner">
+                            <span class="font-bold text-amber-900 dark:text-amber-400 block mb-1">
+                                <i class="fa-solid fa-graduation-cap me-1.5"></i>ביאור ${commTitle}:
+                            </span>
+                            <p class="torah-text text-gray-800 dark:text-gray-200 leading-relaxed" style="font-size: ${Math.max(14, currentState.fontSize - 3)}px;">
+                                ${commText}
+                            </p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Interactive Bar: Hearts, Comments, WhatsApp Share
+            html += `
+                <div class="pt-3 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <button onclick="toggleLike('${verseKey}')" class="flex items-center space-x-1 space-x-reverse ${isLiked ? 'text-red-500 font-bold' : 'hover:text-red-500'} transition">
+                            <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart text-base"></i>
+                            <span>${likeCount}</span>
+                        </button>
+                        <button onclick="toggleCommentsSection('${verseKey}')" class="flex items-center space-x-1 space-x-reverse hover:text-amber-700 dark:hover:text-amber-400 transition">
+                            <i class="fa-regular fa-comment text-base"></i>
+                            <span>${verseComments.length} תגובות</span>
+                        </button>
+                    </div>
+                    <button onclick="shareVerseToWhatsApp('${currentState.bookName}', '${currentState.chapter}', '${itemNum}', \`${verseText.replace(/'/g, "\\'")}\`)" class="text-green-600 dark:text-green-400 hover:text-green-700 transition flex items-center gap-1 font-semibold" title="שתף בוואטסאפ">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        <span>שתף</span>
+                    </button>
+                </div>
+
+                <!-- Comments Section -->
+                <div id="comments-section-${verseKey}" class="hidden mt-3 pt-3 bg-amber-50/50 dark:bg-zinc-900/50 p-4 rounded-xl border border-amber-200/50 dark:border-zinc-800 space-y-3">
+                    <h4 class="font-bold text-amber-900 dark:text-amber-300">תגובות</h4>
+                    <div id="comments-list-${verseKey}" class="space-y-2 max-h-40 overflow-y-auto">
+                        ${renderCommentsList(verseComments)}
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <input type="text" id="comment-input-${verseKey}" placeholder="הוסף תגובה..." class="flex-1 px-3 py-1.5 text-xs rounded-lg border border-amber-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none">
+                        <button onclick="addComment('${verseKey}')" class="px-3 py-1.5 bg-amber-800 text-white rounded-lg text-xs font-bold hover:bg-amber-900 transition">שלח</button>
+                    </div>
+                </div>
+            `;
+
+            itemDiv.innerHTML = html;
+            return itemDiv;
+        }
+
+        function toggleLike(verseKey) {
+            if (currentState.likes[verseKey]) {
+                delete currentState.likes[verseKey];
+            } else {
+                currentState.likes[verseKey] = 1;
+            }
+            saveStateToLocalStorage();
+            loadChapterContent();
+        }
+
+        function toggleCommentsSection(verseKey) {
+            const sec = document.getElementById(`comments-section-${verseKey}`);
+            if (sec) sec.classList.toggle('hidden');
+        }
+
+        function renderCommentsList(comments) {
+            if (!comments || comments.length === 0) {
+                return '<p class="text-xs text-gray-400 italic">אין תגובות עדיין. היה הראשון להגיב!</p>';
+            }
+            return comments.map(c => `
+                <div class="bg-white dark:bg-zinc-800 p-2 rounded-lg border border-amber-100 dark:border-zinc-700 text-xs">
+                    <span class="font-bold text-amber-900 dark:text-amber-400 me-1">${c.author}:</span>
+                    <span class="text-gray-800 dark:text-gray-200">${c.text}</span>
+                </div>
+            `).join('');
+        }
+
+        function addComment(verseKey) {
+            const input = document.getElementById(`comment-input-${verseKey}`);
+            if (!input || !input.value.trim()) return;
+
+            if (!currentState.comments[verseKey]) {
+                currentState.comments[verseKey] = [];
+            }
+
+            currentState.comments[verseKey].push({
+                author: 'אורח',
+                text: input.value.trim(),
+                date: new Date().toISOString()
+            });
+
+            input.value = '';
+            saveStateToLocalStorage();
+            loadChapterContent();
+        }
+
+        function shareVerseToWhatsApp(book, chapter, verseNum, text) {
+            const shareText = `*${book} פרק ${toHebrewGematria(chapter)} (${verseNum})*\n"${text}"\n\nמתוך אוצר הספרים`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+        }
+
+        function shareToWhatsApp() {
+            const textContainer = document.getElementById('textDisplayContainer');
+            if (!textContainer) return;
+            const heading = `*${currentState.bookName} - פרק ${toHebrewGematria(currentState.chapter)}'*\n\n`;
+            let bodyText = textContainer.innerText;
+            if (bodyText.length > 1500) bodyText = bodyText.substring(0, 1500) + '...';
+            
+            const fullMessage = heading + bodyText;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(fullMessage)}`, '_blank');
+        }
+
+        function renderFallbackText(textContainer) {
+            textContainer.innerHTML = '';
+            const key = `${currentState.bookId}_${currentState.chapter}`;
+            const sample = SAMPLE_TEXTS[key] || [
+                { 
+                    num: "משנה א'", 
+                    text: `מאימתי קורין את שמע בערבית... (${currentState.bookName} פרק ${toHebrewGematria(currentState.chapter)})`,
+                    kehati: "ביאור קהתי: מאיזה זמן מבוקר מתחיל חיוב קריאת שמע של ערבית..."
+                }
+            ];
+
+            sample.forEach((item, index) => {
+                const itemDiv = renderVerseItem(index, item.text, item.kehati, currentState.category === 'tanakh');
+                textContainer.appendChild(itemDiv);
+            });
+        }
+
+        function toggleRashi() {
+            currentState.showRashi = !currentState.showRashi;
+            loadChapterContent();
+            saveStateToLocalStorage();
+        }
+
+        function toggleKehati() {
+            currentState.showKehati = !currentState.showKehati;
+            loadChapterContent();
+            saveStateToLocalStorage();
+        }
+
+        function toHebrewGematria(num) {
+            if (num <= 0) return num.toString();
+            const letters = [
+                { val: 400, char: 'ת' }, { val: 300, char: 'ש' }, { val: 200, char: 'ר' }, { val: 100, char: 'ק' },
+                { val: 90, char: 'צ' }, { val: 80, char: 'פ' }, { val: 70, char: 'ע' }, { val: 60, char: 'ס' },
+                { val: 50, char: 'נ' }, { val: 40, char: 'מ' }, { val: 30, char: 'ל' }, { val: 20, char: 'כ' },
+                { val: 10, char: 'י' }, { val: 9, char: 'ט' }, { val: 8, char: 'ח' }, { val: 7, char: 'ז' },
+                { val: 6, char: 'ו' }, { val: 5, char: 'ה' }, { val: 4, char: 'ד' }, { val: 3, char: 'ג' },
+                { val: 2, char: 'ב' }, { val: 1, char: 'א' }
+            ];
+            if (num === 15) return 'טו';
+            if (num === 16) return 'טז';
+
+            let result = '';
+            let n = num;
+            for (let i = 0; i < letters.length; i++) {
+                while (n >= letters[i].val) {
+                    result += letters[i].char;
+                    n -= letters[i].val;
+                }
+            }
+            return result;
+        }
+
+        function setupEventListeners() {
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.onclick = function() {
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar) sidebar.classList.toggle('translate-x-full');
+                };
+            }
+        }
+
+        function closeSidebarMobile() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && window.innerWidth < 768) {
+                sidebar.classList.add('translate-x-full');
+            }
+        }
+
+        function navigateChapter(direction) {
+            const isTanakh = currentState.category === 'tanakh';
+            const dataSet = isTanakh ? TANAKH_DATA : MISHNA_DATA;
+            const currentBookObj = dataSet[currentState.sectionKey]?.books.find(b => b.id === currentState.bookId) || { chaptersCount: 1 };
+
+            const newChapter = currentState.chapter + direction;
+            if (newChapter >= 1 && newChapter <= currentBookObj.chaptersCount) {
+                currentState.chapter = newChapter;
+                loadChapterContent();
+                saveStateToLocalStorage();
+            }
+        }
+
+        function jumpToChapter(chNum) {
+            currentState.chapter = parseInt(chNum, 10);
+            loadChapterContent();
+            saveStateToLocalStorage();
+        }
+
+        function toggleFontControls() {
+            const controls = document.getElementById('fontControls');
+            if (controls) controls.classList.toggle('hidden');
+        }
+
+        function changeFontSize(delta) {
+            currentState.fontSize = Math.max(14, Math.min(40, currentState.fontSize + delta));
+            const fontDisp = document.getElementById('fontSizeDisplay');
+            if (fontDisp) fontDisp.innerText = `${currentState.fontSize}px`;
+            loadChapterContent();
+            saveStateToLocalStorage();
+        }
+
+        function changeFontFamily(font) {
+            currentState.fontFamily = font;
+            loadChapterContent();
+            saveStateToLocalStorage();
+        }
+
+        function toggleDarkMode() {
+            currentState.darkMode = !currentState.darkMode;
+            const themeIcon = document.getElementById('themeIcon');
+            if (currentState.darkMode) {
+                document.documentElement.classList.add('dark');
+                if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-lg';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (themeIcon) themeIcon.className = 'fa-solid fa-moon text-lg';
+            }
+            saveStateToLocalStorage();
+        }
+
+        function filterBooksList() {
+            const query = (document.getElementById('bookSearchInput')?.value || '').trim().toLowerCase();
+            const bookItems = document.querySelectorAll('.book-item');
+            bookItems.forEach(item => {
+                const name = item.getAttribute('data-name') || '';
+                if (name.toLowerCase().includes(query)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        function showToast(message, iconClass = 'fa-check') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            if (!toast || !toastMsg) return;
+
+            toastMsg.innerText = message;
+            if (toastIcon) toastIcon.className = `fa-solid ${iconClass}`;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        function bookmarkCurrentLocation() {
+            const key = `${currentState.category}_${currentState.bookId}_${currentState.chapter}`;
+            const existingIndex = currentState.bookmarks.findIndex(b => b.key === key);
+
+            if (existingIndex >= 0) {
+                currentState.bookmarks.splice(existingIndex, 1);
+                showToast('הסימניה הוסרה', 'fa-bookmark');
+            } else {
+                currentState.bookmarks.push({
+                    key: key,
+                    category: currentState.category,
+                    sectionKey: currentState.sectionKey,
+                    bookId: currentState.bookId,
+                    bookName: currentState.bookName,
+                    chapter: currentState.chapter,
+                    title: `${currentState.bookName} - פרק ${toHebrewGematria(currentState.chapter)}'`
+                });
+                showToast('הפרק נשמר בסימניות', 'fa-bookmark');
+            }
+            updateBookmarkBtnState();
+            saveStateToLocalStorage();
+        }
+
+        function updateBookmarkBtnState() {
+            const btnIcon = document.getElementById('bookmarkCurrentBtn');
+            if (!btnIcon) return;
+            const key = `${currentState.category}_${currentState.bookId}_${currentState.chapter}`;
+            const isBookmarked = currentState.bookmarks.some(b => b.key === key);
+            if (isBookmarked) {
+                btnIcon.className = 'fa-solid fa-bookmark text-lg text-amber-600 dark:text-amber-400';
+            } else {
+                btnIcon.className = 'fa-regular fa-bookmark text-lg';
+            }
+        }
+
+        function toggleBookmarksModal() {
+            const modal = document.getElementById('bookmarksModal');
+            if (!modal) return;
+            if (modal.classList.contains('hidden')) {
+                renderBookmarksList();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function renderBookmarksList() {
+            const list = document.getElementById('bookmarksList');
+            if (!list) return;
+
+            if (currentState.bookmarks.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-6 text-sm">אין סימניות שמורות עדיין.</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            currentState.bookmarks.forEach((bm, idx) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3 rounded-xl bg-amber-50 dark:bg-zinc-800 border border-amber-200 dark:border-zinc-700 hover:bg-amber-100 transition';
+                item.innerHTML = `
+                    <button onclick="goToBookmark(${idx})" class="font-bold text-amber-900 dark:text-amber-300 text-sm text-right flex-1">
+                        ${bm.title} (${bm.category === 'tanakh' ? 'תנ"ך' : 'משנה'})
+                    </button>
+                    <button onclick="removeBookmark(${idx})" class="text-red-500 hover:text-red-700 p-1">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function goToBookmark(idx) {
+            const bm = currentState.bookmarks[idx];
+            if (!bm) return;
+            currentState.category = bm.category;
+            currentState.sectionKey = bm.sectionKey;
+            currentState.bookId = bm.bookId;
+            currentState.bookName = bm.bookName;
+            currentState.chapter = bm.chapter;
+            renderCategory();
+            loadChapterContent();
+            toggleBookmarksModal();
+            saveStateToLocalStorage();
+        }
+
+        function removeBookmark(idx) {
+            currentState.bookmarks.splice(idx, 1);
+            renderBookmarksList();
+            updateBookmarkBtnState();
+            saveStateToLocalStorage();
+        }
+
+        function copyCurrentText() {
+            const textContainer = document.getElementById('textDisplayContainer');
+            if (!textContainer) return;
+            const rawText = textContainer.innerText;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(rawText).then(() => {
+                    showToast('הטקסט הועתק ללוח', 'fa-copy');
+                }).catch(() => {
+                    showToast('הטקסט הועתק ללוח', 'fa-copy');
+                });
+            } else {
+                showToast('הטקסט הועתק ללוח', 'fa-copy');
+            }
+        }
+
+        function toggleSearchModal() {
+            const modal = document.getElementById('searchModal');
+            if (modal) modal.classList.toggle('hidden');
+        }
+
+        function executeSearch() {
+            const query = (document.getElementById('globalSearchInput')?.value || '').trim();
+            const resultsDiv = document.getElementById('searchResults');
+            if (!resultsDiv) return;
+
+            if (!query) {
+                resultsDiv.innerHTML = '<p class="text-center text-gray-500 py-6">יש להזין מילת חיפוש.</p>';
+                return;
+            }
+
+            resultsDiv.innerHTML = `
+                <div class="flex items-center justify-center py-8 text-amber-800 dark:text-amber-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl me-2"></i>
+                    <span>מחפש במקורות...</span>
+                </div>
+            `;
+
+            setTimeout(() => {
+                let matches = [];
+                Object.keys(SAMPLE_TEXTS).forEach(key => {
+                    SAMPLE_TEXTS[key].forEach(item => {
+                        if (item.text.includes(query)) {
+                            matches.push({ key, item });
+                        }
+                    });
+                });
+
+                if (matches.length === 0) {
+                    resultsDiv.innerHTML = `<p class="text-center text-gray-500 py-6">לא נמצאו תוצאות עבור "${query}".</p>`;
+                    return;
+                }
+
+                resultsDiv.innerHTML = '';
+                matches.forEach(m => {
+                    const resItem = document.createElement('div');
+                    resItem.className = 'p-3 rounded-xl bg-amber-50 dark:bg-zinc-800 border border-amber-200 dark:border-zinc-700 text-sm space-y-1';
+                    resItem.innerHTML = `
+                        <div class="font-bold text-amber-900 dark:text-amber-300">${m.key.replace('_', ' פרק ')} - ${m.item.num}</div>
+                        <div class="text-gray-800 dark:text-gray-200 font-torah">${m.item.text}</div>
+                    `;
+                    resultsDiv.appendChild(resItem);
+                });
+            }, 400);
+        }
+    </script>
+</body>
+</html>

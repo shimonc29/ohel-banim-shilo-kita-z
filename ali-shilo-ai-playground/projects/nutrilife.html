@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriLife - תזונה נכונה ואורח חיים בריא</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Heebo -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            dark: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            font-family: 'Heebo', sans-serif;
+        }
+
+        /* Custom Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #22c55e;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-brand-700 text-white py-2 px-4 text-center text-xs font-semibold flex justify-center items-center gap-2">
+        <i class="fa-solid fa-leaf text-brand-100"></i>
+        <span>הדרך שלך לאורח חיים בריא, מאוזן ומלא אנרגיה מתחילה כאן!</span>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Logo -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('home')">
+                <div class="w-11 h-11 rounded-2xl bg-brand-500 text-white flex items-center justify-center text-2xl shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid fa-apple-whole"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-2xl text-slate-900 tracking-tight leading-none">
+                        Nutri<span class="text-brand-600">Life</span>
+                    </h1>
+                    <p class="text-[10px] text-slate-400 font-bold tracking-wider uppercase mt-0.5">בריאות & תזונה מותאמת</p>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="hidden md:flex items-center gap-8 font-semibold text-sm text-slate-600">
+                <button onclick="switchTab('home')" class="nav-link text-brand-600 hover:text-brand-700 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-house text-xs"></i> ראשי
+                </button>
+                <button onclick="switchTab('calculator')" class="nav-link hover:text-brand-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-calculator text-xs"></i> מחשבון BMI & קלוריות
+                </button>
+                <button onclick="switchTab('recipes')" class="nav-link hover:text-brand-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-utensils text-xs"></i> מתכונים בריאים
+                </button>
+                <button onclick="switchTab('unhealthy')" class="nav-link hover:text-red-600 transition flex items-center gap-1.5 text-slate-700">
+                    <i class="fa-solid fa-ban text-xs text-red-500"></i> ממה להימנע?
+                </button>
+                <button onclick="switchTab('water')" class="nav-link hover:text-brand-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-droplet text-xs"></i> מעקב מים
+                </button>
+                <button onclick="switchTab('blog')" class="nav-link hover:text-brand-600 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-book-open text-xs"></i> טיפים & מאמרים
+                </button>
+            </nav>
+
+            <!-- Action Button -->
+            <div class="flex items-center gap-3">
+                <button onclick="shareEntireSite()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl transition flex items-center gap-2 border border-slate-200">
+                    <i class="fa-solid fa-share-nodes text-brand-600"></i>
+                    <span class="hidden sm:inline">שתף את האתר</span>
+                </button>
+                <button onclick="switchTab('calculator')" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md shadow-brand-500/20 hover:scale-105 transition flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>חשב תפריט אישי</span>
+                </button>
+
+                <!-- Mobile menu btn -->
+                <button onclick="toggleMobileMenu()" class="md:hidden text-slate-700 text-2xl p-2">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 py-4 space-y-3 font-medium">
+            <button onclick="switchTab('home')" class="block w-full text-right text-brand-600 py-1">ראשי</button>
+            <button onclick="switchTab('calculator')" class="block w-full text-right text-slate-700 py-1">מחשבון BMI & קלוריות</button>
+            <button onclick="switchTab('recipes')" class="block w-full text-right text-slate-700 py-1">מתכונים בריאים</button>
+            <button onclick="switchTab('unhealthy')" class="block w-full text-right text-red-600 py-1 font-bold">🚫 ממה כדאי להימנע?</button>
+            <button onclick="switchTab('water')" class="block w-full text-right text-slate-700 py-1">מעקב מים יומי</button>
+            <button onclick="switchTab('blog')" class="block w-full text-right text-slate-700 py-1">טיפים & מאמרים</button>
+            <button onclick="shareEntireSite()" class="block w-full text-right text-brand-700 font-bold py-1 border-t border-slate-100 pt-2">🔗 שתף את האתר לחברים</button>
+        </div>
+    </header>
+
+    <!-- Global Share Notification Toast -->
+    <div id="global-share-toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl border border-slate-700 text-sm font-bold flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-brand-400 text-lg"></i>
+        <span id="global-share-toast-text">הקישור הועתק בהצלחה!</span>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow">
+
+        <!-- TAB 1: HOME PAGE -->
+        <div id="tab-home" class="space-y-16 pb-16">
+            
+            <!-- Hero Banner -->
+            <section class="relative bg-gradient-to-br from-emerald-900 via-slate-900 to-slate-950 text-white py-20 px-4 overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                
+                <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
+                    <div class="space-y-6 text-center md:text-right">
+                        <span class="bg-brand-500/20 text-brand-300 border border-brand-500/30 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                            ✨ המדריך המלא לתזונה מאוזנת
+                        </span>
+                        <h2 class="text-4xl sm:text-6xl font-black leading-tight tracking-tight">
+                            לאכול נכון. <br>
+                            <span class="text-brand-500">להרגיש מצוין.</span>
+                        </h2>
+                        <p class="text-slate-300 text-base sm:text-lg max-w-xl leading-relaxed">
+                            גלה את התפריט המותאם אישית עבורך, חשב קלוריות וערכים תזונתיים, ותיהנה ממאות מתכונים בריאים וטעימים.
+                        </p>
+                        <div class="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
+                            <button onclick="switchTab('calculator')" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg shadow-brand-500/30 hover:scale-105 transition flex items-center gap-2">
+                                <i class="fa-solid fa-calculator"></i>
+                                <span>התחל חישוב תזונתי</span>
+                            </button>
+                            <button onclick="switchTab('recipes')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold px-6 py-3.5 rounded-2xl transition flex items-center gap-2">
+                                <i class="fa-solid fa-utensils text-brand-400"></i>
+                                <span>למתכונים הבריאים</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hero Visual Card -->
+                    <div class="relative flex justify-center">
+                        <div class="w-full max-w-md bg-slate-900/80 border border-slate-700/60 p-6 rounded-3xl backdrop-blur-xl shadow-2xl space-y-6">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold">
+                                        <i class="fa-solid fa-heart-pulse"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm">היעדים התזונתיים שלך</h4>
+                                        <p class="text-xs text-slate-400">ערכים מומלצים ליום</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs bg-brand-500/20 text-brand-400 px-2.5 py-1 rounded-lg font-bold">מאוזן</span>
+                            </div>
+
+                            <!-- Target Stats Example -->
+                            <div class="grid grid-cols-3 gap-3 text-center">
+                                <div class="bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
+                                    <span class="block text-xs text-slate-400">קלוריות</span>
+                                    <span class="text-lg font-black text-brand-400">2,000</span>
+                                </div>
+                                <div class="bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
+                                    <span class="block text-xs text-slate-400">חלבון</span>
+                                    <span class="text-lg font-black text-blue-400">140g</span>
+                                </div>
+                                <div class="bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
+                                    <span class="block text-xs text-slate-400">פחמימות</span>
+                                    <span class="text-lg font-black text-amber-400">200g</span>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center gap-3 text-xs text-brand-300">
+                                <i class="fa-solid fa-circle-check text-base shrink-0"></i>
+                                <span>מחשבון התזונה שלנו מתחשב ברמת הפעילות והמטרות האישיות שלך!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Grid -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+                <div class="text-center max-w-2xl mx-auto space-y-2">
+                    <h3 class="text-3xl font-black text-slate-900">כל מה שאתה צריך לבריאות מיטבית</h3>
+                    <p class="text-slate-500 text-sm">כלים מתקדמים שיעזרו לך לשמור על התזונה בקלות ובכיף</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <!-- Feature 1 -->
+                    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition group cursor-pointer" onclick="switchTab('calculator')">
+                        <div class="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <h4 class="font-bold text-xl text-slate-900 mb-2">מחשבון BMI & קלוריות</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed">חשב את ה-BMI שלך, גלה כמה קלוריות הגוף שלך שורף ביום ואיזה יחס חלבונים, פחמימות ושומנים מומלץ לך.</p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition group cursor-pointer" onclick="switchTab('recipes')">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-bowl-food"></i>
+                        </div>
+                        <h4 class="font-bold text-xl text-slate-900 mb-2">מתכונים תזונתיים</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed">ספריית מתכונים עשירה הכוללת ערכים תזונתיים מלאים (קלוריות, חלבונים, פחמימות) להכנה מהירה בבית.</p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition group cursor-pointer" onclick="switchTab('water')">
+                        <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-glass-water"></i>
+                        </div>
+                        <h4 class="font-bold text-xl text-slate-900 mb-2">מעקב שתיית מים</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed">שמור על הידרציה תקינה לאורך היום בעזרת יומן המים האינטראקטיבי שמזכיר לך לשתות בזמן.</p>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+        <!-- NEW TAB: UNHEALTHY FOODS TO AVOID -->
+        <div id="tab-unhealthy" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 hidden">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                    🚫 זהירות תזונתית
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900">מאכלים שלא מומלץ לאכול ⚠️</h2>
+                <p class="text-slate-500 text-sm sm:text-base leading-relaxed">
+                    כדי להגיע לתוצאות מיטביות ולשמור על בריאות הלב, המשקל והאנרגיה – מומלץ להפחית או להימנע ככל האפשר מהמזונות הבאים:
+                </p>
+            </div>
+
+            <!-- Unhealthy Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="unhealthy-grid">
+                <!-- Items dynamically injected here -->
+            </div>
+        </div>
+
+        <!-- TAB 2: CALCULATOR PAGE -->
+        <div id="tab-calculator" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 hidden">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-black text-slate-900">מחשבון תזונה, BMI וקלוריות 📊</h2>
+                <p class="text-slate-500 text-sm">הזן את הנתונים האישיים לקבלת חישוב מדויק של הצרכים התזונתיים שלך</p>
+            </div>
+
+            <!-- Calculator Form Card -->
+            <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xl space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    
+                    <!-- Gender -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">מין</label>
+                        <select id="calc-gender" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold focus:outline-none focus:border-brand-500">
+                            <option value="male">גבר</option>
+                            <option value="female">אישה</option>
+                        </select>
+                    </div>
+
+                    <!-- Age -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">גיל (בשנים)</label>
+                        <input type="number" id="calc-age" value="25" min="10" max="100" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold focus:outline-none focus:border-brand-500">
+                    </div>
+
+                    <!-- Height -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">גובה (בס"מ)</label>
+                        <input type="number" id="calc-height" value="175" min="100" max="230" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold focus:outline-none focus:border-brand-500">
+                    </div>
+
+                    <!-- Weight -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">משקל (בק"ג)</label>
+                        <input type="number" id="calc-weight" value="70" min="30" max="200" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold focus:outline-none focus:border-brand-500">
+                    </div>
+
+                    <!-- Activity Level -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 mb-2">רמת פעילות גופנית</label>
+                        <select id="calc-activity" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold focus:outline-none focus:border-brand-500">
+                            <option value="1.2">יושבני (מעט / ללא אימונים)</option>
+                            <option value="1.375">קל (1-3 אימונים בשבוע)</option>
+                            <option value="1.55" selected>בינוני (3-5 אימונים בשבוע)</option>
+                            <option value="1.725">גבוה (6-7 אימונים בשבוע)</option>
+                        </select>
+                    </div>
+
+                    <!-- Target Goal -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 mb-2">מטרה תזונתית</label>
+                        <select id="calc-goal" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold focus:outline-none focus:border-brand-500">
+                            <option value="lose">ירידה במשקל / חיטוב (-15% קלוריות)</option>
+                            <option value="maintain" selected>שמירה על המשקל הקיים</option>
+                            <option value="gain">עלייה במסת שריר (+15% קלוריות)</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <button onclick="calculateNutrition()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-500/20 transition text-base">
+                    חשב נתונים תזונתיים
+                </button>
+            </div>
+
+            <!-- Results Card -->
+            <div id="calc-results" class="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-2xl space-y-6 hidden">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-xl font-black flex items-center gap-2">
+                        <i class="fa-solid fa-square-poll-vertical text-brand-400"></i>
+                        תוצאות החישוב התזונתי שלך
+                    </h3>
+                    <button onclick="shareResults()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2 shadow-md">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>שתף תוצאות</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- BMI -->
+                    <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 text-center space-y-1">
+                        <span class="text-xs text-slate-400">מדד BMI</span>
+                        <div id="res-bmi" class="text-2xl font-black text-white">22.9</div>
+                        <span id="res-bmi-status" class="inline-block text-[10px] bg-brand-500/20 text-brand-400 font-bold px-2 py-0.5 rounded">משקל תקין</span>
+                    </div>
+
+                    <!-- Daily Calories -->
+                    <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 text-center space-y-1">
+                        <span class="text-xs text-slate-400">קלוריות יומיות</span>
+                        <div id="res-calories" class="text-2xl font-black text-brand-400">2,150</div>
+                        <span class="text-[10px] text-slate-400">קלוריות מומלצות ליום</span>
+                    </div>
+
+                    <!-- Protein -->
+                    <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 text-center space-y-1">
+                        <span class="text-xs text-slate-400">חלבונים</span>
+                        <div id="res-protein" class="text-2xl font-black text-blue-400">140g</div>
+                        <span class="text-[10px] text-slate-400">30% מכלל הקלוריות</span>
+                    </div>
+
+                    <!-- Carbs & Fats -->
+                    <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/60 text-center space-y-1">
+                        <span class="text-xs text-slate-400">פחמימות / שומנים</span>
+                        <div id="res-carbs-fats" class="text-lg font-black text-amber-400">215g / 60g</div>
+                        <span class="text-[10px] text-slate-400">יחס מאוזן</span>
+                    </div>
+                </div>
+
+                <!-- Shared Link Modal Notification -->
+                <div id="share-toast" class="hidden p-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-xs text-brand-400 font-bold flex items-center justify-between">
+                    <span id="share-toast-text">הקישור הועתק בהצלחה ללוח!</span>
+                    <button onclick="document.getElementById('share-toast').classList.add('hidden')" class="text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: RECIPES PAGE -->
+        <div id="tab-recipes" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 hidden">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-900">מתכונים בריאים וטעימים 🥗</h2>
+                    <p class="text-slate-500 text-sm">ארוחות קלות להכנה עם ערכים תזונתיים מפורטים</p>
+                </div>
+
+                <!-- Recipe Category Filter -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterRecipes('all')" class="recipe-filter active-filter bg-brand-600 text-white font-bold text-xs px-4 py-2 rounded-xl">הכל</button>
+                    <button onclick="filterRecipes('breakfast')" class="recipe-filter bg-white text-slate-600 font-bold text-xs px-4 py-2 rounded-xl border border-slate-200">ארוחת בוקר</button>
+                    <button onclick="filterRecipes('lunch')" class="recipe-filter bg-white text-slate-600 font-bold text-xs px-4 py-2 rounded-xl border border-slate-200">ארוחת צהריים</button>
+                    <button onclick="filterRecipes('snack')" class="recipe-filter bg-white text-slate-600 font-bold text-xs px-4 py-2 rounded-xl border border-slate-200">נשנושים וקינוחים</button>
+                </div>
+            </div>
+
+            <!-- Recipes Grid -->
+            <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Recipe Cards dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- TAB 4: WATER TRACKER -->
+        <div id="tab-water" class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 hidden">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-black text-slate-900">יומן מעקב שתיית מים 💧</h2>
+                <p class="text-slate-500 text-sm">שמור על רוויה והרגשה רעננה לאורך כל היום</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl text-center space-y-6">
+                <div class="w-24 h-24 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-4xl mx-auto border-4 border-blue-100">
+                    <i class="fa-solid fa-droplet"></i>
+                </div>
+
+                <div>
+                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">יעד שתייה יומי</span>
+                    <h3 id="water-count-text" class="text-4xl font-black text-slate-900 mt-1">0 / 8 כוסות</h3>
+                    <p class="text-xs text-slate-500 mt-1">(כ-2 ליטרים מים ביום)</p>
+                </div>
+
+                <!-- Water Progress Bar -->
+                <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden">
+                    <div id="water-progress" class="bg-blue-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+
+                <!-- Water Buttons -->
+                <div class="flex justify-center gap-4 pt-2">
+                    <button onclick="addWater(1)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl shadow-md shadow-blue-500/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> הוסף כוס מים
+                    </button>
+                    <button onclick="resetWater()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-4 py-3 rounded-xl transition">
+                        איפוס
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: BLOG & TIPS -->
+        <div id="tab-blog" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 hidden">
+            <div class="border-b border-slate-200 pb-4">
+                <h2 class="text-3xl font-black text-slate-900">מאמרים וטיפים לתזונה נכונה 📖</h2>
+                <p class="text-slate-500 text-sm">מידע מדעי נגיש לאורח חיים בריא ומאוזן</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="blog-grid">
+                <!-- Blog cards -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-10">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-4">
+            <div class="flex justify-center items-center gap-2 text-white font-black text-xl">
+                <i class="fa-solid fa-apple-whole text-brand-500"></i>
+                <span>NutriLife</span>
+            </div>
+            <p class="text-xs max-w-md mx-auto text-slate-500">המידע באתר מיועד להעשרה ולמידה בלבד ואינו מהווה תחליף לייעוץ רפואי או תזונתי מקצועי.</p>
+            <p class="text-xs text-slate-600">© 2026 NutriLife. כל הזכויות שמורות.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Data & Logic -->
+    <script>
+        // Unhealthy Foods Database
+        const unhealthyFoodsData = [
+            {
+                title: "שתייה מתוקה ומוגזת",
+                icon: "fa-bottle-droplet",
+                color: "text-red-500 bg-red-50",
+                desc: "משקאות אלו עמוסים בסוכר מעובד ללא שום ערך תזונתי. הם גורמים לקפיצות נחשוליות ברמת הסוכר בדם ולעלייה מהירה במשקל.",
+                risk: "סיכון גבוה לסוכרת והשמנה"
+            },
+            {
+                title: "מזון אולטרה-מעובד ונקניקיות",
+                icon: "fa-hotdog",
+                color: "text-amber-500 bg-amber-50",
+                desc: "מכילים כמות גבוהה של נתרן (מלח), חומרים משמרים ושומנים רווים המגדילים את הסיכון למחלות לב ולחץ דם גבוה.",
+                risk: "עמוס בנתרן וחומרים משמרים"
+            },
+            {
+                title: "חטיפים מטוגנים (צ'יפס/פלאפל מטוגן בשמן עמוק)",
+                icon: "fa-fire-burner",
+                color: "text-orange-500 bg-orange-50",
+                desc: "טיגון בשמן שחומם שוב ושוב מייצר שומני טראנס מזיקים החוסמים את עורקי הלב ומעלים את רמת ה-LDL (הכולסטרול הרע).",
+                risk: "חמצון שומנים ושומן טראנס"
+            },
+            {
+                title: "מאפים מתוקים ובורקסים",
+                icon: "fa-cookie-bite",
+                color: "text-yellow-500 bg-yellow-50",
+                desc: "שילוב של קמח לבן מעובד עם מרגרינה וכמויות גדולות של סוכר. מביאים לשובע קצר בלבד ולאחריו נפילת אנרגיה חדה.",
+                risk: "פחמימות ריקות ושומן מוקשה"
+            },
+            {
+                title: "רטבים מוכנים (מיונז, קטשופ תעשייתי, רטבי לסלט)",
+                icon: "fa-jar",
+                color: "text-rose-500 bg-rose-50",
+                desc: "רטבים מוכנים רבים מכילים כמויות מוסוות של סוכר, שמן באיכות ירודה ומשמרים שהופכים סלט בריא לפצצת קלוריות.",
+                risk: "קלוריות מוסוות וסוכר סמוי"
+            },
+            {
+                title: "דגני בוקר ממותקים",
+                icon: "fa-bowl-rice",
+                color: "text-purple-500 bg-purple-50",
+                desc: "אף על פי שממותגים כבריאים, רובם מכילים אחוז סוכר גבוה במיוחד ודלים בסיבים תזונתיים אמיתיים.",
+                risk: "עומס סוכר בבוקר"
+            }
+        ];
+
+        // Recipe Database
+        const recipeData = [
+            {
+                id: 1,
+                title: "קערת שיבולת שועל ופירות יער",
+                category: "breakfast",
+                calories: 320,
+                protein: "14g",
+                carbs: "52g",
+                fats: "6g",
+                img: "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=500&fit=crop",
+                desc: "ארוחת בוקר עשירה בסיבים תזונתיים ונוגדי חמצון המעניקה אנרגיה יציבה לאורך כל הבוקר."
+            },
+            {
+                id: 2,
+                title: "חזה עוף בגריל עם קינואה וירקות",
+                category: "lunch",
+                calories: 480,
+                protein: "42g",
+                carbs: "45g",
+                fats: "10g",
+                img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&fit=crop",
+                desc: "ארוחת צהריים מאוזנת ועתירת חלבון התומכת בבניית שריר והתאוששות."
+            },
+            {
+                id: 3,
+                title: "שקשוקה ירוקה עם תרד ופטה קלה",
+                category: "breakfast",
+                calories: 290,
+                protein: "18g",
+                carbs: "12g",
+                fats: "16g",
+                img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&fit=crop",
+                desc: "גרסה קלה ורעננה לשקשוקה הקלאסית עם עלים ירוקים ועשירים בברזל."
+            },
+            {
+                id: 4,
+                title: "סלמון בתנור עם ברוקולי ואורז מלא",
+                category: "lunch",
+                calories: 520,
+                protein: "38g",
+                carbs: "40g",
+                fats: "22g",
+                img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500&fit=crop",
+                desc: "עשיר בחומצות שומן חיוניות מסוג אומגה 3 התורמות לבריאות הלב והמוח."
+            },
+            {
+                id: 5,
+                title: "כדורי אנרגיה מתמרים ואגוזים",
+                category: "snack",
+                calories: 180,
+                protein: "5g",
+                carbs: "24g",
+                fats: "8g",
+                img: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=500&fit=crop",
+                desc: "נשנוש מתוק שטבעי ומספק בוסט אנרגיה מהיר לפני אימון."
+            }
+        ];
+
+        // Blog Database
+        const blogData = [
+            {
+                title: "5 טיפים זהב לירידה מבוקרת במשקל בלי להרגיש רעב",
+                desc: "איך שילוב חלבונים, סיבים תזונתיים ושתיית מים מספקת יכולים לחולל פלאים בתהליך החיטוב שלך.",
+                tag: "חיטוב ותזונה"
+            },
+            {
+                title: "חשיבות החלבון: כמה חלבון אתה באמת צריך ביום?",
+                desc: "מדריך מפורט על תפקיד החלבון בבניית שריר, שמירה על שובע והתאוששות מאימונים.",
+                tag: "מדריך תזונה"
+            }
+        ];
+
+        let waterCups = 0;
+
+        window.onload = () => {
+            renderRecipes('all');
+            renderBlog();
+            renderUnhealthyFoods();
+            checkSharedUrlParams();
+        };
+
+        // Navigation Switcher
+        function switchTab(tabId) {
+            ['home', 'calculator', 'recipes', 'unhealthy', 'water', 'blog'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) target.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        // Render Unhealthy Foods
+        function renderUnhealthyFoods() {
+            const grid = document.getElementById('unhealthy-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            unhealthyFoodsData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-4 flex flex-col justify-between";
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 rounded-2xl ${item.color} flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid ${item.icon}"></i>
+                        </div>
+                        <h3 class="font-bold text-xl text-slate-900">${item.title}</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">${item.desc}</p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-100">
+                        <span class="text-[11px] font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-100 inline-block">
+                            ⚠️ ${item.risk}
+                        </span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Global Site Share Function
+        function shareEntireSite() {
+            const shareUrl = window.location.href.split('?')[0];
+            const shareTitle = "NutriLife - אתר התזונה והבריאות האישי שלך 🥗";
+            const shareText = "ממליץ בחום להיכנס לאתר NutriLife! מחשבון BMI & קלוריות, מתכונים בריאים, מדריך ממה להימנע ומעקב מים:";
+
+            if (navigator.share) {
+                navigator.share({
+                    title: shareTitle,
+                    text: shareText,
+                    url: shareUrl
+                }).catch(() => copyToClipboardGlobal(shareUrl, "🔗 הקישור לאתר הועתק בהצלחה!"));
+            } else {
+                copyToClipboardGlobal(shareUrl, "🔗 הקישור לאתר הועתק בהצלחה!");
+            }
+        }
+
+        function copyToClipboardGlobal(text, message) {
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+
+            showToast(message);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('global-share-toast');
+            document.getElementById('global-share-toast-text').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3500);
+        }
+
+        // Nutrition Calculator Logic
+        function calculateNutrition() {
+            const gender = document.getElementById('calc-gender').value;
+            const age = parseFloat(document.getElementById('calc-age').value) || 25;
+            const height = parseFloat(document.getElementById('calc-height').value) || 175;
+            const weight = parseFloat(document.getElementById('calc-weight').value) || 70;
+            const activity = parseFloat(document.getElementById('calc-activity').value) || 1.55;
+            const goal = document.getElementById('calc-goal').value;
+
+            // BMR Calculation (Mifflin-St Jeor Formula)
+            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+            bmr += (gender === 'male') ? 5 : -161;
+
+            // TDEE
+            let tdee = bmr * activity;
+
+            // Goal Adjustments
+            if (goal === 'lose') tdee *= 0.85;
+            if (goal === 'gain') tdee *= 1.15;
+
+            const finalCalories = Math.round(tdee);
+
+            // BMI Calculation
+            const heightInMeters = height / 100;
+            const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1);
+
+            // Macros
+            const protein = Math.round(weight * 2.0); // 2g per kg
+            const fats = Math.round((finalCalories * 0.25) / 9);
+            const carbs = Math.round((finalCalories - (protein * 4) - (fats * 9)) / 4);
+
+            // Display Results
+            document.getElementById('calc-results').classList.remove('hidden');
+            document.getElementById('res-bmi').innerText = bmi;
+            document.getElementById('res-calories').innerText = finalCalories.toLocaleString();
+            document.getElementById('res-protein').innerText = `${protein}g`;
+            document.getElementById('res-carbs-fats').innerText = `${carbs}g / ${fats}g`;
+
+            // BMI Status Text
+            const bmiStatus = document.getElementById('res-bmi-status');
+            if (bmi < 18.5) {
+                bmiStatus.innerText = "תת משקל";
+                bmiStatus.className = "inline-block text-[10px] bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded";
+            } else if (bmi <= 24.9) {
+                bmiStatus.innerText = "משקל תקין";
+                bmiStatus.className = "inline-block text-[10px] bg-brand-500/20 text-brand-400 font-bold px-2 py-0.5 rounded";
+            } else {
+                bmiStatus.innerText = "עודף משקל";
+                bmiStatus.className = "inline-block text-[10px] bg-red-500/20 text-red-400 font-bold px-2 py-0.5 rounded";
+            }
+        }
+
+        // Share Results & Create Custom URL Link
+        function shareResults() {
+            const gender = document.getElementById('calc-gender').value;
+            const age = document.getElementById('calc-age').value;
+            const height = document.getElementById('calc-height').value;
+            const weight = document.getElementById('calc-weight').value;
+            const activity = document.getElementById('calc-activity').value;
+            const goal = document.getElementById('calc-goal').value;
+
+            const params = new URLSearchParams({
+                gender, age, height, weight, activity, goal
+            });
+
+            const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+            const shareTitle = "התוצאות התזונתיות שלי ב-NutriLife 🥗";
+            const shareText = `בדקתי את הנתונים התזונתיים שלי במחשבון NutriLife! צפה בתוצאות:`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: shareTitle,
+                    text: shareText,
+                    url: shareUrl
+                }).catch(() => copyToClipboard(shareUrl));
+            } else {
+                copyToClipboard(shareUrl);
+            }
+        }
+
+        function copyToClipboard(text) {
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+
+            const toast = document.getElementById('share-toast');
+            toast.classList.remove('hidden');
+            document.getElementById('share-toast-text').innerText = "🔗 הקישור לתוצאות שלך הועתק בהצלחה!";
+            setTimeout(() => toast.classList.add('hidden'), 4000);
+        }
+
+        // Check if user came from a shared URL
+        function checkSharedUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('weight') && urlParams.has('height')) {
+                document.getElementById('calc-gender').value = urlParams.get('gender') || 'male';
+                document.getElementById('calc-age').value = urlParams.get('age') || 25;
+                document.getElementById('calc-height').value = urlParams.get('height') || 175;
+                document.getElementById('calc-weight').value = urlParams.get('weight') || 70;
+                document.getElementById('calc-activity').value = urlParams.get('activity') || 1.55;
+                document.getElementById('calc-goal').value = urlParams.get('goal') || 'maintain';
+
+                switchTab('calculator');
+                calculateNutrition();
+            }
+        }
+
+        // Render Recipes
+        function renderRecipes(category) {
+            const grid = document.getElementById('recipes-grid');
+            grid.innerHTML = '';
+
+            const filtered = category === 'all' ? recipeData : recipeData.filter(r => r.category === category);
+
+            filtered.forEach(r => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition group";
+                card.innerHTML = `
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="${r.img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${r.title}">
+                        <span class="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-slate-800 font-black text-xs px-3 py-1 rounded-full shadow">
+                            🔥 ${r.calories} קלוריות
+                        </span>
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <h4 class="font-bold text-lg text-slate-900">${r.title}</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">${r.desc}</p>
+                        <div class="pt-3 border-t border-slate-100 flex justify-between text-xs font-bold text-slate-600">
+                            <span>חלבון: <strong class="text-brand-600">${r.protein}</strong></span>
+                            <span>פחמימות: <strong>${r.carbs}</strong></span>
+                            <span>שומנים: <strong>${r.fats}</strong></span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterRecipes(cat) {
+            document.querySelectorAll('.recipe-filter').forEach(btn => {
+                btn.className = "recipe-filter bg-white text-slate-600 font-bold text-xs px-4 py-2 rounded-xl border border-slate-200";
+            });
+            event.target.className = "recipe-filter active-filter bg-brand-600 text-white font-bold text-xs px-4 py-2 rounded-xl";
+            renderRecipes(cat);
+        }
+
+        // Water Tracker
+        function addWater(amount) {
+            if (waterCups < 8) {
+                waterCups += amount;
+                updateWaterUI();
+            }
+        }
+
+        function resetWater() {
+            waterCups = 0;
+            updateWaterUI();
+        }
+
+        function updateWaterUI() {
+            document.getElementById('water-count-text').innerText = `${waterCups} / 8 כוסות`;
+            const percent = (waterCups / 8) * 100;
+            document.getElementById('water-progress').style.width = `${percent}%`;
+        }
+
+        // Render Blog
+        function renderBlog() {
+            const grid = document.getElementById('blog-grid');
+            grid.innerHTML = '';
+
+            blogData.forEach(b => {
+                const item = document.createElement('div');
+                item.className = "bg-white p-6 rounded-3xl border border-slate-200 space-y-3 shadow-sm hover:shadow-md transition";
+                item.innerHTML = `
+                    <span class="bg-brand-50 text-brand-600 text-xs font-bold px-3 py-1 rounded-lg">${b.tag}</span>
+                    <h3 class="font-bold text-xl text-slate-900">${b.title}</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed">${b.desc}</p>
+                `;
+                grid.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>

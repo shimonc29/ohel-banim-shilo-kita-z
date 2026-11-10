@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockBot Simulator - סימולטור שוק ההון לילדים</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;900&display=swap');
+        body { 
+            font-family: 'Rubik', sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc; 
+        }
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        .chat-scroll::-webkit-scrollbar-thumb { background-color: #4c1d95; border-radius: 4px; }
+        
+        @keyframes bounceSlow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-bounce-slow {
+            animation: bounceSlow 2s infinite ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-pink-500 selection:text-white">
+
+    <!-- Container for Custom Toast Notifications -->
+    <div id="toastContainer" class="fixed top-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header -->
+    <header class="bg-slate-900/90 backdrop-blur border-b-2 border-indigo-500/30 p-4 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 via-pink-500 to-indigo-600 flex items-center justify-center text-2xl shadow-lg shadow-pink-500/30 animate-bounce-slow">
+                    🚀
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black bg-gradient-to-r from-amber-300 via-pink-400 to-cyan-300 bg-clip-text text-transparent">
+                        משחק ההשקעות של פיני 🎈
+                    </h1>
+                    <p class="text-xs font-semibold text-indigo-300">לומדים להרוויח ולחסוך בכסף מדומה!</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="flex items-center gap-3 sm:gap-5 bg-slate-800/90 px-4 py-2.5 rounded-2xl border-2 border-indigo-500/40 shadow-inner">
+                <div class="text-center">
+                    <span class="text-[10px] sm:text-xs text-amber-300 font-bold block">🗓️ יום בסימולציה</span>
+                    <span id="currentDate" class="text-xs sm:text-sm font-extrabold text-white">01/01/2026</span>
+                </div>
+                <div class="h-8 w-0.5 bg-indigo-500/30"></div>
+                <div class="text-center">
+                    <span class="text-[10px] sm:text-xs text-emerald-300 font-bold block">💵 דמי כיס בחשבון</span>
+                    <span id="cashBalance" class="text-xs sm:text-sm font-black text-emerald-400">₪50,000</span>
+                </div>
+                <div class="h-8 w-0.5 bg-indigo-500/30"></div>
+                <div class="text-center">
+                    <span class="text-[10px] sm:text-xs text-cyan-300 font-bold block">🏆 קופה כוללת</span>
+                    <span id="portfolioValue" class="text-xs sm:text-sm font-black text-cyan-300">₪50,000</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Bot Advisor (4 Cols) -->
+        <section class="lg:col-span-4 flex flex-col bg-slate-900/90 border-2 border-indigo-500/30 rounded-3xl overflow-hidden h-[520px] lg:h-[calc(100vh-140px)] shadow-2xl">
+            <div class="p-4 bg-indigo-950/60 border-b border-indigo-500/30 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">🤖</span>
+                    <div>
+                        <h2 class="font-bold text-white text-sm sm:text-base">פיני הרובוט החבר</h2>
+                        <p class="text-[10px] text-emerald-400 font-semibold">● מוכן להסביר ולזורק טיפים</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="ttsToggleBtn" onclick="toggleVoice()" class="text-xs text-slate-200 hover:text-white font-bold transition flex items-center gap-1.5 bg-indigo-900/80 hover:bg-indigo-800 px-3 py-1.5 rounded-xl border border-indigo-400/30 shadow">
+                        <i class="fa-solid fa-volume-high text-amber-300" id="ttsIcon"></i>
+                        <span id="ttsStatus">קול מופעל</span>
+                    </button>
+                    <button onclick="restartAdvisor()" class="text-xs text-pink-300 hover:text-pink-200 font-bold transition flex items-center gap-1 bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div id="chatBox" class="flex-1 p-4 overflow-y-auto space-y-4 chat-scroll bg-slate-950/40">
+                <!-- Dynamic messages go here -->
+            </div>
+
+            <!-- Chat Options Container -->
+            <div id="chatOptions" class="p-4 bg-slate-900 border-t border-indigo-500/30 flex flex-wrap gap-2">
+                <!-- Dynamic action buttons go here -->
+            </div>
+        </section>
+
+        <!-- Right Column: Market & Chart & Portfolio (8 Cols) -->
+        <section class="lg:col-span-8 flex flex-col gap-6 overflow-y-auto lg:h-[calc(100vh-140px)] chat-scroll pl-0 lg:pl-1">
+
+            <!-- Simulator Time Control Bar -->
+            <div class="bg-slate-900/90 border-2 border-indigo-500/30 rounded-3xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+                <div>
+                    <h3 class="font-bold text-amber-300 text-base flex items-center gap-2">
+                        <span>⏰ מכונת הזמן של השוק</span>
+                    </h3>
+                    <p class="text-xs text-slate-300 font-medium">כאן אפשר לקפוץ בזמן ולראות אם הרווחת או הפסדת!</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="advanceDays(1)" class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-indigo-500/30 flex items-center gap-2 border border-indigo-400/30">
+                        <span>קדם יום 1 ⏩</span>
+                    </button>
+                    <button onclick="advanceDays(7)" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-sm rounded-2xl border-2 border-cyan-500/40 transition flex items-center gap-2">
+                        <span>קדם שבוע 🚀</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stock Graph & Trade Card -->
+            <div class="bg-slate-900/90 border-2 border-indigo-500/30 rounded-3xl p-5 flex flex-col gap-4 shadow-xl">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 id="activeStockTitle" class="text-2xl font-black text-white">בחר חברה לעיון</h2>
+                            <span id="activeStockSymbol" class="text-xs bg-indigo-950 text-cyan-300 font-bold px-2.5 py-1 rounded-xl border border-indigo-500/40">---</span>
+                        </div>
+                        <p id="activeStockPrice" class="text-3xl font-black text-emerald-400 mt-1">₪0.00</p>
+                    </div>
+                    
+                    <!-- Stock Selector -->
+                    <div class="w-full sm:w-auto">
+                        <label class="block text-xs font-bold text-indigo-300 mb-1">🔍 במה בא לך להשקיע?</label>
+                        <select id="stockSelect" onchange="selectStock(this.value)" class="w-full sm:w-72 bg-slate-800 text-white font-bold border-2 border-indigo-500/40 rounded-2xl px-4 py-2.5 text-sm outline-none focus:border-pink-500 transition shadow">
+                            <!-- Options injected dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Canvas Chart -->
+                <div class="h-60 sm:h-64 w-full bg-slate-950/80 rounded-2xl p-3 border border-indigo-500/20 relative">
+                    <canvas id="stockChart"></canvas>
+                </div>
+
+                <!-- Trade Controls -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-800">
+                    <div>
+                        <label class="text-xs font-bold text-slate-300 mb-1 block">כמות מניות שתקנה/תמכור</label>
+                        <input type="number" id="tradeQuantity" value="5" min="1" class="w-full bg-slate-800 border-2 border-indigo-500/40 rounded-2xl px-3 py-2 text-white font-bold text-base outline-none focus:border-pink-500 transition text-center">
+                    </div>
+                    <div class="md:col-span-2 flex items-end gap-3">
+                        <button onclick="buyStock()" class="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-base rounded-2xl transition shadow-lg shadow-emerald-600/30 flex justify-center items-center gap-2 border border-emerald-400/30">
+                            <span>לקנות מניה 📈</span>
+                        </button>
+                        <button onclick="sellStock()" class="flex-1 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-black text-base rounded-2xl transition shadow-lg shadow-rose-600/30 flex justify-center items-center gap-2 border border-rose-400/30">
+                            <span>למכור מניה 📉</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Table -->
+            <div class="bg-slate-900/90 border-2 border-indigo-500/30 rounded-3xl p-5 shadow-xl mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-lg font-black text-amber-300">🎒 התיק שלי (מה שבבעלותך)</h3>
+                    <span class="text-xs font-bold text-indigo-300">מעקב רווחים בזמן אמת</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="text-xs text-indigo-200 border-b border-indigo-500/30">
+                            <tr>
+                                <th class="py-3 px-2">שם החברה</th>
+                                <th class="py-3 px-2">כמות שקנית</th>
+                                <th class="py-3 px-2">מחיר בקנייה</th>
+                                <th class="py-3 px-2">מחיר עכשיו</th>
+                                <th class="py-3 px-2">כמה הרווחת/הפסדת?</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolioTable" class="divide-y divide-slate-800 text-slate-200 font-bold">
+                            <!-- Dynamic Portfolio Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        // Kid-friendly database of Stocks (US & ISRAEL)
+        const stocksData = {
+            // US Stocks
+            "NVDA": { name: "אנבידיה 🎮 (מחשבי גיימינג ו-AI)", symbol: "NVDA", market: "US", currency: "$", price: 450, history: [430, 435, 440, 442, 450], risk: "high", sector: "tech" },
+            "AAPL": { name: "אפל 📱 (אייפון ומחשבים)", symbol: "AAPL", market: "US", currency: "$", price: 180, history: [175, 177, 178, 179, 180], risk: "low", sector: "tech" },
+            "DIS": { name: "דיסני 🏰 (סרטים ופארקים)", symbol: "DIS", market: "US", currency: "$", price: 95, history: [90, 92, 94, 93, 95], risk: "medium", sector: "fun" },
+            "TSLA": { name: "טסלה 🚗 (מכוניות חשמליות)", symbol: "TSLA", market: "US", currency: "$", price: 240, history: [220, 250, 230, 235, 240], risk: "high", sector: "auto" },
+            "S&P500": { name: "מדד 500 החברות הגדולות 🇺🇸", symbol: "VOO", market: "US", currency: "$", price: 410, history: [400, 402, 405, 408, 410], risk: "low", sector: "index" },
+            
+            // Israeli Stocks
+            "TA35": { name: "מדד תל אביב 35 🇮🇱 (חברות מובחרות)", symbol: "TA35.TA", market: "IL", currency: "₪", price: 2050, history: [1980, 2000, 2010, 2030, 2050], risk: "low", sector: "index" },
+            "ESLT": { name: "אלביט ✈️ (טכנולוגיית תעופה וביטחון)", symbol: "ESLT.TA", market: "IL", currency: "₪", price: 780, history: [740, 750, 765, 770, 780], risk: "medium", sector: "defense" },
+            "LUMI": { name: "בנק לאומי 🏦 (שומר על הכסף)", symbol: "LUMI.TA", market: "IL", currency: "₪", price: 32, history: [30, 30.5, 31, 31.8, 32], risk: "low", sector: "finance" },
+            "TEVA": { name: "טבע 💊 (תרופות ובריאות)", symbol: "TEVA.TA", market: "IL", currency: "₪", price: 62, history: [58, 59, 60, 61, 62], risk: "high", sector: "pharma" }
+        };
+
+        // User State
+        let simDate = new Date(2026, 0, 1);
+        let cash = 50000;
+        let portfolio = {}; 
+        let currentStockSymbol = "NVDA";
+        let chart = null;
+        let isVoiceEnabled = true;
+
+        let quizAnswers = {};
+
+        // Speech Synthesis (TTS) Helper
+        function speak(text) {
+            if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+            
+            // Clean markdown asterisks or special icons for natural speech
+            const cleanText = text.replace(/\*/g, '').replace(/🤖|💰|🚀|🛡️|🔥|💻|📊|🇮🇱|🇺🇸|📈|📉|🌟|🎮|📱|🏰|🚗|✈️|🏦|💊|⏰|🏆|💵|🎈/g, '');
+            
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'he-IL';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.1; // Slightly higher pitch for friendly kid tone
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleVoice() {
+            isVoiceEnabled = !isVoiceEnabled;
+            const icon = document.getElementById('ttsIcon');
+            const status = document.getElementById('ttsStatus');
+            
+            if (isVoiceEnabled) {
+                icon.className = "fa-solid fa-volume-high text-amber-300";
+                status.innerText = "קול מופעל";
+                showNotification("פיני יקריא לך את ההודעות! 🔊", "info");
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-slate-400";
+                status.innerText = "מושתק";
+                window.speechSynthesis.cancel();
+                showNotification("הדיבור הקולי הושתק 🔇", "info");
+            }
+        }
+
+        // Custom Toast Notification System
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-slate-800 border-indigo-500 text-white";
+            if (type === 'error') bgClass = "bg-rose-900 border-rose-500 text-rose-100";
+            if (type === 'success') bgClass = "bg-emerald-900 border-emerald-400 text-emerald-100";
+
+            toast.className = `pointer-events-auto px-4 py-3 rounded-2xl border-2 shadow-2xl font-bold text-sm flex items-center gap-2 animate-fade-in ${bgClass}`;
+            toast.innerHTML = `<span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize App on Load
+        window.onload = () => {
+            initChart();
+            populateStockSelect();
+            selectStock(currentStockSymbol);
+            updateUI();
+            startChat();
+        };
+
+        // Setup Stock Select Dropdown
+        function populateStockSelect() {
+            const select = document.getElementById('stockSelect');
+            select.innerHTML = '';
+            
+            const ilGroup = document.createElement('optgroup');
+            ilGroup.label = "🇮🇱 הבורסה בישראל (שקלים ₪)";
+            
+            const usGroup = document.createElement('optgroup');
+            usGroup.label = "🇺🇸 הבורסה בארה\"ב (דולרים $)";
+
+            Object.keys(stocksData).forEach(sym => {
+                const stock = stocksData[sym];
+                const opt = document.createElement('option');
+                opt.value = sym;
+                opt.innerText = `${stock.name} (${stock.currency})`;
+                
+                if (stock.market === "IL") {
+                    ilGroup.appendChild(opt);
+                } else {
+                    usGroup.appendChild(opt);
+                }
+            });
+
+            select.appendChild(ilGroup);
+            select.appendChild(usGroup);
+        }
+
+        // Initialize Chart.js
+        function initChart() {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.4)');
+            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['יום 1', 'יום 2', 'יום 3', 'יום 4', 'יום 5'],
+                    datasets: [{
+                        label: 'מחיר',
+                        data: [],
+                        borderColor: '#ec4899',
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#f43f5e',
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const stock = stocksData[currentStockSymbol];
+                                    return `מחיר: ${stock.currency}${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#cbd5e1', font: { weight: 'bold' } } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#cbd5e1', font: { weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        // Select Stock to View & Trade
+        function selectStock(symbol) {
+            currentStockSymbol = symbol;
+            const stock = stocksData[symbol];
+            document.getElementById('activeStockTitle').innerText = stock.name;
+            document.getElementById('activeStockSymbol').innerText = `${stock.market === 'IL' ? '🇮🇱' : '🇺🇸'} ${stock.symbol}`;
+            document.getElementById('activeStockPrice').innerText = `${stock.currency}${stock.price.toFixed(2)}`;
+            document.getElementById('stockSelect').value = symbol;
+
+            // Update Chart
+            chart.data.labels = stock.history.map((_, i) => `יום ${i + 1}`);
+            chart.data.datasets[0].data = stock.history;
+            chart.update();
+        }
+
+        // Advance Simulation Time
+        function advanceDays(days) {
+            simDate.setDate(simDate.getDate() + days);
+            
+            // Random price fluctuation for all stocks
+            Object.keys(stocksData).forEach(sym => {
+                const stock = stocksData[sym];
+                for(let i = 0; i < days; i++) {
+                    const volatility = stock.risk === 'high' ? 0.05 : 0.02;
+                    const changePercent = (Math.random() - 0.47) * volatility; 
+                    stock.price = Math.max(1, stock.price * (1 + changePercent));
+                    stock.history.push(stock.price);
+                    if(stock.history.length > 20) stock.history.shift();
+                }
+            });
+
+            selectStock(currentStockSymbol);
+            updateUI();
+            showNotification(`קפצנו ${days} ימים קדימה בזמן! בדוק מה קרה למניות 🚀`, 'info');
+        }
+
+        // Buy Stock Logic
+        function buyStock() {
+            const qtyInput = document.getElementById('tradeQuantity');
+            const qty = parseInt(qtyInput.value);
+            const stock = stocksData[currentStockSymbol];
+            const cost = stock.price * qty;
+
+            if(isNaN(qty) || qty <= 0) {
+                return showNotification('כתוב כמות מניות תקינה (למשל 1 או 5)', 'error');
+            }
+            if(cash < cost) {
+                return showNotification('אופס! אין מספיק דמי כיס בחשבון 😅', 'error');
+            }
+
+            cash -= cost;
+
+            if(!portfolio[currentStockSymbol]) {
+                portfolio[currentStockSymbol] = { qty: 0, avgPrice: 0 };
+            }
+
+            const currentHolding = portfolio[currentStockSymbol];
+            const totalCost = (currentHolding.qty * currentHolding.avgPrice) + cost;
+            currentHolding.qty += qty;
+            currentHolding.avgPrice = totalCost / currentHolding.qty;
+
+            updateUI();
+            showNotification(`איזה כיף! קנית ${qty} מניות של ${stock.name} 🎉`, 'success');
+        }
+
+        // Sell Stock Logic
+        function sellStock() {
+            const qtyInput = document.getElementById('tradeQuantity');
+            const qty = parseInt(qtyInput.value);
+            const holding = portfolio[currentStockSymbol];
+
+            if(isNaN(qty) || qty <= 0) {
+                return showNotification('רשום כמות תקינה של מניות למכירה', 'error');
+            }
+
+            if(!holding || holding.qty < qty) {
+                return showNotification('אין לך מספיק מניות מהחברה הזאת למכור', 'error');
+            }
+
+            const stock = stocksData[currentStockSymbol];
+            const returnAmount = stock.price * qty;
+
+            cash += returnAmount;
+            holding.qty -= qty;
+
+            if(holding.qty === 0) {
+                delete portfolio[currentStockSymbol];
+            }
+
+            updateUI();
+            showNotification(`מכרת ${qty} מניות! הכסף חזר לקופה שלך 💰`, 'success');
+        }
+
+        // Calculate Total Portfolio Value & Update UI
+        function updateUI() {
+            let totalPortfolioValue = cash;
+            const portfolioTable = document.getElementById('portfolioTable');
+            portfolioTable.innerHTML = '';
+
+            const keys = Object.keys(portfolio);
+            if (keys.length === 0) {
+                portfolioTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-6 text-center text-slate-400 font-normal">עדיין לא קנית מניות. תנסה לקנות משהו מעניין! 🎈</td>
+                    </tr>
+                `;
+            } else {
+                keys.forEach(sym => {
+                    const item = portfolio[sym];
+                    const stock = stocksData[sym];
+                    const currentValue = item.qty * stock.price;
+                    const pnl = currentValue - (item.qty * item.avgPrice);
+                    totalPortfolioValue += currentValue;
+
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-800/60 transition";
+                    row.innerHTML = `
+                        <td class="py-3 px-2 font-bold">${stock.name}</td>
+                        <td class="py-3 px-2">${item.qty}</td>
+                        <td class="py-3 px-2">${stock.currency}${item.avgPrice.toFixed(2)}</td>
+                        <td class="py-3 px-2">${stock.currency}${stock.price.toFixed(2)}</td>
+                        <td class="py-3 px-2 font-black ${pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                            ${pnl >= 0 ? '🟢 +' : '🔴 '}${stock.currency}${pnl.toFixed(2)}
+                        </td>
+                    `;
+                    portfolioTable.appendChild(row);
+                });
+            }
+
+            document.getElementById('currentDate').innerText = simDate.toLocaleDateString('he-IL');
+            document.getElementById('cashBalance').innerText = `₪${cash.toLocaleString('he-IL', {maximumFractionDigits: 0})}`;
+            document.getElementById('portfolioValue').innerText = `₪${totalPortfolioValue.toLocaleString('he-IL', {maximumFractionDigits: 0})}`;
+        }
+
+        // --- Advisor Bot Section ---
+        function addBotMessage(text) {
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.className = "flex gap-3 text-sm animate-fade-in";
+            msg.innerHTML = `
+                <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-400 to-pink-500 flex items-center justify-center shrink-0 shadow-md text-lg">🤖</div>
+                <div class="bg-slate-800/90 border border-indigo-500/30 p-3.5 rounded-2xl rounded-tr-none text-slate-100 font-medium leading-relaxed shadow">${text}</div>
+            `;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            // Trigger TTS
+            speak(text);
+        }
+
+        function addUserMessage(text) {
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.className = "flex gap-3 text-sm justify-end animate-fade-in";
+            msg.innerHTML = `
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-3.5 rounded-2xl rounded-tl-none text-white font-bold shadow-md">${text}</div>
+            `;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function setChatOptions(options) {
+            const optionsContainer = document.getElementById('chatOptions');
+            optionsContainer.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "px-3.5 py-2 bg-indigo-950/80 hover:bg-pink-600 border border-indigo-400/40 text-xs text-white font-bold rounded-xl transition shadow hover:scale-105 active:scale-95";
+                btn.innerText = opt.label;
+                btn.onclick = () => {
+                    addUserMessage(opt.label);
+                    opt.action();
+                };
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function startChat() {
+            document.getElementById('chatBox').innerHTML = '';
+            addBotMessage("היי אלופים! 🌟 אני פיני הרובוט. רוצים שנמצא יחד את החברה הכי שווה להשקיע בה?");
+            setChatOptions([
+                { label: "🇮🇱 חברות מישראל (בשקלים)", action: () => handleMarket('IL') },
+                { label: "🇺🇸 חברות מארה\"ב (בדולרים)", action: () => handleMarket('US') }
+            ]);
+        }
+
+        function handleMarket(market) {
+            quizAnswers.market = market;
+            const place = market === 'IL' ? "בישראל 🇮🇱" : "באמריקה 🇺🇸";
+            addBotMessage(`מגניב! נבחר חברות ${place}. מה ההרפתקה שבא לך לעשות?`);
+            setChatOptions([
+                { label: "🛡️ לשמור על הכסף בטוח ולאט לאט", action: () => handleRisk('low') },
+                { label: "🚀 לקחת סיכון בשביל להרוויח המון!", action: () => handleRisk('high') }
+            ]);
+        }
+
+        function handleRisk(risk) {
+            quizAnswers.risk = risk;
+            
+            let recommendedSymbol = "S&P500";
+            
+            if (quizAnswers.market === 'IL') {
+                if (quizAnswers.risk === 'high') recommendedSymbol = "TEVA";
+                else recommendedSymbol = "TA35";
+            } else {
+                if (quizAnswers.risk === 'high') recommendedSymbol = "NVDA";
+                else recommendedSymbol = "DIS";
+            }
+
+            const recStock = stocksData[recommendedSymbol];
+
+            addBotMessage(`רעיון מעולה! ההמלצה שלי בשבילך היא: **${recStock.name}** 🌟`);
+            addBotMessage(`לחץ על הלחצן למטה כדי שנפתח את החברה במסך הראשי!`);
+
+            setChatOptions([
+                { 
+                    label: `✨ פתח את ${recStock.symbol} במסך`, 
+                    action: () => {
+                        selectStock(recommendedSymbol);
+                        addBotMessage(`פתחנו את ${recStock.symbol}! עכשיו רשום כמה מניות בא לך לקנות ולחץ 'לקנות מניה'.`);
+                    }
+                },
+                { label: "🔄 בא לי לשאול משהו אחר", action: () => startChat() }
+            ]);
+        }
+
+        function restartAdvisor() {
+            startChat();
+        }
+    </script>
+</body>
+</html>

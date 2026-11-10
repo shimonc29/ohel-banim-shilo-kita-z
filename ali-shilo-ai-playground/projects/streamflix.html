@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreamFlix - קישורים ישירים לסרטים</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #141414;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: 70px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4%;
+      background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+      z-index: 1000;
+      transition: background-color 0.4s ease;
+    }
+
+    .header.scrolled {
+      background-color: #141414;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .logo {
+      color: #E50914;
+      font-size: 1.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 15px;
+    }
+
+    .nav-links a {
+      color: #e5e5e5;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #b3b3b3;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .search-input {
+      background-color: rgba(0, 0, 0, 0.75);
+      border: 1px solid #777;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 4px;
+      outline: none;
+      font-size: 0.9rem;
+      transition: width 0.3s ease;
+      width: 180px;
+    }
+
+    .search-input:focus {
+      border-color: #ffffff;
+      width: 240px;
+    }
+
+    /* Hero Banner */
+    .hero {
+      position: relative;
+      height: 75vh;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      padding: 0 4%;
+      transition: background-image 0.5s ease-in-out;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(0deg, #141414 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.8) 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 650px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .rating {
+      color: #46d369;
+      font-weight: bold;
+    }
+
+    .duration {
+      color: #aaa;
+    }
+
+    .badge {
+      border: 1px solid #777;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.8rem;
+    }
+
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .hero-description {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      color: #ddd;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      opacity: 0.85;
+      transform: scale(1.03);
+    }
+
+    .btn-play {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    .btn-info {
+      background-color: rgba(109, 109, 110, 0.7);
+      color: #ffffff;
+    }
+
+    /* Main Content & Cards */
+    .main-content {
+      margin-top: -60px;
+      position: relative;
+      z-index: 2;
+      padding-bottom: 60px;
+    }
+
+    .category-row {
+      margin-bottom: 35px;
+      padding: 0 4%;
+    }
+
+    .category-title {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      color: #e5e5e5;
+    }
+
+    .cards-container {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 10px 0;
+      scroll-behavior: smooth;
+    }
+
+    .cards-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .card {
+      min-width: 240px;
+      height: 280px;
+      background-color: #1f1f1f;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #2d2d2d;
+    }
+
+    .card:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+      border-color: #E50914;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 140px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-grow: 1;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: #aaa;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: auto;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background-color: #181818;
+      width: 100%;
+      max-width: 700px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: #181818;
+      color: white;
+      border: none;
+      font-size: 1.5rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .modal-banner {
+      width: 100%;
+      height: 300px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .modal-body {
+      padding: 25px;
+    }
+
+    .modal-meta {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+
+    .modal-desc {
+      color: #aaa;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2rem; }
+      .nav-links { display: none; }
+      .card { min-width: 180px; height: 250px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="nav-right">
+      <a href="#" class="logo">STREAMFLIX</a>
+      <ul class="nav-links">
+        <li><a href="#">דף הבית</a></li>
+        <li><a href="#">סדרות</a></li>
+        <li><a href="#">סרטים</a></li>
+        <li><a href="#">חדש ופופולרי</a></li>
+      </ul>
+    </div>
+    <div class="nav-left">
+      <input type="text" id="searchInput" class="search-input" placeholder="חיפוש סרט...">
+      <div style="width:32px;height:32px;background:#E50914;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;">U</div>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="hero" id="heroBanner">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-meta">
+        <span class="rating" id="heroRating">★ 9.0</span>
+        <span class="duration" id="heroDuration">148 דקות</span>
+        <span class="badge">4K</span>
+      </div>
+      <h1 class="hero-title" id="heroTitle">טוען...</h1>
+      <p class="hero-description" id="heroDesc"></p>
+      <div class="hero-buttons">
+        <button class="btn btn-play" id="heroPlayBtn">🔗 עבר לאתר הסרט</button>
+        <button class="btn btn-info" id="heroInfoBtn">ⓘ מידע נוסף</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent"></main>
+
+  <!-- Modal -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closeModal">&times;</button>
+      <div class="modal-banner" id="modalBanner"></div>
+      <div class="modal-body">
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <div class="modal-meta">
+          <span class="rating" id="modalRating"></span>
+          <span class="duration" id="modalDuration"></span>
+          <span class="badge" id="modalCategory"></span>
+        </div>
+        <p class="modal-desc" id="modalDesc"></p>
+        <button class="btn btn-play" id="modalPlayBtn">🔗 מעבר לאתר הרשמי</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // מאגר סרטים אמיתיים עם קישורים לאתרי הסרטים (IMDb/אתר רשמי)
+    const movies = [
+      {
+        id: 1,
+        title: "התחלה (Inception)",
+        category: "מדע בדיוני",
+        rating: "9.0",
+        duration: "148 דקות",
+        description: "גנב שמחדיר רעיונות למוחם של בני אדם דרך חלומות מקבל משימה כמעט בלתי אפשרית: להשתיל רעיון במוחו של מנכ\"ל תאגיד.",
+        poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&q=80",
+        banner: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=1200&q=80",
+        movieUrl: "https://www.imdb.com/title/tt1375666/"
+      },
+      {
+        id: 2,
+        title: "האביר האפל (The Dark Knight)",
+        category: "פעולה",
+        rating: "9.0",
+        duration: "152 דקות",
+        description: "באטמן נלחם באנרכיה שזורע הג'וקר בגות'אם סיטי במבחן הפיזי והמנטלי הגדול ביותר שלו.",
+        poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&q=80",
+        banner: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&q=80",
+        movieUrl: "https://www.imdb.com/title/tt0468569/"
+      },
+      {
+        id: 3,
+        title: "בינכוכבי (Interstellar)",
+        category: "מדע בדיוני",
+        rating: "8.7",
+        duration: "169 דקות",
+        description: "צוות חוקרים נוסע דרך חור תולעת בחלל במטרה למצוא כוכב לכת חדש שיבטיח את הישרדות האנושות.",
+        poster: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&q=80",
+        banner: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80",
+        movieUrl: "https://www.imdb.com/title/tt0816692/"
+      },
+      {
+        id: 4,
+        title: "ספרות זולה (Pulp Fiction)",
+        category: "פשע",
+        rating: "8.9",
+        duration: "154 דקות",
+        description: "סיפוריהם המוצלבים של שני רוצחים שכירים, אשת בוס פשע, מתאגרף ושני שודדים בלוס אנג'לס.",
+        poster: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&q=80",
+        banner: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80",
+        movieUrl: "https://www.imdb.com/title/tt0110912/"
+      },
+      {
+        id: 5,
+        title: "גלדיאטור (Gladiator)",
+        category: "פעולה",
+        rating: "8.5",
+        duration: "155 דקות",
+        description: "מצביא רומי לשעבר שנבגד והפך לעבד יוצא למסע נקמה בקיסר המושחת שרצח את משפחתו.",
+        poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&q=80",
+        banner: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&q=80",
+        movieUrl: "https://www.imdb.com/title/tt0172495/"
+      },
+      {
+        id: 6,
+        title: "מטריקס (The Matrix)",
+        category: "מדע בדיוני",
+        rating: "8.7",
+        duration: "136 דקות",
+        description: "מתכנת מחשבים מגלה שהמציאות שהוא מכיר היא רק סימולציה ממוחשבת שנבנתה על ידי מכונות.",
+        poster: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80",
+        banner: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&q=80",
+        movieUrl: "https://www.imdb.com/title/tt0133093/"
+      },
+      {
+        id: 7,
+        title: "חומות של תקווה (Shawshank)",
+        category: "דרמה",
+        rating: "9.3",
+        duration: "142 דקות",
+        description: "בנקאי שנשפט למאסר עולם על רצח שלא ביצע מוצא נחמה ותקווה דרך חברות ייחודית בתוך הכלא.",
+        poster: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&q=80",
+        banner: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&q=80",
+        movieUrl: "https://www.imdb.com/title/tt0111161/"
+      },
+      {
+        id: 8,
+        title: "הסנדק (The Godfather)",
+        category: "פשע",
+        rating: "9.2",
+        duration: "175 דקות",
+        description: "ראש משפחת פשע מאורגן בניו יורק מעביר את השליטה באימפריה לבנו הצעיר והמהסס.",
+        poster: "https://images.unsplash.com/photo-1509718443690-d8e2fb3474b7?w=500&q=80",
+        banner: "https://images.unsplash.com/photo-1509718443690-d8e2fb3474b7?w=1200&q=80",
+        movieUrl: "https://www.imdb.com/title/tt0068646/"
+      }
+    ];
+
+    let currentSelectedMovie = movies[0];
+
+    // הגדרת באנר
+    function setupHero(movie) {
+      currentSelectedMovie = movie;
+      document.getElementById('heroBanner').style.backgroundImage = `url('${movie.banner}')`;
+      document.getElementById('heroTitle').innerText = movie.title;
+      document.getElementById('heroDesc').innerText = movie.description;
+      document.getElementById('heroRating').innerText = `★ ${movie.rating}`;
+      document.getElementById('heroDuration').innerText = movie.duration;
+    }
+
+    // רינדור כרטיסיות הסרטים עם כותרת ותיאור
+    function renderContent(dataList) {
+      const mainContent = document.getElementById('mainContent');
+      mainContent.innerHTML = '';
+
+      const categories = [...new Set(movies.map(m => m.category))];
+
+      categories.forEach(category => {
+        const categoryMovies = dataList.filter(m => m.category === category);
+        if (categoryMovies.length === 0) return;
+
+        const rowElement = document.createElement('div');
+        rowElement.className = 'category-row';
+
+        const titleElement = document.createElement('h2');
+        titleElement.className = 'category-title';
+        titleElement.innerText = category;
+
+        const cardsContainer = document.createElement('div');
+        cardsContainer.className = 'cards-container';
+
+        categoryMovies.forEach(movie => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          
+          // לחיצה מעבירה ישירות לקישור הסרט
+          card.onclick = () => openMovieLink(movie.movieUrl);
+
+          card.innerHTML = `
+            <div class="card-img" style="background-image: url('${movie.poster}')"></div>
+            <div class="card-body">
+              <div class="card-title">${movie.title}</div>
+              <div class="card-desc">${movie.description}</div>
+              <div class="card-footer">
+                <span style="color:#46d369;font-weight:bold;">★ ${movie.rating}</span>
+                <span>${movie.duration}</span>
+              </div>
+            </div>
+          `;
+          
+          cardsContainer.appendChild(card);
+        });
+
+        rowElement.appendChild(titleElement);
+        rowElement.appendChild(cardsContainer);
+        mainContent.appendChild(rowElement);
+      });
+    }
+
+    // פתיחת קישור לסרט בלשונית חדשה
+    function openMovieLink(url) {
+      if (url) {
+        window.open(url, '_blank');
+      }
+    }
+
+    // מודאל מידע נוסף
+    function openModal(movie) {
+      currentSelectedMovie = movie;
+      document.getElementById('modalBanner').style.backgroundImage = `url('${movie.banner}')`;
+      document.getElementById('modalTitle').innerText = movie.title;
+      document.getElementById('modalDesc').innerText = movie.description;
+      document.getElementById('modalRating').innerText = `★ ${movie.rating}`;
+      document.getElementById('modalDuration').innerText = movie.duration;
+      document.getElementById('modalCategory').innerText = movie.category;
+      document.getElementById('infoModal').style.display = 'flex';
+    }
+
+    document.getElementById('closeModal').onclick = () => {
+      document.getElementById('infoModal').style.display = 'none';
+    };
+
+    // כפתורי הירור ומודאל
+    document.getElementById('heroPlayBtn').onclick = () => openMovieLink(currentSelectedMovie.movieUrl);
+    document.getElementById('heroInfoBtn').onclick = () => openModal(currentSelectedMovie);
+    document.getElementById('modalPlayBtn').onclick = () => openMovieLink(currentSelectedMovie.movieUrl);
+
+    // חיפוש בזמן אמת
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      const filteredMovies = movies.filter(movie => 
+        movie.title.toLowerCase().includes(searchTerm) || 
+        movie.description.toLowerCase().includes(searchTerm) ||
+        movie.category.toLowerCase().includes(searchTerm)
+      );
+      renderContent(filteredMovies);
+    });
+
+    // אפקט סקרול בתפריט
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // איתחול הדף
+    window.onload = () => {
+      setupHero(movies[0]);
+      renderContent(movies);
+    };
+  </script>
+</body>
+</html>

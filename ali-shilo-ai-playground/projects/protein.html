@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProteinChef 10m - מחשבון חלבון ומתכונים מהירים</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Rubik -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Rubik', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Rubik', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #15803d;
+        }
+        .like-bounce {
+            animation: bounce 0.3s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-full flex flex-col transition-colors duration-200">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-30 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+        <div class="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white text-xl shadow-md">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                        ProteinChef <span class="text-brand-500">10m</span>
+                    </h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">מהמקרר לצלחת ב-10 דקות</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggle" class="p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-sm flex items-center gap-2">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                    <span id="themeText" class="text-xs font-semibold hidden sm:inline">מצב לילה</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Ingredients Selector & Nutrition Summary (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+            
+            <!-- Ingredient Selection Box -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm transition-all">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-bold flex items-center gap-2 text-gray-900 dark:text-white">
+                        <i class="fa-solid fa-refrigerator text-brand-500"></i>
+                        מה יש לך במקרר?
+                    </h2>
+                    <button id="clearAllBtn" class="text-xs font-semibold text-rose-500 hover:text-rose-600 hidden">
+                        נקה הכל
+                    </button>
+                </div>
+
+                <!-- Category Filters -->
+                <div class="flex gap-2 overflow-x-auto pb-2 mb-3 text-xs scrollbar-none" id="categoryFilter">
+                    <button class="cat-btn active bg-brand-500 text-white px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors" data-category="all">הכל</button>
+                    <button class="cat-btn bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" data-category="protein">חלבונים</button>
+                    <button class="cat-btn bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" data-category="dairy">חלבי/גבינות</button>
+                    <button class="cat-btn bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" data-category="carbs">פחמימות</button>
+                    <button class="cat-btn bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" data-category="veggies">ירקות ופירות</button>
+                </div>
+
+                <!-- Ingredients Grid -->
+                <div id="ingredientsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[320px] overflow-y-auto p-1">
+                    <!-- Ingredients items injected by JS -->
+                </div>
+
+                <!-- Add Custom Ingredient Toggle -->
+                <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+                    <button id="toggleCustomFormBtn" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        הוסף מצרך אישי לרשימה
+                    </button>
+
+                    <!-- Form (hidden by default) -->
+                    <form id="customIngredientForm" class="hidden mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 text-xs flex flex-col gap-2.5">
+                        <input type="text" id="customName" placeholder="שם המצרך (לדוגמה: טופו)" required class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:border-brand-500">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">חלבון (גרם)</label>
+                                <input type="number" id="customProtein" placeholder="0" min="0" step="0.1" required class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:border-brand-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 dark:text-gray-400 mb-0.5">קלוריות (קל')</label>
+                                <input type="number" id="customCalories" placeholder="0" min="0" required class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:border-brand-500">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-lg transition-colors mt-1">
+                            הוסף מצרך
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Nutrition Summary Box -->
+            <div class="bg-gray-900 text-white rounded-2xl p-5 shadow-lg border border-gray-800 relative overflow-hidden">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold text-gray-400 tracking-wider uppercase">ערכים תזונתיים מצטברים</h3>
+                    <span id="selectedCountBadge" class="text-xs bg-gray-800 text-brand-400 border border-brand-500/30 px-2.5 py-0.5 rounded-full font-bold">0 מצרכים</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 my-2">
+                    <!-- Total Protein -->
+                    <div class="bg-gray-800/80 p-3.5 rounded-xl border border-gray-700/60 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-dumbbell"></i>
+                        </div>
+                        <div>
+                            <span class="block text-2xl font-black text-white" id="totalProtein">0<span class="text-xs font-normal text-gray-400"> ג'</span></span>
+                            <span class="text-[11px] text-gray-400">סה"כ חלבון</span>
+                        </div>
+                    </div>
+
+                    <!-- Total Calories -->
+                    <div class="bg-gray-800/80 p-3.5 rounded-xl border border-gray-700/60 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                        <div>
+                            <span class="block text-2xl font-black text-white" id="totalCalories">0<span class="text-xs font-normal text-gray-400"> קל'</span></span>
+                            <span class="text-[11px] text-gray-400">ערך קלורי</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tip -->
+                <div class="mt-3 text-xs text-gray-300 bg-gray-800/40 p-2.5 rounded-lg border border-gray-800 flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-400 text-sm"></i>
+                    <span id="macroTip">סמן מצרכים שיש לך בבית כדי להתאים מתכון מהיר!</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Column: Recipes List (7 cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Section Header & Filter Controls -->
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-bold flex items-center gap-2 text-gray-900 dark:text-white">
+                        <i class="fa-solid fa-utensils text-brand-500"></i>
+                        מתכונים עד 10 דקות
+                    </h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">הוראות פשוטות להכנה מהירה עשירה בחלבון</p>
+                </div>
+                
+                <!-- Sort Options -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">מיון:</span>
+                    <select id="sortSelect" class="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-xs rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 text-gray-700 dark:text-gray-200">
+                        <option value="match">התאמה למצרכים</option>
+                        <option value="protein">הכי הרבה חלבון</option>
+                        <option value="time">הכי מהיר להכנה</option>
+                        <option value="calories">הכי מעט קלוריות</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Recipes Feed -->
+            <div id="recipesContainer" class="flex flex-col gap-4">
+                <!-- Recipe Cards rendered dynamically -->
+            </div>
+
+            <!-- Empty State Notice -->
+            <div id="noRecipesState" class="hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 text-center">
+                <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-1">לא נמצאו מתכונים מתאימים</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">נסה לסמן מצרכים נוספים במקרר לקבלת הצעות מתאימות.</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Modal: Recipe Step-by-Step Instructions -->
+    <div id="recipeModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col">
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start sticky top-0 bg-white dark:bg-gray-800 z-10">
+                <div>
+                    <span id="modalCategory" class="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/40 px-2 py-0.5 rounded">מתכון מהיר</span>
+                    <h3 id="modalTitle" class="text-lg font-bold text-gray-900 dark:text-white mt-1">שם המתכון</h3>
+                </div>
+                <button id="closeModalBtn" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-lg transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-5 flex flex-col gap-5">
+                <!-- Meta stats -->
+                <div class="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-gray-700/40 p-3 rounded-xl text-center text-xs">
+                    <div>
+                        <span class="block text-gray-400 text-[10px]">זמן הכנה סופר מהיר</span>
+                        <span id="modalTime" class="font-bold text-amber-500">0 דקות</span>
+                    </div>
+                    <div class="border-x border-gray-200 dark:border-gray-600">
+                        <span class="block text-gray-400 text-[10px]">חלבון</span>
+                        <span id="modalProtein" class="font-bold text-emerald-600 dark:text-emerald-400">0 גרם</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-400 text-[10px]">קלוריות</span>
+                        <span id="modalCalories" class="font-bold text-gray-700 dark:text-gray-300">0 קל'</span>
+                    </div>
+                </div>
+
+                <!-- Action Bar (WhatsApp & Like inside Modal) -->
+                <div class="flex items-center justify-between bg-gray-100 dark:bg-gray-700/60 p-2.5 rounded-xl text-xs">
+                    <button id="modalLikeBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 text-rose-500 font-bold border border-gray-200 dark:border-gray-600 shadow-sm hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-heart"></i>
+                        <span id="modalLikeCount">0</span> לייקים
+                    </button>
+                    <button id="modalShareWhatsapp" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-sm transition-colors">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        שתף ב-WhatsApp
+                    </button>
+                </div>
+
+                <!-- Ingredients List -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-check text-brand-500"></i>
+                        מצרכים נדרשים:
+                    </h4>
+                    <ul id="modalIngredientsList" class="space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
+                        <!-- Items injected here -->
+                    </ul>
+                </div>
+
+                <!-- Preparation Steps -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-kitchen-set text-brand-500"></i>
+                        שלבי הכנה (מהירים):
+                    </h4>
+                    <ol id="modalStepsList" class="space-y-2 text-xs text-gray-700 dark:text-gray-300 list-decimal list-inside">
+                        <!-- Steps injected here -->
+                    </ol>
+                </div>
+
+                <!-- Interactive Comments Section -->
+                <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-1.5">
+                        <i class="fa-solid fa-comments text-brand-500"></i>
+                        תגובות וטיפים של גולשים
+                    </h4>
+
+                    <!-- Comment Input -->
+                    <form id="commentForm" class="flex gap-2 mb-4">
+                        <input type="text" id="commentInput" placeholder="כתוב תגובה או טיפ להכנה..." required class="flex-1 p-2 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-xs focus:outline-none focus:border-brand-500">
+                        <button type="submit" class="px-3.5 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl transition-colors">
+                            שלח
+                        </button>
+                    </form>
+
+                    <!-- Comments List -->
+                    <div id="modalCommentsList" class="space-y-2 max-h-40 overflow-y-auto">
+                        <!-- Comments injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end">
+                <button id="modalDoneBtn" class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl transition-colors">
+                    הבנתי, בתיאבון!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-4 text-center text-xs text-gray-500 dark:text-gray-400 transition-colors mt-8">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>ProteinChef &copy; 2026 - מחשבון חלבון ומתכונים מהירים</span>
+            <span class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <i class="fa-solid fa-stopwatch"></i> מקסימום 10 דקות הכנה
+            </span>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data Structures
+        const initialIngredients = [
+            { id: 'egg', name: 'ביצים (2 יח\')', protein: 12, calories: 140, category: 'protein', icon: 'fa-egg', image: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=300&q=80' },
+            { id: 'tuna', name: 'קופסת טונה במים', protein: 26, calories: 110, category: 'protein', icon: 'fa-fish', image: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=300&q=80' },
+            { id: 'cottage', name: 'קוטג\' 5% (1/2 גביע)', protein: 12, calories: 95, category: 'dairy', icon: 'fa-cheese', image: 'https://images.unsplash.com/photo-1559561853-08451507cbe7?auto=format&fit=crop&w=300&q=80' },
+            { id: 'yellow_cheese', name: 'גבינה צהובה 9% (פרוסה)', protein: 7, calories: 45, category: 'dairy', icon: 'fa-cheese', image: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=300&q=80' },
+            { id: 'bread', name: 'לחם קל (2 פרוסות)', protein: 5, calories: 90, category: 'carbs', icon: 'fa-bread-slice', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=300&q=80' },
+            { id: 'oats', name: 'שיבולת שועל (40 ג\')', protein: 5, calories: 150, category: 'carbs', icon: 'fa-bowl-rice', image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=300&q=80' },
+            { id: 'protein_powder', name: 'אבקת חלבון (מנה)', protein: 25, calories: 120, category: 'protein', icon: 'fa-jar', image: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=300&q=80' },
+            { id: 'chicken_breast', name: 'חזה עוף מבושל (100 ג\')', protein: 31, calories: 165, category: 'protein', icon: 'fa-drumstick-bite', image: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=300&q=80' },
+            { id: 'greek_yogurt', name: 'יוגורט יווני / PRO', protein: 20, calories: 120, category: 'dairy', icon: 'fa-prescription-bottle', image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=300&q=80' },
+            { id: 'rice_cakes', name: 'פריכיות אורז (3 יח\')', protein: 2, calories: 90, category: 'carbs', icon: 'fa-cookie', image: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?auto=format&fit=crop&w=300&q=80' },
+            { id: 'tomatoes', name: 'עגבניה / שרי', protein: 1, calories: 20, category: 'veggies', icon: 'fa-apple-whole', image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=300&q=80' },
+            { id: 'cucumber', name: 'מלפפון', protein: 1, calories: 15, category: 'veggies', icon: 'fa-carrot', image: 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?auto=format&fit=crop&w=300&q=80' },
+            { id: 'spinach', name: 'תרד / חסה', protein: 2, calories: 15, category: 'veggies', icon: 'fa-leaf', image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=300&q=80' },
+            { id: 'peanut_butter', name: 'חמאת בוטנים (כף)', protein: 4, calories: 95, category: 'carbs', icon: 'fa-jar-wheat', image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=300&q=80' }
+        ];
+
+        const recipes = [
+            {
+                id: 'scrambled_cottage',
+                title: 'מקושקשת חלבון מושחתת עם קוטג\'',
+                time: 5,
+                speedTag: '🔥 סופר מהיר (5 דק\')',
+                protein: 24,
+                calories: 235,
+                likes: 42,
+                comments: ['יוצא ממש אוורירי!', 'הוספתי גם קצת תרד ויצא אש.'],
+                image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80',
+                requiredIngredients: ['egg', 'cottage'],
+                optionalIngredients: ['yellow_cheese', 'spinach', 'tomatoes'],
+                description: 'מקושקשת אוורירית ועשירה בטעמים שמכינים במחבת במהירות הבזק.',
+                steps: [
+                    'טורפים 2 ביצים בקערה קטנה עם קורט מלח ופלפל.',
+                    'מוסיפים 2 כפות קוטג\' ומערבבים מעט.',
+                    'מחממים מחבת משומנת קלות ומפזרים תרד או עגבניות אם יש.',
+                    'יוצקים את תערובת הביצים, מערבבים בעדינות במשך 3-4 דקות עד לרמת העשייה הרצויה ומגישים.'
+                ]
+            },
+            {
+                id: 'tuna_salad_bowl',
+                title: 'סלט טונה חלבוני ב-5 דקות',
+                time: 5,
+                speedTag: '⚡ ב-5 דקות בלבד',
+                protein: 38,
+                calories: 235,
+                likes: 89,
+                comments: ['הארוחה הקבועה שלי אחרי אימון!', 'פשוט ומשביע מאוד.'],
+                image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+                requiredIngredients: ['tuna', 'egg'],
+                optionalIngredients: ['cucumber', 'tomatoes', 'yellow_cheese'],
+                description: 'ארוחה מהירה בצלחת אחת מלאה בחלבון איכותי וירקות מרעננים.',
+                steps: [
+                    'מסננים את קופסת הטונה ומעבירים לקערה.',
+                    'חותכים מלפפון ועגבניה לקוביות קטנות ומוסיפים לקערה.',
+                    'קוצצים ביצה קשה (אפשר מוכנה מראש או מהירה במיקרו/מחבת) פנימה.',
+                    'מתבלים בכף מיונז קל/לימון, מלח ופלפל ומערבבים.'
+                ]
+            },
+            {
+                id: 'protein_oatmeal',
+                title: 'דייסת חלבון מהירה במיקרוגל',
+                time: 4,
+                speedTag: '⚡ שיא המהירות (4 דק\')',
+                protein: 30,
+                calories: 270,
+                likes: 64,
+                comments: ['שמתי חמאת בוטנים וזה טעם של קינוח!'],
+                image: 'https://images.unsplash.com/photo-1517673400267-0251440c45dc?auto=format&fit=crop&w=600&q=80',
+                requiredIngredients: ['oats', 'protein_powder'],
+                optionalIngredients: ['peanut_butter', 'greek_yogurt'],
+                description: 'ארוחת בוקר או לילה מתוקה, מחממת ועשירה מאוד בחלבון.',
+                steps: [
+                    'בקערה מתאימה למיקרוגל מערבבים שיבולת שועל עם חצי כוס מים או חלב.',
+                    'מחממים במיקרוגל במשך 90 שניות עד שהדייסת מסמיכה.',
+                    'מוציאים, מוסיפים את סקופ אבקת החלבון ומערבבים היטב (אם סמיך מדי, מוסיפים מעט מים).',
+                    'מוסיפים כפית חמאת בוטנים מעל ומגישים.'
+                ]
+            },
+            {
+                id: 'protein_toast',
+                title: 'טוסט חלבון וגבינות מוזהב',
+                time: 7,
+                speedTag: '⏳ 7 דקות בטוסטר',
+                protein: 24,
+                calories: 230,
+                likes: 51,
+                comments: ['הקוטג\' נהיה גבינה נמסה ומדהימה!'],
+                image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80',
+                requiredIngredients: ['bread', 'yellow_cheese', 'cottage'],
+                optionalIngredients: ['tomatoes'],
+                description: 'טוסט קריספי מנחם עם שילוב גבינות מעולה.',
+                steps: [
+                    'מורחים על פרוסת לחם קל שכבת קוטג\'.',
+                    'מניחים פרוסת גבינה צהובה ופרוסות עגבניה.',
+                    'סוגרים בפרוסת הלחם השנייה.',
+                    'קולים בטוסטר לחיצה או במחבת יבשה כ-4-5 דקות עד שהגבינה נמסה.'
+                ]
+            },
+            {
+                id: 'chicken_veggie_wrap',
+                title: 'צלחת חזה עוף וירקות מהירה',
+                time: 8,
+                speedTag: '🍗 8 דקות הכנה',
+                protein: 33,
+                calories: 200,
+                likes: 37,
+                comments: ['מצוין למי שמכין חזה עוף מראש במקרר.'],
+                image: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80',
+                requiredIngredients: ['chicken_breast', 'tomatoes', 'cucumber'],
+                optionalIngredients: ['spinach'],
+                description: 'פתרון מושלם למי שיש חזה עוף מבושל/מוכן במקרר ורוצה ארוחה קלה.',
+                steps: [
+                    'חותכים את חזה העוף לרצועות קטנות (או מחממים 1-2 דקות במחבת/מיקרו).',
+                    'חותכים סלט ירקות רענן (עגבניה, מלפפון, תרד).',
+                    'מערבבים את רצועות העוף החמות עם הירקות.',
+                    'מתבלים במעט שמן זית, לימון, מלח ופלפל.'
+                ]
+            },
+            {
+                id: 'pro_yogurt_bowl',
+                title: 'קערת יוגורט PRO ושיבולת שועל',
+                time: 3,
+                speedTag: '⚡ 3 דקות ללא בישול!',
+                protein: 29,
+                calories: 360,
+                likes: 95,
+                comments: ['הכי מהיר שיש כשקמים בבוקר ממהרים.'],
+                image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80',
+                requiredIngredients: ['greek_yogurt', 'oats'],
+                optionalIngredients: ['peanut_butter', 'protein_powder'],
+                description: 'ארוחה קרה שמוכנה תוך 3 דקות בלבד ללא צורך בבישול.',
+                steps: [
+                    'יוצקים גביע יוגורט יווני / PRO לקערה.',
+                    'מוסיפים 40 גרם שיבולת שועל (אפשר קלויה או רגילה).',
+                    'מזלפים כף חמאת בוטנים רכה מעל.',
+                    'מערבבים ואוכלים מיד.'
+                ]
+            }
+        ];
+
+        // State Variables & DOM Elements
+        let ingredientsList = [...initialIngredients];
+        let selectedIngredients = new Set();
+        let activeCategory = 'all';
+        let currentActiveRecipeId = null;
+        let userLikedRecipes = new Set();
+
+        let ingredientsGrid, totalProteinEl, totalCaloriesEl, selectedCountBadge, clearAllBtn, macroTipEl;
+        let recipesContainer, sortSelect, noRecipesState;
+        let recipeModal, modalTitle, modalTime, modalProtein, modalCalories, modalIngredientsList, modalStepsList, closeModalBtn, modalDoneBtn;
+
+        function initDOMElements() {
+            ingredientsGrid = document.getElementById('ingredientsGrid');
+            totalProteinEl = document.getElementById('totalProtein');
+            totalCaloriesEl = document.getElementById('totalCalories');
+            selectedCountBadge = document.getElementById('selectedCountBadge');
+            clearAllBtn = document.getElementById('clearAllBtn');
+            macroTipEl = document.getElementById('macroTip');
+            
+            recipesContainer = document.getElementById('recipesContainer');
+            sortSelect = document.getElementById('sortSelect');
+            noRecipesState = document.getElementById('noRecipesState');
+            
+            recipeModal = document.getElementById('recipeModal');
+            modalTitle = document.getElementById('modalTitle');
+            modalTime = document.getElementById('modalTime');
+            modalProtein = document.getElementById('modalProtein');
+            modalCalories = document.getElementById('modalCalories');
+            modalIngredientsList = document.getElementById('modalIngredientsList');
+            modalStepsList = document.getElementById('modalStepsList');
+            closeModalBtn = document.getElementById('closeModalBtn');
+            modalDoneBtn = document.getElementById('modalDoneBtn');
+        }
+
+        // WhatsApp Share Helper Function
+        window.shareRecipeWhatsapp = function(title, protein, time) {
+            const text = encodeURIComponent(`בדוק את המתכון המהיר הזה ב-ProteinChef! 🥗\n\n*${title}*\n⏱️ זמן הכנה: ${time} דקות\n💪 חלבון: ${protein} גרם\n\nמוכן ב-10 דקות ומטה!`);
+            window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        };
+
+        // Like Recipe Function
+        window.likeRecipe = function(id, event) {
+            if (event) event.stopPropagation();
+            const recipe = recipes.find(r => r.id === id);
+            if (!recipe) return;
+
+            if (userLikedRecipes.has(id)) {
+                recipe.likes--;
+                userLikedRecipes.delete(id);
+            } else {
+                recipe.likes++;
+                userLikedRecipes.add(id);
+            }
+
+            renderRecipes();
+
+            if (currentActiveRecipeId === id) {
+                document.getElementById('modalLikeCount').textContent = recipe.likes;
+                const modalLikeBtn = document.getElementById('modalLikeBtn');
+                if (userLikedRecipes.has(id)) {
+                    modalLikeBtn.classList.add('like-bounce');
+                    setTimeout(() => modalLikeBtn.classList.remove('like-bounce'), 300);
+                }
+            }
+        };
+
+        // Render Ingredients Grid
+        function renderIngredients() {
+            ingredientsGrid.innerHTML = '';
+
+            const filtered = ingredientsList.filter(item => {
+                if (activeCategory === 'all') return true;
+                return item.category === activeCategory;
+            });
+
+            filtered.forEach(item => {
+                const isSelected = selectedIngredients.has(item.id);
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = `p-2 rounded-xl border text-right transition-all flex flex-col justify-between h-24 select-none relative overflow-hidden group ${
+                    isSelected 
+                    ? 'bg-brand-50 dark:bg-brand-900/30 border-brand-500 ring-2 ring-brand-500/20 text-gray-900 dark:text-white' 
+                    : 'bg-gray-50 dark:bg-gray-700/40 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
+                }`;
+
+                const imgUrl = item.image || 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=300&q=80';
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2 w-full z-10">
+                        <img src="${imgUrl}" alt="${item.name}" loading="lazy" class="w-8 h-8 rounded-lg object-cover flex-shrink-0 shadow-sm border border-gray-200/50 dark:border-gray-600/50">
+                        <span class="text-xs font-bold leading-snug line-clamp-1 flex-1">${item.name}</span>
+                        <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px] flex-shrink-0 ${
+                            isSelected ? 'bg-brand-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-transparent'
+                        }">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-end w-full text-[10px] text-gray-500 dark:text-gray-400 font-medium z-10 mt-1">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-semibold">${item.protein} ג' חלבון</span>
+                        <span>${item.calories} קל'</span>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => toggleIngredient(item.id));
+                ingredientsGrid.appendChild(card);
+            });
+        }
+
+        // Toggle Selection
+        function toggleIngredient(id) {
+            if (selectedIngredients.has(id)) {
+                selectedIngredients.delete(id);
+            } else {
+                selectedIngredients.add(id);
+            }
+            renderIngredients();
+            updateSummary();
+            renderRecipes();
+        }
+
+        // Update Nutrition Dashboard
+        function updateSummary() {
+            let totalP = 0;
+            let totalC = 0;
+
+            selectedIngredients.forEach(id => {
+                const item = ingredientsList.find(i => i.id === id);
+                if (item) {
+                    totalP += item.protein;
+                    totalC += item.calories;
+                }
+            });
+
+            totalProteinEl.innerHTML = `${totalP.toFixed(0)}<span class="text-xs font-normal text-gray-400"> ג'</span>`;
+            totalCaloriesEl.innerHTML = `${totalC.toFixed(0)}<span class="text-xs font-normal text-gray-400"> קל'</span>`;
+            selectedCountBadge.textContent = `${selectedIngredients.size} מצרכים`;
+
+            if (selectedIngredients.size > 0) {
+                clearAllBtn.classList.remove('hidden');
+            } else {
+                clearAllBtn.classList.add('hidden');
+            }
+
+            if (totalP === 0) {
+                macroTipEl.textContent = 'סמן מצרכים שיש לך בבית כדי להתאים מתכון מהיר!';
+            } else if (totalP < 20) {
+                macroTipEl.textContent = 'טיפ: הוסף טונה, ביצים או קוטג\' כדי להעלות את החלבון לאזור ה-30 גרם!';
+            } else if (totalP >= 30) {
+                macroTipEl.textContent = 'מעולה! הרכבת מנה עשירה מאוד בחלבון שמתאימה לבניית שריר והתאוששות.';
+            } else {
+                macroTipEl.textContent = 'כמות חלבון יפה לארוחה קלה ומהירה.';
+            }
+        }
+
+        // Render Recipes Feed
+        function renderRecipes() {
+            recipesContainer.innerHTML = '';
+
+            let processedRecipes = recipes.map(recipe => {
+                const reqMatches = recipe.requiredIngredients.filter(id => selectedIngredients.has(id)).length;
+                const optMatches = recipe.optionalIngredients.filter(id => selectedIngredients.has(id)).length;
+                const matchScore = reqMatches + (optMatches * 0.5);
+                const hasAllRequired = reqMatches === recipe.requiredIngredients.length;
+                
+                return {
+                    ...recipe,
+                    matchScore,
+                    hasAllRequired,
+                    reqMatches
+                };
+            });
+
+            const sortBy = sortSelect.value;
+            processedRecipes.sort((a, b) => {
+                if (sortBy === 'match') {
+                    if (a.hasAllRequired !== b.hasAllRequired) return b.hasAllRequired ? 1 : -1;
+                    return b.matchScore - a.matchScore;
+                } else if (sortBy === 'protein') {
+                    return b.protein - a.protein;
+                } else if (sortBy === 'time') {
+                    return a.time - b.time;
+                } else if (sortBy === 'calories') {
+                    return a.calories - b.calories;
+                }
+            });
+
+            let visibleCount = 0;
+
+            processedRecipes.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row';
+
+                let matchBadgeHTML = '';
+                if (selectedIngredients.size > 0) {
+                    if (recipe.hasAllRequired) {
+                        matchBadgeHTML = `<span class="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-circle-check"></i> יש לך הכל!
+                        </span>`;
+                    } else if (recipe.reqMatches > 0) {
+                        matchBadgeHTML = `<span class="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                            חלקית (${recipe.reqMatches}/${recipe.requiredIngredients.length})
+                        </span>`;
+                    }
+                }
+
+                const ingredientsBadges = recipe.requiredIngredients.map(id => {
+                    const ing = ingredientsList.find(i => i.id === id);
+                    const name = ing ? ing.name.split('(')[0] : id;
+                    const hasIt = selectedIngredients.has(id);
+                    return `<span class="text-[10px] px-2 py-0.5 rounded-md font-medium ${
+                        hasIt 
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    }">${name}</span>`;
+                }).join(' ');
+
+                const recipeImg = recipe.image || 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80';
+                const isLiked = userLikedRecipes.has(recipe.id);
+
+                card.innerHTML = `
+                    <div class="sm:w-44 h-36 sm:h-auto relative overflow-hidden flex-shrink-0">
+                        <img src="${recipeImg}" alt="${recipe.title}" loading="lazy" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 right-2 bg-black/70 backdrop-blur-md text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                            ${recipe.speedTag}
+                        </div>
+                        <div class="absolute top-2 right-2 sm:hidden">
+                            ${matchBadgeHTML}
+                        </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between gap-3">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <div class="flex items-center gap-2">
+                                    <div class="hidden sm:block">${matchBadgeHTML}</div>
+                                    <span class="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                        <i class="fa-solid fa-bolt"></i> ${recipe.time} דקות
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="likeRecipe('${recipe.id}', event)" class="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-500 text-xs font-bold transition-all flex items-center gap-1">
+                                        <i class="fa-${isLiked ? 'solid' : 'regular'} fa-heart"></i>
+                                        <span>${recipe.likes}</span>
+                                    </button>
+                                    <button onclick="shareRecipeWhatsapp('${recipe.title}', ${recipe.protein}, ${recipe.time})" title="שתף ב-WhatsApp" class="p-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs transition-colors">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug">${recipe.title}</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">${recipe.description}</p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-1.5 my-1">
+                            ${ingredientsBadges}
+                        </div>
+
+                        <div class="pt-2 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
+                            <div class="flex items-center gap-3 text-xs">
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400">${recipe.protein} ג' חלבון</span>
+                                <span class="text-gray-300 dark:text-gray-600">|</span>
+                                <span class="font-medium text-gray-600 dark:text-gray-400">${recipe.calories} קלוריות</span>
+                            </div>
+                            <button onclick="openRecipeModal('${recipe.id}')" class="px-3.5 py-1.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-brand-600 dark:hover:bg-brand-400 dark:hover:text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5">
+                                הוראות הכנה
+                                <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                recipesContainer.appendChild(card);
+                visibleCount++;
+            });
+
+            if (visibleCount === 0) {
+                noRecipesState.classList.remove('hidden');
+            } else {
+                noRecipesState.classList.add('hidden');
+            }
+        }
+
+        // Open Recipe Details Modal
+        window.openRecipeModal = function(id) {
+            const recipe = recipes.find(r => r.id === id);
+            if (!recipe) return;
+
+            currentActiveRecipeId = id;
+            modalTitle.textContent = recipe.title;
+            modalTime.textContent = recipe.speedTag;
+            modalProtein.textContent = `${recipe.protein} גרם`;
+            modalCalories.textContent = `${recipe.calories} קל'`;
+            document.getElementById('modalLikeCount').textContent = recipe.likes;
+
+            const modalShareWhatsapp = document.getElementById('modalShareWhatsapp');
+            modalShareWhatsapp.onclick = () => shareRecipeWhatsapp(recipe.title, recipe.protein, recipe.time);
+
+            const modalLikeBtn = document.getElementById('modalLikeBtn');
+            modalLikeBtn.onclick = (e) => likeRecipe(recipe.id, e);
+
+            modalIngredientsList.innerHTML = recipe.requiredIngredients.map(ingId => {
+                const ing = ingredientsList.find(i => i.id === ingId);
+                const name = ing ? ing.name : ingId;
+                const isHave = selectedIngredients.has(ingId);
+                return `<li class="flex items-center gap-2">
+                    <i class="fa-solid ${isHave ? 'fa-check text-emerald-500' : 'fa-circle-dot text-gray-300'} text-[10px]"></i>
+                    <span class="${isHave ? 'font-medium text-gray-900 dark:text-white' : ''}">${name}</span>
+                </li>`;
+            }).join('');
+
+            modalStepsList.innerHTML = recipe.steps.map(step => `
+                <li class="pl-1 leading-relaxed">${step}</li>
+            `).join('');
+
+            renderComments(recipe);
+
+            recipeModal.classList.remove('hidden');
+            setTimeout(() => {
+                recipeModal.classList.remove('opacity-0');
+            }, 10);
+        };
+
+        function closeModal() {
+            recipeModal.classList.add('opacity-0');
+            setTimeout(() => {
+                recipeModal.classList.add('hidden');
+            }, 200);
+        }
+
+        // Render Comments in Modal
+        function renderComments(recipe) {
+            const modalCommentsList = document.getElementById('modalCommentsList');
+            if (!recipe.comments || recipe.comments.length === 0) {
+                modalCommentsList.innerHTML = `<p class="text-xs text-gray-400 italic">אין תגובות עדיין. היה הראשון להגיב!</p>`;
+                return;
+            }
+
+            modalCommentsList.innerHTML = recipe.comments.map(c => `
+                <div class="bg-gray-100 dark:bg-gray-700/50 p-2.5 rounded-xl text-xs text-gray-800 dark:text-gray-200 flex items-start gap-2">
+                    <i class="fa-solid fa-user-circle text-gray-400 text-sm mt-0.5"></i>
+                    <span class="flex-1">${c}</span>
+                </div>
+            `).join('');
+        }
+
+        // Theme Toggle Logic
+        function initTheme() {
+            const isDark = localStorage.getItem('theme') === 'dark' || 
+                (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                updateThemeUI(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeUI(false);
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeUI(isDark);
+        }
+
+        function updateThemeUI(isDark) {
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            if (themeIcon && themeText) {
+                if (isDark) {
+                    themeIcon.className = 'fa-solid fa-sun text-amber-400';
+                    themeText.textContent = 'מצב יום';
+                } else {
+                    themeIcon.className = 'fa-solid fa-moon';
+                    themeText.textContent = 'מצב לילה';
+                }
+            }
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.cat-btn').forEach(b => {
+                        b.className = 'cat-btn bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors';
+                    });
+                    e.target.className = 'cat-btn active bg-brand-500 text-white px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors';
+                    activeCategory = e.target.dataset.category;
+                    renderIngredients();
+                });
+            });
+
+            clearAllBtn.addEventListener('click', () => {
+                selectedIngredients.clear();
+                renderIngredients();
+                updateSummary();
+                renderRecipes();
+            });
+
+            sortSelect.addEventListener('change', renderRecipes);
+
+            const themeToggleBtn = document.getElementById('themeToggle');
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', toggleTheme);
+            }
+
+            closeModalBtn.addEventListener('click', closeModal);
+            modalDoneBtn.addEventListener('click', closeModal);
+            recipeModal.addEventListener('click', (e) => {
+                if (e.target === recipeModal) closeModal();
+            });
+
+            const toggleCustomFormBtn = document.getElementById('toggleCustomFormBtn');
+            const customIngredientForm = document.getElementById('customIngredientForm');
+            toggleCustomFormBtn.addEventListener('click', () => {
+                customIngredientForm.classList.toggle('hidden');
+            });
+
+            customIngredientForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('customName').value.trim();
+                const protein = parseFloat(document.getElementById('customProtein').value) || 0;
+                const calories = parseFloat(document.getElementById('customCalories').value) || 0;
+
+                if (name) {
+                    const newId = 'custom_' + Date.now();
+                    const newIng = {
+                        id: newId,
+                        name: `${name} (אישי)`,
+                        protein: protein,
+                        calories: calories,
+                        category: 'protein',
+                        icon: 'fa-plus'
+                    };
+                    ingredientsList.unshift(newIng);
+                    selectedIngredients.add(newId);
+                    
+                    document.getElementById('customName').value = '';
+                    document.getElementById('customProtein').value = '';
+                    document.getElementById('customCalories').value = '';
+                    customIngredientForm.classList.add('hidden');
+
+                    renderIngredients();
+                    updateSummary();
+                    renderRecipes();
+                }
+            });
+
+            document.getElementById('commentForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = document.getElementById('commentInput');
+                const commentText = input.value.trim();
+
+                if (commentText && currentActiveRecipeId) {
+                    const recipe = recipes.find(r => r.id === currentActiveRecipeId);
+                    if (recipe) {
+                        if (!recipe.comments) recipe.comments = [];
+                        recipe.comments.push(commentText);
+                        renderComments(recipe);
+                        input.value = '';
+                    }
+                }
+            });
+        }
+
+        // Initialize App
+        function init() {
+            initDOMElements();
+            initTheme();
+            renderIngredients();
+            updateSummary();
+            renderRecipes();
+            setupEventListeners();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

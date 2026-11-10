@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>זירת קרב טנקים 3D - אדום נגד כחול</title>
+    <!-- Tailwind CSS for UI styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js for 3D Graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;800;900&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Rubik', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        .hp-bar-container {
+            position: absolute;
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            width: 48px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hp-bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.1s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white select-none">
+
+    <!-- 3D Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Dynamic 2D Health Bars Overlay -->
+    <div id="hp-bars-overlay" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+    <!-- HUD Overlay -->
+    <div id="hud" class="absolute top-0 left-0 right-0 p-4 flex justify-between items-start pointer-events-none z-10">
+        <!-- Player & Team Stats -->
+        <div class="bg-slate-800/85 backdrop-blur border border-red-500/30 p-4 rounded-xl shadow-xl flex flex-col gap-2 min-w-[230px]">
+            <div class="flex justify-between items-center">
+                <span class="text-red-400 font-bold text-sm">❤️ חיים (טנק אדום):</span>
+                <span id="hud-hp-text" class="text-emerald-400 font-extrabold text-lg">100%</span>
+            </div>
+            <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                <div id="hud-hp-bar" class="bg-gradient-to-r from-red-500 to-rose-400 h-full w-full transition-all duration-200"></div>
+            </div>
+            <div class="flex justify-between items-center mt-1">
+                <span class="text-gray-300 font-bold text-sm">💰 מטבעות:</span>
+                <span id="hud-coins" class="text-amber-400 font-black text-xl">0</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-300 font-bold text-sm">🛡️ בני ברית פעילים:</span>
+                <span id="hud-allies-count" class="text-red-400 font-extrabold text-base">0</span>
+            </div>
+        </div>
+
+        <!-- Wave & World Stats -->
+        <div class="bg-slate-800/85 backdrop-blur border border-slate-700 px-6 py-3 rounded-xl shadow-xl text-center">
+            <div id="hud-world-name" class="text-xs text-amber-400 font-bold tracking-wider uppercase mb-0.5">עולם 1: מדבר האש</div>
+            <div id="hud-wave" class="text-3xl font-black text-red-500">שלב 1</div>
+            <div class="flex items-center gap-3 justify-center text-xs font-bold mt-1">
+                <span id="hud-team-red" class="text-red-400">🔴 אדומים: 0</span>
+                <span>VS</span>
+                <span id="hud-team-blue" class="text-blue-400">🔵 כחולים: 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upgrade Shop Overlay -->
+    <div id="shop-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 hidden transition-all duration-300">
+        <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl max-w-2xl w-full mx-4 shadow-2xl relative overflow-hidden text-right max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-amber-400 to-orange-500">
+                    🏆 השלב הושלם בהצלחה!
+                </h2>
+                <p class="text-gray-300 text-sm mt-1">השתמש בכסף שהרווחת כדי לשפר את הטנק שלך ואת הקבוצה האדומה!</p>
+                <div class="mt-3 inline-block bg-amber-500/10 border border-amber-500/30 px-5 py-1.5 rounded-full text-amber-400 font-extrabold text-lg">
+                    💰 קופה: <span id="shop-coins">0</span> מטבעות
+                </div>
+            </div>
+
+            <!-- Shop Items Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Upgrade Personal Damage -->
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-extrabold text-red-400">💥 עוצמת אש אישית</span>
+                            <span id="lvl-damage" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-gray-300">רמה 1</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3">מגדיל את נזק הפגזים של הטנק שלך.</p>
+                    </div>
+                    <button id="btn-upg-damage" onclick="buyUpgrade('damage')" class="w-full py-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 font-bold rounded-lg text-sm shadow transition active:scale-95 flex justify-between px-4 items-center">
+                        <span>שדרג</span>
+                        <span id="cost-damage" class="bg-black/30 px-2 py-0.5 rounded text-amber-300">100 💰</span>
+                    </button>
+                </div>
+
+                <!-- Upgrade Speed -->
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-extrabold text-blue-400">⚡ מהירות תנועה</span>
+                            <span id="lvl-speed" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-gray-300">רמה 1</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3">מגביר את מהירות הנסיעה של הטנק שלך.</p>
+                    </div>
+                    <button id="btn-upg-speed" onclick="buyUpgrade('speed')" class="w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold rounded-lg text-sm shadow transition active:scale-95 flex justify-between px-4 items-center">
+                        <span>שדרג</span>
+                        <span id="cost-speed" class="bg-black/30 px-2 py-0.5 rounded text-amber-300">100 💰</span>
+                    </button>
+                </div>
+
+                <!-- Add Team Ally Tank -->
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-red-900/50 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-extrabold text-amber-400">🤖 גיוס טנק אדום לקבוצה</span>
+                            <span id="lvl-allies" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-gray-300">0 טנקים</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3">מוסיף טנק ידידותי שיפעל ויילחם לצדך בשלב הבא.</p>
+                    </div>
+                    <button id="btn-upg-ally" onclick="buyUpgrade('addAlly')" class="w-full py-2 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 font-bold rounded-lg text-sm shadow transition active:scale-95 flex justify-between px-4 items-center">
+                        <span>גייס חבר צוות</span>
+                        <span id="cost-ally" class="bg-black/30 px-2 py-0.5 rounded text-amber-300">200 💰</span>
+                    </button>
+                </div>
+
+                <!-- Upgrade Team Armor -->
+                <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-extrabold text-emerald-400">🛡️ שריון קבוצתי</span>
+                            <span id="lvl-maxhp" class="text-xs bg-slate-700 px-2 py-0.5 rounded text-gray-300">רמה 1</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3">מגדיל חיים מרביים ומרפא את כל חברי הקבוצה האדומה.</p>
+                    </div>
+                    <button id="btn-upg-maxhp" onclick="buyUpgrade('maxHp')" class="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 font-bold rounded-lg text-sm shadow transition active:scale-95 flex justify-between px-4 items-center">
+                        <span>שדרג</span>
+                        <span id="cost-maxhp" class="bg-black/30 px-2 py-0.5 rounded text-amber-300">150 💰</span>
+                    </button>
+                </div>
+            </div>
+
+            <button id="btn-next-level" onclick="startNextLevel()" class="w-full py-4 bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 hover:from-red-500 hover:to-amber-400 text-white font-black text-xl rounded-xl shadow-lg transform transition active:scale-95 text-center">
+                עבור לעולם הבא 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Start / Game Over Screen Overlay -->
+    <div id="modal-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-slate-800 border border-slate-700 p-8 rounded-2xl max-w-md w-full mx-4 text-center shadow-2xl relative overflow-hidden">
+            <h1 id="modal-title" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-amber-300 mb-2">
+                קרב טנקים: אדום vs כחול
+            </h1>
+            <p id="modal-subtitle" class="text-gray-300 mb-6 text-sm">
+                הובל את הקבוצה האדומה לניצחון מוחץ מול הקבוצה הכחולה בעולמות לחימה ענקיים!
+            </p>
+
+            <div id="modal-stats" class="hidden bg-slate-900/80 rounded-xl p-4 mb-6 border border-slate-700/50 flex justify-around">
+                <div>
+                    <div class="text-xs text-gray-400">ניקוד סופי</div>
+                    <div id="final-score" class="text-2xl font-bold text-amber-400">0</div>
+                </div>
+                <div class="border-r border-slate-700"></div>
+                <div>
+                    <div class="text-xs text-gray-400">שלב שהגעת</div>
+                    <div id="final-wave" class="text-2xl font-bold text-red-400">0</div>
+                </div>
+            </div>
+
+            <!-- Controls instructions -->
+            <div class="bg-slate-900/60 p-4 rounded-xl text-right text-xs text-gray-300 space-y-1 mb-6 border border-slate-700/40">
+                <div class="font-bold text-red-400 mb-1">מקשי משחק:</div>
+                <div>🎮 <b>תנועה:</b> WASD / חיצים</div>
+                <div>🎯 <b>כיוון צריח:</b> הזזת העכבר</div>
+                <div>💥 <b>ירי:</b> מקש שמאלי / מקש רווח (Space)</div>
+            </div>
+
+            <button id="btn-start" class="w-full py-4 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-black text-xl rounded-xl shadow-lg transform transition active:scale-95">
+                התחל משחק
+            </button>
+        </div>
+    </div>
+
+    <!-- Sound & Game Logic Script -->
+    <script>
+        // --- SOUND EFFECTS SYNTHESIZER ---
+        class SoundFX {
+            constructor() { this.ctx = null; }
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+            playShoot() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+            }
+            playExplosion(isBig = false) {
+                if (!this.ctx) return;
+                const dur = isBig ? 0.5 : 0.25;
+                const bufferSize = this.ctx.sampleRate * dur;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(isBig ? 350 : 700, this.ctx.currentTime);
+                filter.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + dur);
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(isBig ? 0.6 : 0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur);
+                noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+                noise.start();
+            }
+            playHit() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+            }
+        }
+
+        const sfx = new SoundFX();
+
+        // --- WORLDS / ARENAS CONFIG ---
+        let ARENA_SIZE = 120; // Larger battlefield map
+        let HALF_ARENA = ARENA_SIZE / 2;
+        const BULLET_SPEED = 40;
+        const BULLET_LIFESPAN = 3.0;
+
+        const WORLDS = [
+            {
+                name: "עולם 1: מדבר האש 🏜️",
+                floorColor: 0x3a2012,
+                gridColor: 0x5a341d,
+                wallColor: 0x7c3f1d,
+                obsColor: 0x9a4e21,
+                obsTopColor: 0xe07a3c,
+                skyFog: 0x1a0f0a
+            },
+            {
+                name: "עולם 2: שדה קרח ❄️",
+                floorColor: 0x1b2838,
+                gridColor: 0x2e4562,
+                wallColor: 0x3d5a80,
+                obsColor: 0x5c7b9d,
+                obsTopColor: 0x98c1d9,
+                skyFog: 0x0d1520
+            },
+            {
+                name: "עולם 3: זירת ניאון عתידנית ⚡",
+                floorColor: 0x0f172a,
+                gridColor: 0x1e293b,
+                wallColor: 0x334155,
+                obsColor: 0x475569,
+                obsTopColor: 0xf43f5e,
+                skyFog: 0x020617
+            }
+        ];
+
+        // Team Palette Definitions
+        const COLORS = {
+            // RED TEAM (Player + Allies)
+            redHull: 0xef4444,
+            redTurret: 0xb91c1c,
+            redDetail: 0xfca5a5,
+            
+            // BLUE TEAM (Enemies)
+            blueHull: 0x3b82f6,
+            blueTurret: 0x1d4ed8,
+            blueDetail: 0x93c5fd
+        };
+
+        // Entities & Global State
+        let scene, camera, renderer;
+        let playerTank = null;
+        let redTeamAllies = [];
+        let blueTeamEnemies = [];
+        let bullets = [];
+        let particles = [];
+        let obstacles = [];
+        let pickups = []; // Power-ups list
+        let arenaMeshGroup = null;
+
+        // Player & Team Stats
+        let playerStats = {
+            damage: 30,
+            speed: 20,
+            shootCooldown: 0.22,
+            maxHp: 120,
+            alliesCount: 0,
+            // Power-up active timers
+            shieldTimer: 0,
+            doubleDamageTimer: 0,
+            // Upgrade levels
+            lvlDamage: 1,
+            lvlSpeed: 1,
+            lvlMaxHp: 1,
+            // Costs
+            costDamage: 100,
+            costSpeed: 100,
+            costAlly: 200,
+            costMaxHp: 150
+        };
+
+        let coins = 0;
+        let score = 0;
+        let currentWave = 1;
+        let spawnTimer = 0;
+        let lastShootTime = 0;
+        let enemiesToSpawn = 0;
+
+        let raycaster = new THREE.Raycaster();
+        let mousePos = new THREE.Vector2();
+        let groundPlane;
+        let keys = {};
+        let isPlaying = false;
+        let clock = new THREE.Clock();
+
+        // DOM Handles
+        const overlay = document.getElementById('modal-overlay');
+        const btnStart = document.getElementById('btn-start');
+        const modalTitle = document.getElementById('modal-title');
+        const modalSubtitle = document.getElementById('modal-subtitle');
+        const modalStats = document.getElementById('modal-stats');
+        const finalScoreEl = document.getElementById('final-score');
+        const finalWaveEl = document.getElementById('final-wave');
+        const hudHpText = document.getElementById('hud-hp-text');
+        const hudHpBar = document.getElementById('hud-hp-bar');
+        const hudScore = document.getElementById('hud-score');
+        const hudWave = document.getElementById('hud-wave');
+        const hpBarsOverlay = document.getElementById('hp-bars-overlay');
+
+        function onMouseMove(event) {
+            mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        // --- EXPLOSIONS & PARTICLES SYSTEM ---
+        function createExplosion(pos, isBig = false, colorHex = 0xff8800) {
+            sfx.playExplosion(isBig);
+            const count = isBig ? 28 : 12;
+            const particleGeo = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+
+            for (let i = 0; i < count; i++) {
+                const mat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 1.0 });
+                const mesh = new THREE.Mesh(particleGeo, mat);
+                mesh.position.copy(pos);
+
+                const speed = isBig ? (Math.random() * 18 + 5) : (Math.random() * 10 + 3);
+                const dir = new THREE.Vector3(
+                    (Math.random() - 0.5) * 2,
+                    Math.random() * 1.5,
+                    (Math.random() - 0.5) * 2
+                ).normalize();
+
+                scene.add(mesh);
+
+                particles.push({
+                    mesh: mesh,
+                    vel: dir.multiplyScalar(speed),
+                    life: isBig ? 0.6 : 0.35,
+                    maxLife: isBig ? 0.6 : 0.35
+                });
+            }
+        }
+
+        function updateParticles(delta) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.life -= delta;
+
+                if (p.life <= 0) {
+                    scene.remove(p.mesh);
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                p.mesh.position.addScaledVector(p.vel, delta);
+                p.vel.y -= 15 * delta; // Gravity effect
+                p.mesh.scale.multiplyScalar(0.95);
+                p.mesh.material.opacity = p.life / p.maxLife;
+            }
+        }
+
+        // --- BULLETS & PARTICLES ---
+        function createBullet(position, direction, team, isBoosted = false) {
+            const isRed = team === 'red';
+            const bulletSize = isBoosted ? 0.45 : 0.28;
+            const geo = new THREE.SphereGeometry(bulletSize, 8, 8);
+            const mat = new THREE.MeshBasicMaterial({ 
+                color: isBoosted ? 0xff00ff : (isRed ? 0xff4422 : 0x2288ff) 
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.copy(position);
+            scene.add(mesh);
+
+            bullets.push({
+                mesh: mesh,
+                dir: direction,
+                team: team,
+                isBoosted: isBoosted,
+                spawnTime: clock.getElapsedTime()
+            });
+        }
+
+        // --- POWER-UPS / PICKUPS SYSTEM ---
+        const POWERUP_TYPES = {
+            HEALTH: { color: 0x10b981, icon: '💚', type: 'health' },
+            SHIELD: { color: 0x3b82f6, icon: '🛡️', type: 'shield' },
+            DAMAGE: { color: 0xf59e0b, icon: '💥', type: 'damage' }
+        };
+
+        function spawnPowerUp() {
+            if (pickups.length >= 4) return; // Limit on map
+
+            const types = [POWERUP_TYPES.HEALTH, POWERUP_TYPES.SHIELD, POWERUP_TYPES.DAMAGE];
+            const pType = types[Math.floor(Math.random() * types.length)];
+
+            // Create glowing sphere
+            const geo = new THREE.SphereGeometry(1.0, 16, 16);
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: pType.color, 
+                emissive: pType.color, 
+                emissiveIntensity: 0.6,
+                roughness: 0.2 
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+
+            // Random pos inside arena
+            const margin = 10;
+            const x = (Math.random() - 0.5) * (ARENA_SIZE - margin * 2);
+            const z = (Math.random() - 0.5) * (ARENA_SIZE - margin * 2);
+            mesh.position.set(x, 1.2, z);
+            mesh.castShadow = true;
+
+            // Outer ring animation element
+            const ringGeo = new THREE.RingGeometry(1.2, 1.5, 16);
+            ringGeo.rotateX(-Math.PI / 2);
+            const ringMat = new THREE.MeshBasicMaterial({ color: pType.color, side: THREE.DoubleSide });
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.position.set(x, 0.1, z);
+
+            scene.add(mesh);
+            scene.add(ringMesh);
+
+            pickups.push({
+                mesh: mesh,
+                ringMesh: ringMesh,
+                type: pType.type,
+                spawnTime: clock.getElapsedTime()
+            });
+        }
+
+        function updatePowerUps(delta) {
+            const now = clock.getElapsedTime();
+
+            // Periodic spawn chance
+            if (Math.random() < 0.003 && isPlaying) {
+                spawnPowerUp();
+            }
+
+            // Power-up timers for Player
+            if (playerStats.shieldTimer > 0) playerStats.shieldTimer -= delta;
+            if (playerStats.doubleDamageTimer > 0) playerStats.doubleDamageTimer -= delta;
+
+            for (let i = pickups.length - 1; i >= 0; i--) {
+                const p = pickups[i];
+                p.mesh.rotation.y += 2 * delta;
+                p.mesh.position.y = 1.2 + Math.sin(now * 4) * 0.2;
+
+                // Check pickup by Player
+                if (playerTank && playerTank.mesh.position.distanceTo(p.mesh.position) < 2.5) {
+                    applyPowerUp(p.type);
+                    createExplosion(p.mesh.position, false, p.mesh.material.color.getHex());
+                    
+                    scene.remove(p.mesh);
+                    scene.remove(p.ringMesh);
+                    pickups.splice(i, 1);
+                }
+            }
+        }
+
+        function applyPowerUp(type) {
+            sfx.init();
+            if (type === 'health') {
+                if (playerTank) playerTank.hp = Math.min(playerTank.maxHp, playerTank.hp + 50);
+                redTeamAllies.forEach(ally => ally.hp = Math.min(ally.maxHp, ally.hp + 40));
+            } else if (type === 'shield') {
+                playerStats.shieldTimer = 8.0; // 8 seconds shield
+            } else if (type === 'damage') {
+                playerStats.doubleDamageTimer = 10.0; // 10 seconds double damage
+            }
+        }
+
+        function checkObstacleCollision(pos, radius) {
+            if (Math.abs(pos.x) > HALF_ARENA - radius || Math.abs(pos.z) > HALF_ARENA - radius) return true;
+            for (let obs of obstacles) {
+                if (Math.abs(pos.x - obs.position.x) < obs.halfW + radius &&
+                    Math.abs(pos.z - obs.position.z) < obs.halfD + radius) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // --- TANK MESH BUILDER ---
+        function createTankMesh(hullColor, turretColor, detailColor) {
+            const tankGroup = new THREE.Group();
+
+            const hullMat = new THREE.MeshStandardMaterial({ color: hullColor, roughness: 0.4, metalness: 0.2 });
+            const turretMat = new THREE.MeshStandardMaterial({ color: turretColor, roughness: 0.3, metalness: 0.3 });
+            const detailMat = new THREE.MeshStandardMaterial({ color: detailColor, roughness: 0.5 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.8 });
+
+            // Hull
+            const bodyGeo = new THREE.BoxGeometry(2.6, 0.85, 3.4);
+            const bodyMesh = new THREE.Mesh(bodyGeo, hullMat);
+            bodyMesh.position.y = 0.6;
+            bodyMesh.castShadow = true;
+            tankGroup.add(bodyMesh);
+
+            // Tracks
+            const trackGeo = new THREE.BoxGeometry(0.55, 0.75, 3.8);
+            const lTrack = new THREE.Mesh(trackGeo, detailMat);
+            lTrack.position.set(-1.4, 0.55, 0);
+            lTrack.castShadow = true;
+            tankGroup.add(lTrack);
+
+            const rTrack = new THREE.Mesh(trackGeo, detailMat);
+            rTrack.position.set(1.4, 0.55, 0);
+            rTrack.castShadow = true;
+            tankGroup.add(rTrack);
+
+            // Turret Group
+            const turretGroup = new THREE.Group();
+            turretGroup.position.set(0, 1.15, -0.2);
+
+            const turretGeo = new THREE.BoxGeometry(1.8, 0.75, 2.0);
+            const turretMesh = new THREE.Mesh(turretGeo, turretMat);
+            turretMesh.castShadow = true;
+            turretGroup.add(turretMesh);
+
+            // Barrel
+            const barrelGeo = new THREE.CylinderGeometry(0.14, 0.16, 2.4, 12);
+            barrelGeo.rotateX(Math.PI / 2);
+            const barrelMesh = new THREE.Mesh(barrelGeo, detailMat);
+            barrelMesh.position.set(0, 0.1, 1.5);
+            barrelMesh.castShadow = true;
+            turretGroup.add(barrelMesh);
+
+            const muzzlePoint = new THREE.Object3D();
+            muzzlePoint.position.set(0, 0.1, 2.9);
+            turretGroup.add(muzzlePoint);
+
+            tankGroup.add(turretGroup);
+
+            tankGroup.userData = { turretGroup: turretGroup, muzzlePoint: muzzlePoint };
+            return tankGroup;
+        }
+
+        // --- WORLD & ARENA GENERATOR ---
+        function buildWorldArena(worldIndex) {
+            if (arenaMeshGroup) scene.remove(arenaMeshGroup);
+            obstacles = [];
+
+            const wConfig = WORLDS[worldIndex % WORLDS.length];
+            scene.background = new THREE.Color(wConfig.skyFog);
+            scene.fog = new THREE.FogExp2(wConfig.skyFog, 0.005);
+
+            document.getElementById('hud-world-name').textContent = wConfig.name;
+
+            arenaMeshGroup = new THREE.Group();
+
+            // Floor
+            const floorGeo = new THREE.PlaneGeometry(ARENA_SIZE, ARENA_SIZE);
+            const floorMat = new THREE.MeshStandardMaterial({ color: wConfig.floorColor, roughness: 0.8 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            arenaMeshGroup.add(floor);
+
+            // Grid
+            const grid = new THREE.GridHelper(ARENA_SIZE, 40, wConfig.gridColor, wConfig.gridColor);
+            grid.position.y = 0.02;
+            arenaMeshGroup.add(grid);
+
+            // Walls
+            const wallH = 3;
+            const wallT = 2.5;
+            const wallMat = new THREE.MeshStandardMaterial({ color: wConfig.wallColor, roughness: 0.6 });
+
+            const wGH = new THREE.BoxGeometry(ARENA_SIZE + wallT * 2, wallH, wallT);
+            const wGV = new THREE.BoxGeometry(wallT, wallH, ARENA_SIZE);
+
+            const nW = new THREE.Mesh(wGH, wallMat); nW.position.set(0, wallH/2, -HALF_ARENA - wallT/2); arenaMeshGroup.add(nW);
+            const sW = new THREE.Mesh(wGH, wallMat); sW.position.set(0, wallH/2, HALF_ARENA + wallT/2); arenaMeshGroup.add(sW);
+            const eW = new THREE.Mesh(wGV, wallMat); eW.position.set(HALF_ARENA + wallT/2, wallH/2, 0); arenaMeshGroup.add(eW);
+            const wW = new THREE.Mesh(wGV, wallMat); wW.position.set(-HALF_ARENA - wallT/2, wallH/2, 0); arenaMeshGroup.add(wW);
+
+            // Random Obstacles in Large Arena
+            const obsMat = new THREE.MeshStandardMaterial({ color: wConfig.obsColor, roughness: 0.5 });
+            const topMat = new THREE.MeshStandardMaterial({ color: wConfig.obsTopColor, roughness: 0.3 });
+
+            const layouts = [
+                {x:-30, z:-30, w:10, d:10}, {x:30, z:30, w:10, d:10},
+                {x:-30, z:30, w:10, d:10}, {x:30, z:-30, w:10, d:10},
+                {x:0, z:-20, w:16, d:5}, {x:0, z:20, w:16, d:5},
+                {x:-20, z:0, w:5, d:16}, {x:20, z:0, w:5, d:16}
+            ];
+
+            layouts.forEach(l => {
+                const geo = new THREE.BoxGeometry(l.w, 3, l.d);
+                const mesh = new THREE.Mesh(geo, obsMat);
+                mesh.position.set(l.x, 1.5, l.z);
+                mesh.castShadow = true;
+                arenaMeshGroup.add(mesh);
+
+                const topGeo = new THREE.BoxGeometry(l.w * 0.88, 0.4, l.d * 0.88);
+                const topMesh = new THREE.Mesh(topGeo, topMat);
+                topMesh.position.set(l.x, 3.2, l.z);
+                arenaMeshGroup.add(topMesh);
+
+                obstacles.push({
+                    position: new THREE.Vector3(l.x, 0, l.z),
+                    halfW: l.w / 2 + 1.2,
+                    halfD: l.d / 2 + 1.2
+                });
+            });
+
+            scene.add(arenaMeshGroup);
+        }
+
+        // --- SCENE INITIALIZATION ---
+        function initScene() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+
+            const aspect = window.innerWidth / window.innerHeight;
+            camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
+            camera.position.set(0, 65, 50);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+            dirLight.position.set(40, 70, 30);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.camera.left = -70;
+            dirLight.shadow.camera.right = 70;
+            dirLight.shadow.camera.top = 70;
+            dirLight.shadow.camera.bottom = -70;
+            scene.add(dirLight);
+
+            const groundGeo = new THREE.PlaneGeometry(500, 500);
+            groundPlane = new THREE.Mesh(groundGeo, new THREE.MeshBasicMaterial({ visible: false }));
+            groundPlane.rotation.x = -Math.PI / 2;
+            scene.add(groundPlane);
+
+            buildWorldArena(0);
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('keydown', e => keys[e.code] = true);
+            window.addEventListener('keyup', e => keys[e.code] = false);
+            window.addEventListener('mousedown', e => {
+                if (e.button === 0 && isPlaying) shootPlayerBullet();
+            });
+        }
+
+        // --- PLAYER & ALLIES SPAWNING ---
+        function createPlayer() {
+            const mesh = createTankMesh(COLORS.redHull, COLORS.redTurret, COLORS.redDetail);
+            scene.add(mesh);
+
+            const hpElement = document.createElement('div');
+            hpElement.className = 'hp-bar-container';
+            hpElement.innerHTML = `<div class="hp-bar-fill bg-red-500"></div>`;
+            hpBarsOverlay.appendChild(hpElement);
+
+            playerTank = {
+                mesh: mesh,
+                hp: playerStats.maxHp,
+                maxHp: playerStats.maxHp,
+                radius: 1.6,
+                hpElement: hpElement,
+                hpFill: hpElement.querySelector('.hp-bar-fill')
+            };
+
+            playerTank.mesh.position.set(0, 0, 15);
+        }
+
+        function spawnRedAlly(index) {
+            const mesh = createTankMesh(0xd97706, COLORS.redTurret, 0xfef08a);
+            const offsetX = (index % 2 === 0 ? 1 : -1) * (6 + index * 3);
+            mesh.position.set(offsetX, 0, 22);
+            scene.add(mesh);
+
+            const hpElement = document.createElement('div');
+            hpElement.className = 'hp-bar-container';
+            hpElement.innerHTML = `<div class="hp-bar-fill bg-amber-400"></div>`;
+            hpBarsOverlay.appendChild(hpElement);
+
+            redTeamAllies.push({
+                mesh: mesh,
+                hp: playerStats.maxHp * 0.8,
+                maxHp: playerStats.maxHp * 0.8,
+                speed: 10,
+                fireRate: 1.5,
+                lastShot: Math.random() * 2,
+                radius: 1.6,
+                hpElement: hpElement,
+                hpFill: hpElement.querySelector('.hp-bar-fill')
+            });
+        }
+
+        function spawnBlueEnemy() {
+            const side = Math.floor(Math.random() * 3);
+            let x = 0, z = 0;
+            const spawnLimit = HALF_ARENA - 6;
+
+            switch(side) {
+                case 0: x = (Math.random() - 0.5) * ARENA_SIZE * 0.8; z = -spawnLimit; break;
+                case 1: x = -spawnLimit; z = (Math.random() - 0.5) * ARENA_SIZE * 0.6; break;
+                case 2: x = spawnLimit; z = (Math.random() - 0.5) * ARENA_SIZE * 0.6; break;
+            }
+
+            const hp = 35 + currentWave * 15;
+            const speed = 8 + Math.min(currentWave * 0.4, 5);
+            const fireRate = Math.max(0.7, 1.8 - currentWave * 0.08);
+
+            const mesh = createTankMesh(COLORS.blueHull, COLORS.blueTurret, COLORS.blueDetail);
+            mesh.position.set(x, 0, z);
+            scene.add(mesh);
+
+            const hpElement = document.createElement('div');
+            hpElement.className = 'hp-bar-container';
+            hpElement.innerHTML = `<div class="hp-bar-fill bg-blue-500"></div>`;
+            hpBarsOverlay.appendChild(hpElement);
+
+            blueTeamEnemies.push({
+                mesh: mesh,
+                hp: hp,
+                maxHp: hp,
+                speed: speed,
+                fireRate: fireRate,
+                lastShot: Math.random() * 1.5,
+                radius: 1.6,
+                hpElement: hpElement,
+                hpFill: hpElement.querySelector('.hp-bar-fill')
+            });
+        }
+
+        // --- SHOOTING ---
+        function shootPlayerBullet() {
+            const now = clock.getElapsedTime();
+            const currentCooldown = playerStats.doubleDamageTimer > 0 ? playerStats.shootCooldown * 0.5 : playerStats.shootCooldown;
+            if (now - lastShootTime < currentCooldown) return;
+            lastShootTime = now;
+
+            const turretGroup = playerTank.mesh.userData.turretGroup;
+            const muzzlePoint = playerTank.mesh.userData.muzzlePoint;
+
+            const muzzlePos = new THREE.Vector3();
+            muzzlePoint.getWorldPosition(muzzlePos);
+
+            const dir = new THREE.Vector3(0, 0, 1);
+            dir.applyQuaternion(turretGroup.getWorldQuaternion(new THREE.Quaternion()));
+            dir.y = 0; dir.normalize();
+
+            const isBoosted = playerStats.doubleDamageTimer > 0;
+            createBullet(muzzlePos, dir, 'red', isBoosted);
+            sfx.playShoot();
+        }
+
+        // --- COMBAT & AI LOGIC ---
+        function updateAI(delta) {
+            const now = clock.getElapsedTime();
+
+            // RED ALLIES AI -> SEARCH, DYNAMIC MOVE & SHOOT BLUE ENEMIES LIKE ENEMIES DO
+            redTeamAllies.forEach(ally => {
+                let closestTarget = null;
+                let minDist = 9999;
+
+                // Find nearest blue enemy
+                blueTeamEnemies.forEach(enemy => {
+                    const d = ally.mesh.position.distanceTo(enemy.mesh.position);
+                    if (d < minDist) { minDist = d; closestTarget = enemy; }
+                });
+
+                if (closestTarget) {
+                    // Calculate vector towards closest enemy
+                    const dir = new THREE.Vector3().subVectors(closestTarget.mesh.position, ally.mesh.position);
+                    dir.y = 0;
+                    dir.normalize();
+
+                    // Smooth rotation towards enemy
+                    const targetAngle = Math.atan2(dir.x, dir.z);
+                    let currentAngle = ally.mesh.rotation.y;
+                    let diff = targetAngle - currentAngle;
+                    diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+                    ally.mesh.rotation.y += diff * Math.min(1.0, 10 * delta);
+
+                    // Active Movement towards target (same range as enemies: move when > 12 units)
+                    if (minDist > 12) {
+                        const moveStep = dir.clone().multiplyScalar(ally.speed * delta);
+                        const nextPos = ally.mesh.position.clone().add(moveStep);
+                        if (!checkObstacleCollision(nextPos, ally.radius)) {
+                            ally.mesh.position.copy(nextPos);
+                        }
+                    }
+
+                    // Turret tracks target & shoots actively
+                    const turretGroup = ally.mesh.userData.turretGroup;
+                    turretGroup.rotation.y = 0;
+
+                    if (now - ally.lastShot > ally.fireRate && minDist < 45) {
+                        ally.lastShot = now;
+                        const muzzlePoint = ally.mesh.userData.muzzlePoint;
+                        const muzzlePos = new THREE.Vector3();
+                        muzzlePoint.getWorldPosition(muzzlePos);
+
+                        const shootDir = new THREE.Vector3(0, 0, 1);
+                        shootDir.applyQuaternion(ally.mesh.quaternion);
+                        shootDir.y = 0;
+                        shootDir.normalize();
+
+                        createBullet(muzzlePos, shootDir, 'red');
+                        sfx.playShoot();
+                    }
+                } else if (playerTank) {
+                    // Follow Player closely when battlefield is cleared
+                    const distToPlayer = ally.mesh.position.distanceTo(playerTank.mesh.position);
+                    if (distToPlayer > 8) {
+                        const dirToPlayer = new THREE.Vector3().subVectors(playerTank.mesh.position, ally.mesh.position);
+                        dirToPlayer.y = 0;
+                        dirToPlayer.normalize();
+
+                        const targetAngle = Math.atan2(dirToPlayer.x, dirToPlayer.z);
+                        ally.mesh.rotation.y = targetAngle;
+
+                        const nextPos = ally.mesh.position.clone().add(dirToPlayer.multiplyScalar(ally.speed * delta));
+                        if (!checkObstacleCollision(nextPos, ally.radius)) {
+                            ally.mesh.position.copy(nextPos);
+                        }
+                    }
+                }
+            });
+
+            // BLUE ENEMIES AI -> TARGET RED TEAM (Player or Allies)
+            blueTeamEnemies.forEach(enemy => {
+                // Determine target: nearest among player and red allies
+                let targetPos = null;
+                let minDist = 9999;
+
+                if (playerTank) {
+                    const dToPlayer = enemy.mesh.position.distanceTo(playerTank.mesh.position);
+                    minDist = dToPlayer;
+                    targetPos = playerTank.mesh.position;
+                }
+
+                redTeamAllies.forEach(ally => {
+                    const dToAlly = enemy.mesh.position.distanceTo(ally.mesh.position);
+                    if (dToAlly < minDist) {
+                        minDist = dToAlly;
+                        targetPos = ally.mesh.position;
+                    }
+                });
+
+                if (targetPos) {
+                    const dir = new THREE.Vector3().subVectors(targetPos, enemy.mesh.position);
+                    dir.y = 0;
+                    dir.normalize();
+
+                    const targetAngle = Math.atan2(dir.x, dir.z);
+                    let currentAngle = enemy.mesh.rotation.y;
+                    let diff = targetAngle - currentAngle;
+                    diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+                    enemy.mesh.rotation.y += diff * Math.min(1.0, 8 * delta);
+
+                    if (minDist > 14) {
+                        const moveStep = dir.clone().multiplyScalar(enemy.speed * delta);
+                        const nextPos = enemy.mesh.position.clone().add(moveStep);
+                        if (!checkObstacleCollision(nextPos, enemy.radius)) {
+                            enemy.mesh.position.copy(nextPos);
+                        }
+                    }
+
+                    const turretGroup = enemy.mesh.userData.turretGroup;
+                    turretGroup.rotation.y = 0;
+
+                    if (now - enemy.lastShot > enemy.fireRate && minDist < 45) {
+                        enemy.lastShot = now;
+                        const muzzlePoint = enemy.mesh.userData.muzzlePoint;
+                        const muzzlePos = new THREE.Vector3();
+                        muzzlePoint.getWorldPosition(muzzlePos);
+
+                        const shootDir = new THREE.Vector3(0, 0, 1);
+                        shootDir.applyQuaternion(enemy.mesh.quaternion);
+                        shootDir.y = 0;
+                        shootDir.normalize();
+
+                        createBullet(muzzlePos, shootDir, 'blue');
+                        sfx.playShoot();
+                    }
+                }
+            });
+        }
+
+        // --- BULLETS & COLLISION UPDATE ---
+        function updateBullets(delta) {
+            const now = clock.getElapsedTime();
+
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                if (now - b.spawnTime > BULLET_LIFESPAN) {
+                    scene.remove(b.mesh);
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                const moveStep = b.dir.clone().multiplyScalar(BULLET_SPEED * delta);
+                b.mesh.position.add(moveStep);
+
+                if (checkObstacleCollision(b.mesh.position, 0.4)) {
+                    createExplosion(b.mesh.position, false, 0xffaa00);
+                    scene.remove(b.mesh);
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // Check collision with Blue Team
+                if (b.team === 'red') {
+                    let hitIndex = -1;
+                    for (let j = 0; j < blueTeamEnemies.length; j++) {
+                        const enemy = blueTeamEnemies[j];
+                        if (b.mesh.position.distanceTo(enemy.mesh.position) < enemy.radius + 0.3) {
+                            hitIndex = j;
+                            enemy.hp -= playerStats.damage;
+                            sfx.playHit();
+                            createExplosion(b.mesh.position, false, 0x3b82f6);
+
+                            if (enemy.hp <= 0) {
+                                createExplosion(enemy.mesh.position, true, 0x1d4ed8);
+                                scene.remove(enemy.mesh);
+                                hpBarsOverlay.removeChild(enemy.hpElement);
+                                blueTeamEnemies.splice(j, 1);
+                                coins += 25;
+                                score += 100;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (hitIndex !== -1) {
+                        scene.remove(b.mesh);
+                        bullets.splice(i, 1);
+                        continue;
+                    }
+                }
+
+                // Check collision with Red Team (Player & Allies)
+                if (b.team === 'blue') {
+                    let bulletHit = false;
+
+                    if (playerTank && b.mesh.position.distanceTo(playerTank.mesh.position) < playerTank.radius + 0.3) {
+                        // Check if Shield power-up is active
+                        if (playerStats.shieldTimer > 0) {
+                            createExplosion(b.mesh.position, false, 0x3b82f6); // Shield absorb effect
+                        } else {
+                            playerTank.hp -= 15;
+                            sfx.playHit();
+                            createExplosion(b.mesh.position, false, 0xef4444);
+                        }
+                        bulletHit = true;
+
+                        if (playerTank.hp <= 0) {
+                            playerTank.hp = 0;
+                            createExplosion(playerTank.mesh.position, true, 0xd97706);
+                            gameOver();
+                        }
+                    }
+
+                    if (!bulletHit) {
+                        for (let j = redTeamAllies.length - 1; j >= 0; j--) {
+                            const ally = redTeamAllies[j];
+                            if (b.mesh.position.distanceTo(ally.mesh.position) < ally.radius + 0.3) {
+                                ally.hp -= 15;
+                                sfx.playHit();
+                                createExplosion(b.mesh.position, false, 0xef4444);
+                                bulletHit = true;
+
+                                if (ally.hp <= 0) {
+                                    createExplosion(ally.mesh.position, true, 0xd97706);
+                                    scene.remove(ally.mesh);
+                                    hpBarsOverlay.removeChild(ally.hpElement);
+                                    redTeamAllies.splice(j, 1);
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    if (bulletHit) {
+                        scene.remove(b.mesh);
+                        bullets.splice(i, 1);
+                    }
+                }
+            }
+        }
+
+        // --- HUD 2D HEALTH BARS OVERLAY ---
+        function update2DHPDocElements() {
+            const tempV = new THREE.Vector3();
+
+            const updateBar = (entity, isPlayer = false) => {
+                tempV.copy(entity.mesh.position);
+                tempV.y += 2.6;
+                tempV.project(camera);
+
+                const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-(tempV.y * 0.5) + 0.5) * window.innerHeight;
+
+                entity.hpElement.style.transform = `translate(-50%, -100%) translate(${x}px,${y}px)`;
+                const pct = Math.max(0, Math.min(100, (entity.hp / entity.maxHp) * 100));
+                entity.hpFill.style.width = `${pct}%`;
+            };
+
+            if (playerTank) updateBar(playerTank, true);
+            redTeamAllies.forEach(ally => updateBar(ally));
+            blueTeamEnemies.forEach(enemy => updateBar(enemy));
+
+            // Update top HUD text & Power-up Status
+            if (playerTank) {
+                const pPct = Math.ceil((playerTank.hp / playerTank.maxHp) * 100);
+                hudHpText.textContent = `${pPct}%`;
+                hudHpBar.style.width = `${pPct}%`;
+
+                // Shield indicator
+                if (playerStats.shieldTimer > 0) {
+                    hudHpText.textContent += ` 🛡️ (${Math.ceil(playerStats.shieldTimer)}s)`;
+                }
+                // Double Damage indicator
+                if (playerStats.doubleDamageTimer > 0) {
+                    hudHpText.textContent += ` 💥 (${Math.ceil(playerStats.doubleDamageTimer)}s)`;
+                }
+            }
+
+            document.getElementById('hud-coins').textContent = coins;
+            document.getElementById('hud-allies-count').textContent = redTeamAllies.length;
+            document.getElementById('hud-team-red').textContent = `🔴 אדומים: ${redTeamAllies.length + (playerTank ? 1 : 0)}`;
+            document.getElementById('hud-team-blue').textContent = `🔵 כחולים: ${blueTeamEnemies.length + enemiesToSpawn}`;
+        }
+
+        // --- WAVE & LEVEL SYSTEM ---
+        function updateWaveSystem(delta) {
+            if (blueTeamEnemies.length === 0 && enemiesToSpawn === 0) {
+                // Award 200 Coins victory bonus for clearing the wave
+                coins += 200;
+                openShopMenu();
+                return;
+            }
+
+            if (enemiesToSpawn > 0) {
+                spawnTimer += delta;
+                if (spawnTimer > 1.2) {
+                    spawnTimer = 0;
+                    spawnBlueEnemy();
+                    enemiesToSpawn--;
+                }
+            }
+        }
+
+        function startWave(waveNum) {
+            currentWave = waveNum;
+            hudWave.textContent = `שלב ${currentWave}`;
+
+            buildWorldArena(currentWave - 1);
+
+            if (playerTank) {
+                playerTank.mesh.position.set(0, 0, 15);
+            }
+
+            redTeamAllies.forEach((ally, i) => {
+                const offsetX = (i % 2 === 0 ? 1 : -1) * (6 + i * 3);
+                ally.mesh.position.set(offsetX, 0, 22);
+            });
+
+            enemiesToSpawn = 3 + currentWave * 2;
+            spawnTimer = 0;
+        }
+
+        function openShopMenu() {
+            isPlaying = false;
+            document.getElementById('shop-coins').textContent = coins;
+            // Update subtitle to mention the 200 reward
+            document.querySelector('#shop-overlay p').textContent = 'כל הכבוד! קיבלת 200 💰 בונוס ניצחון! השתמש בכסף לשדרוגים:';
+            document.getElementById('shop-overlay').classList.remove('hidden');
+        }
+
+        function buyUpgrade(type) {
+            sfx.init();
+
+            if (type === 'damage' && coins >= playerStats.costDamage) {
+                coins -= playerStats.costDamage;
+                playerStats.damage += 12;
+                playerStats.lvlDamage++;
+                playerStats.costDamage = Math.floor(playerStats.costDamage * 1.5);
+                document.getElementById('lvl-damage').textContent = `רמה ${playerStats.lvlDamage}`;
+                document.getElementById('cost-damage').textContent = `${playerStats.costDamage} 💰`;
+            } else if (type === 'speed' && coins >= playerStats.costSpeed) {
+                coins -= playerStats.costSpeed;
+                playerStats.speed += 3;
+                playerStats.lvlSpeed++;
+                playerStats.costSpeed = Math.floor(playerStats.costSpeed * 1.5);
+                document.getElementById('lvl-speed').textContent = `רמה ${playerStats.lvlSpeed}`;
+                document.getElementById('cost-speed').textContent = `${playerStats.costSpeed} 💰`;
+            } else if (type === 'addAlly' && coins >= playerStats.costAlly) {
+                coins -= playerStats.costAlly;
+                playerStats.alliesCount++;
+                spawnRedAlly(redTeamAllies.length);
+                playerStats.costAlly = Math.floor(playerStats.costAlly * 1.6);
+                document.getElementById('lvl-allies').textContent = `${redTeamAllies.length} טנקים`;
+                document.getElementById('cost-ally').textContent = `${playerStats.costAlly} 💰`;
+            } else if (type === 'maxHp' && coins >= playerStats.costMaxHp) {
+                coins -= playerStats.costMaxHp;
+                playerStats.maxHp += 30;
+                playerStats.lvlMaxHp++;
+                playerStats.costMaxHp = Math.floor(playerStats.costMaxHp * 1.5);
+                if (playerTank) {
+                    playerTank.maxHp = playerStats.maxHp;
+                    playerTank.hp = playerStats.maxHp;
+                }
+                redTeamAllies.forEach(ally => {
+                    ally.maxHp = playerStats.maxHp * 0.8;
+                    ally.hp = ally.maxHp;
+                });
+                document.getElementById('lvl-maxhp').textContent = `רמה ${playerStats.lvlMaxHp}`;
+                document.getElementById('cost-maxhp').textContent = `${playerStats.costMaxHp} 💰`;
+            }
+
+            document.getElementById('shop-coins').textContent = coins;
+        }
+
+        function startNextLevel() {
+            document.getElementById('shop-overlay').classList.add('hidden');
+            isPlaying = true;
+            startWave(currentWave + 1);
+        }
+
+        // --- PLAYER CONTROLS & CAMERA MOVEMENT ---
+        function updatePlayerMovement(delta) {
+            if (!playerTank || !isPlaying) return;
+
+            const moveDir = new THREE.Vector3(0, 0, 0);
+            if (keys['KeyW'] || keys['ArrowUp']) moveDir.z -= 1;
+            if (keys['KeyS'] || keys['ArrowDown']) moveDir.z += 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) moveDir.x -= 1;
+            if (keys['KeyD'] || keys['ArrowRight']) moveDir.x += 1;
+
+            if (moveDir.lengthSq() > 0) {
+                moveDir.normalize();
+
+                const targetAngle = Math.atan2(moveDir.x, moveDir.z);
+                let currentAngle = playerTank.mesh.rotation.y;
+                let diff = targetAngle - currentAngle;
+                diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+                playerTank.mesh.rotation.y += diff * Math.min(1.0, 14 * delta);
+
+                const nextPos = playerTank.mesh.position.clone().addScaledVector(moveDir, playerStats.speed * delta);
+                if (!checkObstacleCollision(nextPos, playerTank.radius)) {
+                    playerTank.mesh.position.copy(nextPos);
+                }
+            }
+
+            if (keys['Space']) shootPlayerBullet();
+
+            // Aim Turret with Raycaster Mouse
+            raycaster.setFromCamera(mousePos, camera);
+            const intersects = raycaster.intersectObject(groundPlane);
+            if (intersects.length > 0) {
+                const targetPoint = intersects[0].point;
+                const turretGroup = playerTank.mesh.userData.turretGroup;
+
+                const worldPos = new THREE.Vector3();
+                turretGroup.getWorldPosition(worldPos);
+
+                const dx = targetPoint.x - worldPos.x;
+                const dz = targetPoint.z - worldPos.z;
+                const aimAngle = Math.atan2(dx, dz);
+
+                turretGroup.rotation.y = aimAngle - playerTank.mesh.rotation.y;
+            }
+
+            // Smooth Camera Follow
+            camera.position.x = playerTank.mesh.position.x;
+            camera.position.z = playerTank.mesh.position.z + 50;
+            camera.lookAt(playerTank.mesh.position.x, 0, playerTank.mesh.position.z);
+        }
+
+        // --- GAME OVER & RESET ---
+        function gameOver() {
+            isPlaying = false;
+            finalScoreEl.textContent = score;
+            finalWaveEl.textContent = currentWave;
+            modalTitle.textContent = "💥 המשחק נגמר!";
+            modalSubtitle.textContent = "הקבוצה הכחולה ניצחה בקרב זה. נסה שוב!";
+            modalStats.classList.remove('hidden');
+            btnStart.textContent = "שחק שוב 🔄";
+            overlay.classList.remove('hidden');
+        }
+
+        function resetGame() {
+            if (playerTank) {
+                scene.remove(playerTank.mesh);
+                if (playerTank.hpElement.parentNode) hpBarsOverlay.removeChild(playerTank.hpElement);
+            }
+
+            redTeamAllies.forEach(ally => {
+                scene.remove(ally.mesh);
+                if (ally.hpElement.parentNode) hpBarsOverlay.removeChild(ally.hpElement);
+            });
+            redTeamAllies = [];
+
+            blueTeamEnemies.forEach(enemy => {
+                scene.remove(enemy.mesh);
+                if (enemy.hpElement.parentNode) hpBarsOverlay.removeChild(enemy.hpElement);
+            });
+            blueTeamEnemies = [];
+
+            bullets.forEach(b => scene.remove(b.mesh));
+            bullets = [];
+
+            particles.forEach(p => scene.remove(p.mesh));
+            particles = [];
+
+            pickups.forEach(p => {
+                scene.remove(p.mesh);
+                scene.remove(p.ringMesh);
+            });
+            pickups = [];
+
+            coins = 0;
+            score = 0;
+            currentWave = 1;
+
+            playerStats = {
+                damage: 30,
+                speed: 20,
+                shootCooldown: 0.22,
+                maxHp: 120,
+                alliesCount: 0,
+                shieldTimer: 0,
+                doubleDamageTimer: 0,
+                lvlDamage: 1,
+                lvlSpeed: 1,
+                lvlMaxHp: 1,
+                costDamage: 100,
+                costSpeed: 100,
+                costAlly: 200,
+                costMaxHp: 150
+            };
+
+            document.getElementById('lvl-damage').textContent = `רמה 1`;
+            document.getElementById('cost-damage').textContent = `100 💰`;
+            document.getElementById('lvl-speed').textContent = `רמה 1`;
+            document.getElementById('cost-speed').textContent = `100 💰`;
+            document.getElementById('lvl-allies').textContent = `0 טנקים`;
+            document.getElementById('cost-ally').textContent = `200 💰`;
+            document.getElementById('lvl-maxhp').textContent = `רמה 1`;
+            document.getElementById('cost-maxhp').textContent = `150 💰`;
+
+            createPlayer();
+            startWave(1);
+            isPlaying = true;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- MAIN LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+
+            if (isPlaying) {
+                updatePlayerMovement(delta);
+                updateAI(delta);
+                updateBullets(delta);
+                updatePowerUps(delta);
+                updateWaveSystem(delta);
+            }
+
+            updateParticles(delta);
+            update2DHPDocElements();
+
+            renderer.render(scene, camera);
+        }
+
+        // Start button handler
+        btnStart.addEventListener('click', () => {
+            sfx.init();
+            overlay.classList.add('hidden');
+            resetGame();
+        });
+
+        // Initialize when window loads
+        window.onload = () => {
+            initScene();
+            animate();
+        };
+    </script>
+</body>
+</html>
