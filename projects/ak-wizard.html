@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ממליץ אתרים AK - אשף תכנון ודירוג אתרים</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Heebo', 'Assistant', sans-serif;
+            background: linear-gradient(135deg, #090d16 0%, #111827 50%, #090d16 100%);
+            color: #f3f4f6;
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .option-card {
+            transition: all 0.25s ease-out;
+        }
+        .option-card:hover {
+            transform: translateY(-3px);
+            border-color: #6366f1;
+            box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.3);
+        }
+        .option-card.selected {
+            border-color: #818cf8;
+            background: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+        }
+        .palette-card.selected {
+            ring: 3px;
+            ring-color: #818cf8;
+            border-color: #ffffff;
+        }
+        .star-rating i {
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .star-rating i:hover, .star-rating i.active {
+            color: #f59e0b;
+            transform: scale(1.15);
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        /* Sidebar transition */
+        .sidebar-slide {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+<style>@media(max-width:640px){html,body{max-width:100%;overflow-x:hidden}img,video,canvas,svg{max-width:100%}input,select,textarea,button{max-width:100%}input,select,textarea{font-size:16px}.overflow-x-auto{max-width:100%}}@media(max-width:640px){header .max-w-7xl{flex-wrap:wrap;gap:12px}header .max-w-7xl>div:last-child{width:100%;display:flex;gap:6px;flex-wrap:wrap}header button{font-size:11px!important;padding:8px!important}.glass-card{padding:14px!important}}</style>
+</head>
+<body class="flex flex-col min-h-screen relative overflow-x-hidden">
+
+    <!-- Header -->
+    <header class="w-full border-b border-slate-800 bg-slate-950/70 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                    <i class="fa-solid fa-wand-magic-sparkles text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg text-white tracking-wide">ממליץ אתרים AK</h1>
+                    <p class="text-xs text-indigo-400 font-medium">מחולל ואשף אפיון אתרים חכם</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="toggleFeedbackModal()" class="text-xs bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-3.5 py-2 rounded-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-star text-amber-400"></i> דרג אותנו
+                </button>
+                <button onclick="saveSpecLocally()" class="text-xs bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 px-3.5 py-2 rounded-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> שמור אפיון
+                </button>
+                <button onclick="resetWizard()" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-lg border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> התחל מחדש
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid with Rating Sidebar -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        
+        <!-- Main Wizard Section -->
+        <div class="lg:col-span-3 w-full">
+
+            <!-- Progress Tracker -->
+            <div id="progress-container" class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="step-indicator" class="text-sm font-bold text-indigo-400">שלב 1 מתוך 12</span>
+                    <span id="step-title-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">סוג האתר</span>
+                    <span id="progress-percent" class="text-sm font-semibold text-slate-400">8%</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                    <div id="progress-bar" class="h-full bg-gradient-to-l from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out" style="width: 8%;"></div>
+                </div>
+            </div>
+
+            <!-- Wizard Main Card -->
+            <div class="glass-card rounded-2xl p-5 md:p-8 shadow-2xl relative overflow-hidden">
+
+                <!-- STEP 1: Website Type -->
+                <div id="step-1" class="step-content">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 1</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">איזה סוג אתר ברצונך לבנות?</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">בחר את המבנה והייעוד המרכזי של המוצר הדיגיטלי שלך</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 my-5">
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'דף נחיתה (Landing Page)', this)">
+                            <div class="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-rocket"></i></div>
+                            <h3 class="font-bold text-base text-white">דף נחיתה</h3>
+                            <p class="text-xs text-slate-400 mt-1">דף ממוקד להמרות, מותג יחיד או קמפיין.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'אתר תדמית (Corporate)', this)">
+                            <div class="p-2.5 bg-purple-500/10 text-purple-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-building"></i></div>
+                            <h3 class="font-bold text-base text-white">אתר תדמית</h3>
+                            <p class="text-xs text-slate-400 mt-1">ייצוג חברה/עסק, שירותים וצוות.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'חנות אונליין (E-commerce)', this)">
+                            <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-cart-shopping"></i></div>
+                            <h3 class="font-bold text-base text-white">חנות אונליין</h3>
+                            <p class="text-xs text-slate-400 mt-1">קטלוג מוצרים, סליקה ועגלת קניות.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'בלוג / מגזין תוכן', this)">
+                            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-newspaper"></i></div>
+                            <h3 class="font-bold text-base text-white">בלוג / מגזין</h3>
+                            <p class="text-xs text-slate-400 mt-1">מאמרים, כתבות, קטגוריות ותגובות.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'תיק עבודות (Portfolio)', this)">
+                            <div class="p-2.5 bg-pink-500/10 text-pink-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-palette"></i></div>
+                            <h3 class="font-bold text-base text-white">תיק עבודות</h3>
+                            <p class="text-xs text-slate-400 mt-1">הצגת עבודות למעצבים, מפתחים ויוצרים.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'אתר אירועים / פגישות', this)">
+                            <div class="p-2.5 bg-sky-500/10 text-sky-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-calendar-check"></i></div>
+                            <h3 class="font-bold text-base text-white">אירועים / תורים</h3>
+                            <p class="text-xs text-slate-400 mt-1">הרשמה לכנסים או קביעת תורים אונליין.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'פורטל לימודי / קורסים (LMS)', this)">
+                            <div class="p-2.5 bg-rose-500/10 text-rose-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <h3 class="font-bold text-base text-white">פורטל קורסים</h3>
+                            <p class="text-xs text-slate-400 mt-1">מכירת קורסים דיגיטליים ושיעורים.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'אפליקציית ווב (Web App / SaaS)', this)">
+                            <div class="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-laptop-code"></i></div>
+                            <h3 class="font-bold text-base text-white">אפליקציית SaaS</h3>
+                            <p class="text-xs text-slate-400 mt-1">ממשק כלי אונליין ודאשבורד ניהול.</p>
+                        </div>
+
+                        <!-- NEW TYPES ADDED -->
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'פורטל דרושים / קריירה', this)">
+                            <div class="p-2.5 bg-teal-500/10 text-teal-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-briefcase"></i></div>
+                            <h3 class="font-bold text-base text-white">פורטל דרושים</h3>
+                            <p class="text-xs text-slate-400 mt-1">לוח מודעות דרושים והגשת קורות חיים.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'אתר קהילה / פורום', this)">
+                            <div class="p-2.5 bg-orange-500/10 text-orange-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-users"></i></div>
+                            <h3 class="font-bold text-base text-white">קהילה / פורום</h3>
+                            <p class="text-xs text-slate-400 mt-1">דיונים, פרופילי משתמשים וקבוצות.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'לוח מודעות / יד שנייה', this)">
+                            <div class="p-2.5 bg-lime-500/10 text-lime-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-tags"></i></div>
+                            <h3 class="font-bold text-base text-white">לוח מודעות</h3>
+                            <p class="text-xs text-slate-400 mt-1">פרסום מודעות, סינונים וקשר בין משתמשים.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50 flex flex-col items-start" onclick="selectSingle('type', 'אתר נדל״ן ותיווך', this)">
+                            <div class="p-2.5 bg-violet-500/10 text-violet-400 rounded-lg text-xl mb-3"><i class="fa-solid fa-city"></i></div>
+                            <h3 class="font-bold text-base text-white">אתר נדל"ן</h3>
+                            <p class="text-xs text-slate-400 mt-1">הצגת נכסים למכירה/השכרה ומפה אינטראקטיבית.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Industry & Niche -->
+                <div id="step-2" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 2</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">מה תחום העיסוק והנישה?</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">בחר את הנישה להתאמת השפה הוויזואלית והתוכן</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 my-5">
+                        <button type="button" onclick="setNiche('טכנולוגיה / הייטק', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">💻</span> טכנולוגיה / הייטק
+                        </button>
+                        <button type="button" onclick="setNiche('מסעדנות / מזון', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">🍕</span> מסעדנות / מזון
+                        </button>
+                        <button type="button" onclick="setNiche('כושר ובריאות', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">🏋️</span> כושר ובריאות
+                        </button>
+                        <button type="button" onclick="setNiche('אופנה וסטייל', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">👗</span> אופנה וסטייל
+                        </button>
+                        <button type="button" onclick="setNiche('ייעוץ / שירותים מקצועיים', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">💼</span> ייעוץ ושירותים
+                        </button>
+                        <button type="button" onclick="setNiche('אמנות ועיצוב', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">🎨</span> אמנות ועיצוב
+                        </button>
+                        <button type="button" onclick="setNiche('נדל״ן ואדריכלות', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">🏠</span> נדל"ן ואדריכלות
+                        </button>
+                        <button type="button" onclick="setNiche('חינוך והדרכה', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">📚</span> חינוך והדרכה
+                        </button>
+                        <button type="button" onclick="setNiche('רפואה, קליניקות ובריאות', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">🩺</span> רפואה וקליניקות
+                        </button>
+                        <button type="button" onclick="setNiche('משפטים ועריכת דין', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">⚖️</span> משפטים ועריכת דין
+                        </button>
+                        <button type="button" onclick="setNiche('תיירות, מלונאות ונופש', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">✈️</span> תיירות ומלונאות
+                        </button>
+                        <button type="button" onclick="setNiche('עמותות, מוסדות וקהילה', this)" class="niche-btn p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 text-slate-200 text-sm font-semibold hover:border-indigo-500 transition text-right flex items-center gap-3">
+                            <span class="text-indigo-400 text-lg">🤝</span> עמותות ומוסדות
+                        </button>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">תאור תמציתי של העסק / המיזם (אופציונלי):</label>
+                        <input type="text" id="custom-description" placeholder="למשל: קליניקת טיפולי רפואה משלימה לגב ולמפרקים..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <!-- STEP 3: Visual Design Style -->
+                <div id="step-3" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 3</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">מה הסגנון העיצובי של האתר?</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">בחר את האסתטיקה והחוויה הוויזואלית</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 my-5">
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50" onclick="selectSingle('style', 'מודרני ונקי (Minimalist)', this)">
+                            <div class="h-14 bg-slate-100 rounded-lg mb-2 flex items-center justify-center text-slate-800 font-bold text-xs border border-slate-200">Minimal Clean</div>
+                            <h3 class="font-bold text-white text-sm">מודרני ונקי</h3>
+                            <p class="text-xs text-slate-400 mt-1">מינימליזם, רווחים גדולים, פונטים נקיים.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50" onclick="selectSingle('style', 'יוקרתי ואלגנטי (Luxury)', this)">
+                            <div class="h-14 bg-amber-950/80 border border-amber-600/40 rounded-lg mb-2 flex items-center justify-center text-amber-300 font-bold text-xs">Luxury Gold</div>
+                            <h3 class="font-bold text-white text-sm">יוקרתי ואלגנטי</h3>
+                            <p class="text-xs text-slate-400 mt-1">גוונים כהים, אלמנטים מוזהבים, מראה יוקרתי.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50" onclick="selectSingle('style', 'נועז וצבעוני (Bold/Creative)', this)">
+                            <div class="h-14 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-lg mb-2 flex items-center justify-center text-white font-bold text-xs">Bold Creative</div>
+                            <h3 class="font-bold text-white text-sm">נועז וצבעוני</h3>
+                            <p class="text-xs text-slate-400 mt-1">צבעוניות חזקה, ניגודיות גבוהה, אופי צעיר.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50" onclick="selectSingle('style', 'הייטקיסטי/עתידני (Cyber/Dark Mode)', this)">
+                            <div class="h-14 bg-slate-950 border border-cyan-500/50 rounded-lg mb-2 flex items-center justify-center text-cyan-400 font-bold text-xs shadow-md shadow-cyan-500/20">Cyber Dark</div>
+                            <h3 class="font-bold text-white text-sm">הייטקיסטי / Cyber</h3>
+                            <p class="text-xs text-slate-400 mt-1">רקע כהה, אלמנטים זוהרים בגרדיאנט.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50" onclick="selectSingle('style', 'כפרי / טבעי (Organic)', this)">
+                            <div class="h-14 bg-emerald-950/60 border border-emerald-700/50 rounded-lg mb-2 flex items-center justify-center text-emerald-300 font-bold text-xs">Organic Natural</div>
+                            <h3 class="font-bold text-white text-sm">כפרי / טבעי</h3>
+                            <p class="text-xs text-slate-400 mt-1">גווני אדמה וירוק, תחושה חמה ואורגנית.</p>
+                        </div>
+
+                        <div class="option-card cursor-pointer p-4 rounded-xl border border-slate-800 bg-slate-900/50" onclick="selectSingle('style', 'נגיש וידידותי (Friendly)', this)">
+                            <div class="h-14 bg-sky-900/40 border border-sky-400/40 rounded-lg mb-2 flex items-center justify-center text-sky-300 font-bold text-xs">Soft & Friendly</div>
+                            <h3 class="font-bold text-white text-sm">נגיש וידידותי</h3>
+                            <p class="text-xs text-slate-400 mt-1">קצוות מעוגלים מאד, צורות רכות ונגישות.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Color Scheme -->
+                <div id="step-4" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 4</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">פלטת צבעים מותאמת</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">בחר סכמת צבעים שתוביל את העיצוב</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 my-5">
+                        <div class="palette-card cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/60" onclick="selectPalette('Dark Neon (אינדיגו, סגול, ניאון)', this)">
+                            <div class="flex h-8 rounded-md overflow-hidden mb-2">
+                                <div class="w-1/3 bg-slate-950"></div>
+                                <div class="w-1/3 bg-indigo-600"></div>
+                                <div class="w-1/3 bg-pink-500"></div>
+                            </div>
+                            <span class="text-xs font-bold text-white block">Dark Neon</span>
+                        </div>
+
+                        <div class="palette-card cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/60" onclick="selectPalette('Clean Pastel (פסטל, תכלת, לבן)', this)">
+                            <div class="flex h-8 rounded-md overflow-hidden mb-2">
+                                <div class="w-1/3 bg-slate-100"></div>
+                                <div class="w-1/3 bg-sky-300"></div>
+                                <div class="w-1/3 bg-indigo-300"></div>
+                            </div>
+                            <span class="text-xs font-bold text-white block">Clean Pastel</span>
+                        </div>
+
+                        <div class="palette-card cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/60" onclick="selectPalette('Corporate Blue (כחול רשמי, אפור קלאסי)', this)">
+                            <div class="flex h-8 rounded-md overflow-hidden mb-2">
+                                <div class="w-1/3 bg-blue-900"></div>
+                                <div class="w-1/3 bg-blue-600"></div>
+                                <div class="w-1/3 bg-slate-200"></div>
+                            </div>
+                            <span class="text-xs font-bold text-white block">Corporate Blue</span>
+                        </div>
+
+                        <div class="palette-card cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/60" onclick="selectPalette('Luxury Gold (שחור פחם, זהב, נחושת)', this)">
+                            <div class="flex h-8 rounded-md overflow-hidden mb-2">
+                                <div class="w-1/3 bg-zinc-900"></div>
+                                <div class="w-1/3 bg-amber-500"></div>
+                                <div class="w-1/3 bg-amber-700"></div>
+                            </div>
+                            <span class="text-xs font-bold text-white block">Luxury Gold</span>
+                        </div>
+
+                        <div class="palette-card cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/60" onclick="selectPalette('Forest Green (ירוק יער, מרווה, אדמה)', this)">
+                            <div class="flex h-8 rounded-md overflow-hidden mb-2">
+                                <div class="w-1/3 bg-emerald-950"></div>
+                                <div class="w-1/3 bg-emerald-600"></div>
+                                <div class="w-1/3 bg-lime-400"></div>
+                            </div>
+                            <span class="text-xs font-bold text-white block">Forest Green</span>
+                        </div>
+
+                        <div class="palette-card cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/60" onclick="selectPalette('Sunset Warmth (כתום שקיעה, אדום חם, צהוב)', this)">
+                            <div class="flex h-8 rounded-md overflow-hidden mb-2">
+                                <div class="w-1/3 bg-rose-950"></div>
+                                <div class="w-1/3 bg-amber-500"></div>
+                                <div class="w-1/3 bg-orange-600"></div>
+                            </div>
+                            <span class="text-xs font-bold text-white block">Sunset Warmth</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex items-center gap-3">
+                        <label class="text-xs font-bold text-slate-300">צבע מותאם אישית (Custom Accent):</label>
+                        <input type="color" id="custom-color-picker" onchange="wizardData.customColor = this.value" value="#6366f1" class="w-10 h-10 rounded-lg cursor-pointer bg-slate-900 border border-slate-700">
+                    </div>
+                </div>
+
+                <!-- STEP 5: Sitemap & Pages -->
+                <div id="step-5" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 5</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">מבנה העמודים (Sitemap)</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">סמן את העמודים והאזורים הנדרשים באתר (ניתן לבחור מרובים)</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 my-5">
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="דף הבית (Home)" checked onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">🏠 דף הבית</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="אודות (About Us)" onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">ℹ️ אודות</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="שירותים / מוצרים (Services)" onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">💼 שירותים / מוצרים</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="גלריה / תיק עבודות" onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">🖼️ גלריה / עבודות</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="הבלוג שלנו (Blog)" onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">📰 בלוג / מאמרים</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="מחירון (Pricing)" onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">💳 טבלת מחירון</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="המלצות וביקורות (Testimonials)" onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">⭐ המלצות ולקוחות</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="שאלות נפוצות (FAQ)" onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">❓ שאלות נפוצות</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="צור קשר (Contact Us)" checked onchange="toggleMulti('pages', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-semibold text-slate-200">📞 צור קשר</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- STEP 6: Interactive Features -->
+                <div id="step-6" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 6</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">פיצ'רים ואלמנטים אינטראקטיביים</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">בחר את הרכיבים החכמים של הממשק</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 my-5">
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="טופס לכידת לידים / יצירת קשר מתקדם" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">📩 טופס לידים / יצירת קשר</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="כפתור צ'אט מהיר / וואטסאפ צף" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">💬 כפתור וואטסאפ צף / צ'אט חי</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="מחולל הצעות מחיר או מחשבון אינטראקטיבי" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">🧮 מחשבון הצעות מחיר אינטראקטיבי</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="מערכת סינון וחיפוש מתקדמת" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">🔍 סינון וחיפוש מוצרים/פריטים</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="מתג מצב כהה/בהיר (Dark/Light Switcher)" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">🌙 מתג מצב לילה/יום (Dark Mode)</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="קרוסלת המלצות וביקורות נעות" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">🎠 קרוסלת המלצות וביקורות</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="טיימר ספירה לאחור (Countdown Timer)" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">⏳ טיימר ספירה לאחור למבצעים</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="אינטגרציה מלאה לרשתות חברתיות" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">🌐 פיד / קישורים לרשתות חברתיות</span>
+                        </label>
+
+                        <!-- NEW FEATURES ADDED -->
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="צ'אטבוט אינטראקטיבי מבוסס AI" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">🤖 צ'אטבוט AI חכם למענה מהיר</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="הרשמה והתחברות מהירה (Social Login - Google/Facebook)" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">🔑 התחברות מהירה (Google/Facebook)</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="מערכת דירוג וכתיבת חוות דעת" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">⭐ דירוג וכתיבת חוות דעת משתמשים</span>
+                        </label>
+
+                        <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                            <input type="checkbox" value="תצוגת מוצרים 3D / מציאות מדומה (VR Preview)" onchange="toggleMulti('features', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-slate-200">🧊 תצוגת מוצרים בתלת-ממד (3D/VR)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- STEP 7: Tech Stack & Tools (NEW STEP) -->
+                <div id="step-7" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 7</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">טכנולוגיות, סליקה ואינטגרציות</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">בחר את המפתח הטכנולוגי והכלים הנלווים לבנייה</p>
+                    </div>
+
+                    <div class="space-y-4 my-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-2">טכנולוגיית הפיתוח המועדפת:</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('techStack', 'קובץ HTML יחיד (Single-file HTML/JS)', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">HTML / JS יחיד</span>
+                                    <span class="text-[10px] text-slate-400">מהיר, קל לפיתוח ורץ בדפדפן</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('techStack', 'React / Next.js', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">React / Next.js</span>
+                                    <span class="text-[10px] text-slate-400">מתקדם, מתאים לאפליקציות ווב</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('techStack', 'WordPress / Elementor', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">WordPress</span>
+                                    <span class="text-[10px] text-slate-400">מערכת ניהול תוכן פופולרית</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('techStack', 'Shopify / Wix', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">Shopify / Wix</span>
+                                    <span class="text-[10px] text-slate-400">פלטפורמות מוכנות לבניית חנויות</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-2">שירותי סליקה / אינטגרציות נדרשות:</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                    <input type="checkbox" value="סליקת אשראי ישראלית (טרנזילה/משולם/iCredit)" onchange="toggleMulti('integrations', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-xs font-semibold text-slate-200">💳 סליקה ישראלית</span>
+                                </label>
+                                <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                    <input type="checkbox" value="Stripe / PayPal (סליקה בינלאומית)" onchange="toggleMulti('integrations', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-xs font-semibold text-slate-200">🌐 Stripe / PayPal</span>
+                                </label>
+                                <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                    <input type="checkbox" value="חיבור למערכת CRM (Salesforce/Hubspot)" onchange="toggleMulti('integrations', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-xs font-semibold text-slate-200">📊 חיבור ל-CRM</span>
+                                </label>
+                                <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                    <input type="checkbox" value="מערכת דיוור במייל (Mailchimp/ActiveCampaign)" onchange="toggleMulti('integrations', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-xs font-semibold text-slate-200">📧 מערכת דיוור ניוזלטר</span>
+                                </label>
+                                <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                    <input type="checkbox" value="Google Analytics & Meta Pixel" onchange="toggleMulti('integrations', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-xs font-semibold text-slate-200">📈 אנליטיקס ופיקסלים</span>
+                                </label>
+                                <label class="cursor-pointer p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                    <input type="checkbox" value="מפתח API מותאם אישית" onchange="toggleMulti('integrations', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                    <span class="text-xs font-semibold text-slate-200">🔌 API מותאם אישית</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 8: Accessibility & Compliance (NEW STEP) -->
+                <div id="step-8" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 8</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">נגישות, תקנים ואבטחה</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">הגדרת עמידה בתקני חוק, נגישות ואבטחת המידע</p>
+                    </div>
+
+                    <div class="space-y-4 my-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                <input type="checkbox" value="תקן נגישות ישראלי מלא (ת״י 5568 ברמת AA)" checked onchange="toggleMulti('compliance', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                <div>
+                                    <span class="text-sm font-bold text-slate-200 block">♿ נגישות ברמת AA (חוק ישראלי)</span>
+                                    <span class="text-[11px] text-slate-400">ניווט מקלדת, ניגודיות גבוהה והקראת מסך</span>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                <input type="checkbox" value="מדיניות פרטיות ותנאי שימוש (GDPR & Privacy)" checked onchange="toggleMulti('compliance', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                <div>
+                                    <span class="text-sm font-bold text-slate-200 block">📜 תקנון, מדיניות פרטיות ו-GDPR</span>
+                                    <span class="text-[11px] text-slate-400">עוגיות (Cookies) והגנת פרטיות המשתמשים</span>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                <input type="checkbox" value="אבטחת SSL והגנה מפני התקפות (Cyber Security)" onchange="toggleMulti('compliance', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                <div>
+                                    <span class="text-sm font-bold text-slate-200 block">🔒 אבטחה מוגברת וקידוד נתונים</span>
+                                    <span class="text-[11px] text-slate-400">תקן SSL, סינון קלטים והגנת DDOS</span>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer p-3.5 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 hover:border-slate-600 transition">
+                                <input type="checkbox" value="אופטימיזציה למנועי חיפוש (SEO Advanced)" onchange="toggleMulti('compliance', this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                                <div>
+                                    <span class="text-sm font-bold text-slate-200 block">🚀 אופטימיזציית SEO מתקדמת</span>
+                                    <span class="text-[11px] text-slate-400">תגיות מטה, OpenGraph וסכמות נתונים</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 9: Audience & Tone -->
+                <div id="step-9" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 9</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">קהל יעד וטון דיבור</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">הגדרת האופי והתקשורת של האתר</p>
+                    </div>
+
+                    <div class="space-y-4 my-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-2">קהל יעד מרכזי:</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('audience', 'B2B - עסקים וחברות', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">B2B</span>
+                                    <span class="text-xs text-slate-400">עסקים, ארגונים ומנהלים</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('audience', 'B2C - צרכנים ולקוחות פרטיים', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">B2C</span>
+                                    <span class="text-xs text-slate-400">צרכנים ולקוחות קצה</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('audience', 'צעירים / בני נוער (Gen Z)', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">Gen-Z</span>
+                                    <span class="text-xs text-slate-400">צעירים, בני נוער וסטודנטים</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="block text-xs font-bold text-slate-300 mb-2">טון דיבור ושפה תקשורתית:</label>
+                            <select id="tone-select" onchange="wizardData.tone = this.value" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
+                                <option value="מקצועי, אמין וסמכותי">מקצועי, אמין וסמכותי</option>
+                                <option value="קליל, ידידותי ובגובה העיניים">קליל, ידידותי ובגובה העיניים</option>
+                                <option value="מעורר השראה, חם ורגשי">מעורר השראה, חם ורגשי</option>
+                                <option value="חדשני, הייטקיסטי ועתידני">חדשני, הייטקיסטי ועתידני</option>
+                                <option value="רשמי, יוקרתי ומאופק">רשמי, יוקרתי ומאופק</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 10: Budget & Timeline (NEW STEP) -->
+                <div id="step-10" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 10</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">תקציב ולוח זמנים לפרויקט</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">הגדרת מסגרת התקציב ולוח הזמנים למימוש</p>
+                    </div>
+
+                    <div class="space-y-4 my-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-2">מסגרת תקציב משוערת:</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('budget', 'בנייה עצמית / בחינם (DIY / AI Code)', this)">
+                                    <span class="font-bold text-emerald-400 block text-sm">בחינם / DIY</span>
+                                    <span class="text-[10px] text-slate-400">באמצעות קוד AI בלבד</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('budget', 'תקציב נמוך (2,000 - 5,000 ₪)', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">₪2,000 - ₪5,000</span>
+                                    <span class="text-[10px] text-slate-400">אתר בסיסי או דף נחיתה</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('budget', 'תקציב בינוני (5,000 - 15,000 ₪)', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">₪5,000 - ₪15,000</span>
+                                    <span class="text-[10px] text-slate-400">חנות או אתר תדמית עשיר</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('budget', 'תקציב פרימיום / enterprise (15,000+ ₪)', this)">
+                                    <span class="font-bold text-purple-400 block text-sm">₪15,000+</span>
+                                    <span class="text-[10px] text-slate-400">פיתוח מותאם אישית מלא</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-2">לוח זמנים מבוקש להשקה:</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('timeline', 'מיידי (תוך 24-48 שעות)', this)">
+                                    <span class="font-bold text-rose-400 block text-sm">⚡ מיידי (24-48 שעות)</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('timeline', 'מהיר (תוך שבוע-שבועיים)', this)">
+                                    <span class="font-bold text-amber-400 block text-sm">🚀 תוך 1-2 שבועות</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('timeline', 'רגיל (תוך חודש)', this)">
+                                    <span class="font-bold text-indigo-400 block text-sm">📅 תוך חודש</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 11: Languages & Special Notes -->
+                <div id="step-11" class="step-content hidden">
+                    <div class="mb-5">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">צעד 11</span>
+                        <h2 class="text-2xl md:text-3xl font-bold mt-2 text-white">שפות מבוקשות והנחיות מיוחדות</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">הגדרת ריבוי שפות והערות מותאמות אישית</p>
+                    </div>
+
+                    <div class="space-y-4 my-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-2">שפות נתמכות באתר:</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('language', 'עברית בלבד (RTL)', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">🇮🇱 עברית בלבד</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('language', 'אנגלית בלבד (LTR)', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">🇺🇸 אנגלית בלבד</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('language', 'דו-שפתי (עברית + אנגלית)', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">🌐 עברית + אנגלית</span>
+                                </div>
+                                <div class="option-card cursor-pointer p-3 border border-slate-800 bg-slate-900/50 rounded-xl text-center" onclick="selectSingle('language', 'מולטי-שפתי מלא (Multi-language)', this)">
+                                    <span class="font-bold text-slate-200 block text-sm">🌍 מולטי-שפתי מלא</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <label class="block text-xs font-bold text-slate-300 mb-2">הנחיות מיוחדות / בקשות ספציפיות:</label>
+                            <textarea id="special-instructions" rows="3" placeholder="הוסף הערות מיוחדות (למשל: דגש על מהירות טעינה, שלילת צבע אדום, שילוב לוגו מסוים...)" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 12: Summary & AI Output -->
+                <div id="step-12" class="step-content hidden">
+                    <div class="text-center mb-6">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-400 to-indigo-500 text-slate-950 font-bold text-xl mb-2 shadow-lg shadow-emerald-500/20">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-black text-white">אפיון האתר הושלם בהצלחה!</h2>
+                        <p class="text-slate-400 text-xs md:text-sm mt-1">לפניך תצוגה מקדימה קונספטואלית והפרומפט המלא לייצור האתר</p>
+                    </div>
+
+                    <!-- Summary Chips Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-6 text-xs">
+                        <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-slate-500 block">סוג האתר:</span>
+                            <span id="summary-type" class="font-bold text-indigo-300">--</span>
+                        </div>
+                        <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-slate-500 block">תחום ונישה:</span>
+                            <span id="summary-niche" class="font-bold text-purple-300">--</span>
+                        </div>
+                        <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-slate-500 block">סגנון עיצובי:</span>
+                            <span id="summary-style" class="font-bold text-pink-300">--</span>
+                        </div>
+                        <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-slate-500 block">טכנולוגיה:</span>
+                            <span id="summary-tech" class="font-bold text-emerald-300">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Wireframe Preview -->
+                    <div class="mb-6">
+                        <h4 class="text-xs font-bold text-slate-300 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-sitemap text-indigo-400"></i> תצוגה מקדימה דינמית של מבנה האתר (Wireframe Concept)
+                        </h4>
+                        <div id="interactive-wireframe" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+                            <!-- Dynamic Content Rendered via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Generated AI Prompt -->
+                    <div class="relative">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-xs font-bold text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-robot text-purple-400"></i> הפרומפט המלא למחולל ה-AI (ChatGPT / Claude / Gemini):
+                            </label>
+                            <span id="copy-toast" class="text-xs text-emerald-400 opacity-0 transition-opacity font-bold">✔ הועתק ללוח!</span>
+                        </div>
+                        <div class="relative">
+                            <textarea id="ai-prompt-output" readonly rows="7" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-300 focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+                            <div class="absolute top-3 left-3 flex gap-2">
+                                <button onclick="copyPrompt()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-md flex items-center gap-1.5">
+                                    <i class="fa-solid fa-copy"></i> העתק
+                                </button>
+                                <button onclick="downloadPrompt()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-download"></i> הורד קובץ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SOCIAL SHARING SECTION -->
+                    <div class="mt-8 pt-6 border-t border-slate-800">
+                        <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-share-nodes text-pink-400"></i> שתף את האפיון / את האפליקציה ברשתות החברתיות:
+                        </h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+                            <button onclick="shareToWhatsApp()" class="p-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-600 hover:text-white transition flex items-center justify-center gap-2 text-xs font-bold">
+                                <i class="fa-brands fa-whatsapp text-base"></i> WhatsApp
+                            </button>
+
+                            <button onclick="shareToFacebook()" class="p-2.5 rounded-xl bg-blue-600/20 border border-blue-500/40 text-blue-300 hover:bg-blue-600 hover:text-white transition flex items-center justify-center gap-2 text-xs font-bold">
+                                <i class="fa-brands fa-facebook text-base"></i> Facebook
+                            </button>
+
+                            <button onclick="shareToTelegram()" class="p-2.5 rounded-xl bg-sky-600/20 border border-sky-500/40 text-sky-300 hover:bg-sky-600 hover:text-white transition flex items-center justify-center gap-2 text-xs font-bold">
+                                <i class="fa-brands fa-telegram text-base"></i> Telegram
+                            </button>
+
+                            <button onclick="shareToTwitter()" class="p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2 text-xs font-bold">
+                                <i class="fa-brands fa-x-twitter text-base"></i> Twitter / X
+                            </button>
+
+                            <button onclick="shareToTikTok()" class="p-2.5 rounded-xl bg-pink-600/20 border border-pink-500/40 text-pink-300 hover:bg-pink-600 hover:text-white transition flex items-center justify-center gap-2 text-xs font-bold">
+                                <i class="fa-brands fa-tiktok text-base"></i> TikTok / Story
+                            </button>
+
+                            <button onclick="copyShareLink()" class="p-2.5 rounded-xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600 hover:text-white transition flex items-center justify-center gap-2 text-xs font-bold">
+                                <i class="fa-solid fa-link text-base"></i> העתק קישור
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="mt-8 pt-5 border-t border-slate-800/80 flex justify-between items-center">
+                    <button id="prev-btn" onclick="prevStep()" class="hidden px-5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs md:text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-right"></i> הקודם
+                    </button>
+                    
+                    <div class="mr-auto flex gap-3">
+                        <button id="next-btn" onclick="nextStep()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white text-xs md:text-sm font-bold shadow-lg shadow-indigo-500/20 transition flex items-center gap-2">
+                            המשך <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Rating & Feedback Sidebar -->
+        <aside class="w-full lg:col-span-1 glass-card rounded-2xl p-5 border border-slate-800 shadow-xl space-y-5 sticky top-20">
+            <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+                <i class="fa-solid fa-thumbs-up text-indigo-400 text-lg"></i>
+                <h3 class="font-bold text-white text-base">דירוג ומשוב - AK</h3>
+            </div>
+
+            <!-- Share App Banner inside Sidebar -->
+            <div class="bg-gradient-to-r from-indigo-950/70 to-purple-950/70 p-3.5 rounded-xl border border-indigo-500/30 text-center space-y-2">
+                <span class="text-xs font-bold text-indigo-300 block">🚀 אהבת את ממליץ אתרים AK?</span>
+                <p class="text-[11px] text-slate-400">שתף עם חברים שרוצים לבנות אתר!</p>
+                <div class="flex justify-center gap-2 pt-1">
+                    <button onclick="shareToWhatsApp()" class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center hover:scale-110 transition">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+                    <button onclick="shareToFacebook()" class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center hover:scale-110 transition">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </button>
+                    <button onclick="shareToTikTok()" class="w-8 h-8 rounded-lg bg-pink-600 text-white flex items-center justify-center hover:scale-110 transition">
+                        <i class="fa-brands fa-tiktok"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Like Button -->
+            <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 text-center space-y-2">
+                <p class="text-xs text-slate-400">אהבת את ממליץ אתרים AK?</p>
+                <button id="like-btn" onclick="handleLike()" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500 text-slate-200 text-xs font-bold transition flex items-center justify-center gap-2 group">
+                    <i id="like-icon" class="fa-regular fa-heart text-pink-500 group-hover:scale-125 transition-transform text-sm"></i>
+                    <span>לייק</span>
+                    <span id="like-count" class="bg-slate-800 px-2 py-0.5 rounded-full text-[10px] text-pink-400 border border-slate-700">142</span>
+                </button>
+            </div>
+
+            <!-- Interactive Star Rating -->
+            <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 text-center space-y-2">
+                <p class="text-xs font-semibold text-slate-300">איך החוויה באתר?</p>
+                <div class="star-rating flex justify-center gap-2 text-xl text-slate-600 cursor-pointer py-1" id="star-container">
+                    <i class="fa-solid fa-star" onclick="rateStars(1)"></i>
+                    <i class="fa-solid fa-star" onclick="rateStars(2)"></i>
+                    <i class="fa-solid fa-star" onclick="rateStars(3)"></i>
+                    <i class="fa-solid fa-star" onclick="rateStars(4)"></i>
+                    <i class="fa-solid fa-star" onclick="rateStars(5)"></i>
+                </div>
+                <p id="star-status" class="text-[11px] text-amber-400 font-medium h-4"></p>
+            </div>
+
+            <!-- Quick Feedback Box -->
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-300">כתוב חוות דעת קצרה:</label>
+                <textarea id="feedback-input" rows="3" placeholder="שתף אותנו בחוות דעתך על האשף..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                <button onclick="submitFeedback()" class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-md">
+                    שלח חוות דעת
+                </button>
+            </div>
+
+            <!-- Recent Reviews Feed -->
+            <div class="border-t border-slate-800 pt-3">
+                <h4 class="text-xs font-bold text-slate-400 mb-2.5 flex items-center justify-between">
+                    <span>ביקורות אחרונות</span>
+                    <i class="fa-solid fa-comments text-indigo-400"></i>
+                </h4>
+                <div id="reviews-feed" class="space-y-2 max-h-48 overflow-y-auto text-xs pr-1">
+                    <div class="p-2 rounded bg-slate-950/80 border border-slate-800/80">
+                        <div class="flex justify-between text-[10px] text-amber-400 mb-1">
+                            <span>⭐⭐⭐⭐⭐</span>
+                            <span class="text-slate-500">דניאל</span>
+                        </div>
+                        <p class="text-slate-300 text-[11px]">אחלה כלי! עזר לי להבין בדיוק מה אני צריך לבנות.</p>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-slate-800/60 py-3 text-center text-xs text-slate-500">
+        ממליץ אתרים AK &copy; 2026 - אשף תכנון, אפיון ודירוג אתרים
+    </footer>
+
+    <!-- App Logic JS -->
+    <script>
+        let currentStep = 1;
+        const totalSteps = 12;
+        let likes = 142;
+        let hasLiked = false;
+        let currentRating = 0;
+
+        const stepTitles = [
+            'סוג האתר', 'תחום ונישה', 'סגנון עיצובי', 
+            'פלטת צבעים', 'מבנה עמודים', 'פיצ\'רים חכמים',
+            'טכנולוגיה ואינטגרציות', 'נגישות ותקנים',
+            'קהל וטון', 'תקציב ולו״ז', 'שפות והערות', 'סיכום ופרומפט'
+        ];
+
+        // Central State
+        let wizardData = {
+            type: '',
+            niche: '',
+            description: '',
+            style: '',
+            palette: '',
+            customColor: '#6366f1',
+            pages: ['דף הבית (Home)', 'צור קשר (Contact Us)'],
+            features: [],
+            techStack: 'קובץ HTML יחיד (Single-file HTML/JS)',
+            integrations: [],
+            compliance: ['תקן נגישות ישראלי מלא (ת״י 5568 ברמת AA)', 'מדיניות פרטיות ותנאי שימוש (GDPR & Privacy)'],
+            audience: '',
+            tone: 'מקצועי, אמין וסמכותי',
+            budget: 'בנייה עצמית / בחינם (DIY / AI Code)',
+            timeline: 'מהיר (תוך שבוע-שבועיים)',
+            language: 'עברית בלבד (RTL)',
+            specialInstructions: ''
+        };
+
+        // Local Storage Saved Specification
+        function saveSpecLocally() {
+            localStorage.setItem('AK_Website_Spec', JSON.stringify(wizardData));
+            showToast('האפיון נשמר בהצלחה בדפדפן!');
+        }
+
+        function loadSavedSpec() {
+            const saved = localStorage.getItem('AK_Website_Spec');
+            if (saved) {
+                try {
+                    wizardData = JSON.parse(saved);
+                    showToast('האפיון השמור נטען!');
+                } catch(e){}
+            }
+        }
+
+        // Toast Helper
+        function showToast(msg) {
+            const toast = document.getElementById('copy-toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        // Social Sharing Functions
+        function getShareText() {
+            const typeStr = wizardData.type ? `לאתר מסוג: ${wizardData.type}` : 'לאתר האינטרנט שלי';
+            return encodeURIComponent(`אפיינתי את האתר שלי ב-"ממליץ אתרים AK"! 🚀\nסוג אתר: ${wizardData.type || 'מומלץ'}\nנישה: ${wizardData.niche || 'כללי'}\nרוצה לבנות אתר בקלות? כנס לאפליקציית ממליץ אתרים AK!`);
+        }
+
+        function shareToWhatsApp() {
+            const text = getShareText();
+            window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        }
+
+        function shareToFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+
+        function shareToTelegram() {
+            const text = getShareText();
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+        }
+
+        function shareToTwitter() {
+            const text = getShareText();
+            window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+        }
+
+        function shareToTikTok() {
+            const tiktokCopy = `אפיון האתר שלי ב-ממליץ אתרים AK 🚀\nסוג האתר: ${wizardData.type || 'אתר מודרני'}\nנישה: ${wizardData.niche || 'עסקים'}\nעיצוב: ${wizardData.style || 'מודרני'}`;
+            
+            // Copy template for TikTok video caption / story
+            const dummy = document.createElement('textarea');
+            dummy.value = tiktokCopy;
+            document.body.appendChild(dummy);
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            
+            showToast('הטקסט לטיקטוק הועתק! הדבק אותו בסרטון או בסטורי 🎵');
+        }
+
+        function copyShareLink() {
+            const dummy = document.createElement('input');
+            dummy.value = window.location.href;
+            document.body.appendChild(dummy);
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            showToast('קישור לאפליקציה הועתק ללוח!');
+        }
+
+        // Like Button Handler
+        function handleLike() {
+            const countEl = document.getElementById('like-count');
+            const iconEl = document.getElementById('like-icon');
+
+            if (!hasLiked) {
+                likes++;
+                hasLiked = true;
+                iconEl.classList.remove('fa-regular');
+                iconEl.classList.add('fa-solid');
+                countEl.classList.add('bg-pink-500', 'text-white');
+            } else {
+                likes--;
+                hasLiked = false;
+                iconEl.classList.remove('fa-solid');
+                iconEl.classList.add('fa-regular');
+                countEl.classList.remove('bg-pink-500', 'text-white');
+            }
+            countEl.innerText = likes;
+        }
+
+        // Star Rating Handler
+        function rateStars(rating) {
+            currentRating = rating;
+            const stars = document.querySelectorAll('#star-container i');
+            const statusEl = document.getElementById('star-status');
+            
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+
+            const labels = ['', 'טעון שיפור 🙁', 'נחמד 👍', 'טוב מאוד 😀', 'מעולה! 🌟', 'מושלם! 🔥'];
+            statusEl.innerText = labels[rating];
+        }
+
+        // Submit Quick Feedback
+        function submitFeedback() {
+            const input = document.getElementById('feedback-input');
+            const val = input.value.trim();
+            if (!val) {
+                alert('אנא כתוב חוות דעת לפני השליחה');
+                return;
+            }
+
+            const starsStr = currentRating > 0 ? '⭐'.repeat(currentRating) : '⭐⭐⭐⭐⭐';
+            const feed = document.getElementById('reviews-feed');
+            
+            const newRev = document.createElement('div');
+            newRev.className = 'p-2 rounded bg-slate-950/80 border border-indigo-500/30 animate-fade-in';
+            newRev.innerHTML = `
+                <div class="flex justify-between text-[10px] text-amber-400 mb-1">
+                    <span>${starsStr}</span>
+                    <span class="text-slate-400 font-bold">אורח</span>
+                </div>
+                <p class="text-slate-200 text-[11px]">${val}</p>
+            `;
+            feed.prepend(newRev);
+
+            input.value = '';
+            alert('תודה על חוות הדעת שלך!');
+        }
+
+        // Select single option card
+        function selectSingle(field, value, cardElement) {
+            wizardData[field] = value;
+            const parent = cardElement.parentElement;
+            parent.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+        }
+
+        // Set Niche
+        function setNiche(nicheValue, btn) {
+            wizardData.niche = nicheValue;
+            document.querySelectorAll('.niche-btn').forEach(b => {
+                b.classList.remove('border-indigo-500', 'bg-indigo-600/20', 'text-indigo-300');
+            });
+            btn.classList.add('border-indigo-500', 'bg-indigo-600/20', 'text-indigo-300');
+        }
+
+        // Select Color Palette
+        function selectPalette(paletteName, element) {
+            wizardData.palette = paletteName;
+            document.querySelectorAll('.palette-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        // Toggle multi-select checkboxes
+        function toggleMulti(field, checkbox) {
+            if (checkbox.checked) {
+                if (!wizardData[field].includes(checkbox.value)) {
+                    wizardData[field].push(checkbox.value);
+                }
+            } else {
+                wizardData[field] = wizardData[field].filter(v => v !== checkbox.value);
+            }
+        }
+
+        // Next Step Navigation
+        function nextStep() {
+            // Validation
+            if (currentStep === 1 && !wizardData.type) {
+                alert('אנא בחר את סוג האתר כדי להמשיך');
+                return;
+            }
+            if (currentStep === 2 && !wizardData.niche) {
+                alert('אנא בחר את תחום העיסוק');
+                return;
+            }
+            if (currentStep === 3 && !wizardData.style) {
+                alert('אנא בחר סגנון עיצובי');
+                return;
+            }
+
+            if (currentStep < totalSteps) {
+                document.getElementById(`step-${currentStep}`).classList.add('hidden');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+                updateUI();
+            }
+
+            if (currentStep === totalSteps) {
+                buildSummaryAndPrompt();
+            }
+        }
+
+        // Previous Step Navigation
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById(`step-${currentStep}`).classList.add('hidden');
+                currentStep--;
+                document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+                updateUI();
+            }
+        }
+
+        // Update Header & Progress Bar
+        function updateUI() {
+            const percent = Math.round((currentStep / totalSteps) * 100);
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-percent').innerText = `${percent}%`;
+            document.getElementById('step-indicator').innerText = `שלב ${currentStep} מתוך ${totalSteps}`;
+            document.getElementById('step-title-badge').innerText = stepTitles[currentStep - 1];
+
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            if (currentStep === 1) prevBtn.classList.add('hidden');
+            else prevBtn.classList.remove('hidden');
+
+            if (currentStep === totalSteps) {
+                nextBtn.classList.add('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                nextBtn.innerHTML = `המשך <i class="fa-solid fa-arrow-left"></i>`;
+            }
+        }
+
+        // Generate Wireframe Preview & Final AI Prompt
+        function buildSummaryAndPrompt() {
+            const customDesc = document.getElementById('custom-description').value.trim();
+            if (customDesc) wizardData.description = customDesc;
+
+            const instructions = document.getElementById('special-instructions').value.trim();
+            if (instructions) wizardData.specialInstructions = instructions;
+
+            // Summary Badges
+            document.getElementById('summary-type').innerText = wizardData.type || 'לא הוגדר';
+            document.getElementById('summary-niche').innerText = wizardData.niche || 'כללי';
+            document.getElementById('summary-style').innerText = wizardData.style || 'מודרני';
+            document.getElementById('summary-tech').innerText = wizardData.techStack.split(' ')[0] || 'HTML';
+
+            // Build Wireframe HTML
+            renderWireframe();
+
+            // Build Full AI Prompt Text
+            const pagesStr = wizardData.pages.length > 0 ? wizardData.pages.join(', ') : 'דף הבית, צור קשר';
+            const featuresStr = wizardData.features.length > 0 ? wizardData.features.join(', ') : 'טופס לידים, אלמנטים אינטראקטיביים';
+            const integrationsStr = wizardData.integrations.length > 0 ? wizardData.integrations.join(', ') : 'ללא אינטגרציות מורכבות';
+            const complianceStr = wizardData.compliance.length > 0 ? wizardData.compliance.join(', ') : 'תקן נגישות AA ו-GDPR';
+            const paletteStr = wizardData.palette ? wizardData.palette : `צבע מרכזי (${wizardData.customColor})`;
+
+            const promptText = `צור קוד מלא לקובץ HTML יחיד (Single-file) הכולל Tailwind CSS, JavaScript ואיקונים של FontAwesome עבור אתר אינטרנט מקצועי.
+
+📌 מפרט אפיון האתר המלא (AK Website Recommendation Engine):
+• סוג האתר: ${wizardData.type}
+• תחום עיסוק ונישה: ${wizardData.niche} ${wizardData.description ? '(' + wizardData.description + ')' : ''}
+• סגנון עיצובי: ${wizardData.style}
+• פלטת צבעים: ${paletteStr} (Accent Color: ${wizardData.customColor})
+• מבנה עמודים (Sitemap): ${pagesStr}
+• פיצ'רים ורכיבים: ${featuresStr}
+• פלטפורמה/טכנולוגיה: ${wizardData.techStack}
+• סליקה ואינטגרציות: ${integrationsStr}
+• נגישות ותקנים: ${complianceStr}
+• קהל יעד: ${wizardData.audience || 'כללי'}
+• טון דיבור ותקשורת: ${wizardData.tone}
+• מסגרת תקציב ולוח זמנים: ${wizardData.budget} | ${wizardData.timeline}
+• שפה וממשק: ${wizardData.language}
+${wizardData.specialInstructions ? '• הנחיות מיוחדות: ' + wizardData.specialInstructions : ''}
+
+🎯 דרישות טכניות ועיצוביות:
+1. הקוד חייב להיות בקובץ HTML יחיד (כאשר CSS נטען מ-Tailwind CDN וכל הלוגיקה ב-JS פנימי).
+2. עיצוב רספונסיבי מותאם לנייד ולמחשב (Mobile-First, RTL מותאם לעברית).
+3. מראה מודרני, נקי, עם פינות מעוגלות (rounded-xl/2xl), אפקטים של Glassmorphism וטיפוגרפיה קריאה.
+4. שילוב טפסים עובדים עם בדיקת תקינות (Validation), קרוסלות או אלמנטים דינמיים בהתאם לפיצ'רים שנבחרו באפיון.
+5. עמידה מלאה בתקני נגישות (Accessibility AA) ומתן חוויית משתמש חלקה.
+6. ללא שימוש ב-alert() או בקבצי CSS/JS חיצוניים נוספים.`;
+
+            document.getElementById('ai-prompt-output').value = promptText;
+        }
+
+        // Render Dynamic Interactive Wireframe Preview
+        function renderWireframe() {
+            const container = document.getElementById('interactive-wireframe');
+            const pages = wizardData.pages.length > 0 ? wizardData.pages : ['דף הבית', 'צור קשר'];
+            const features = wizardData.features.length > 0 ? wizardData.features : ['טופס יצירת קשר'];
+
+            let html = `
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        <span class="text-[11px] text-slate-400 font-mono mr-2">https://my-awesome-site.co.il</span>
+                    </div>
+                    <div class="text-[10px] text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 font-semibold">${wizardData.type}</div>
+                </div>
+                
+                <!-- Wireframe Header -->
+                <div class="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex justify-between items-center">
+                    <div class="font-extrabold text-indigo-400 text-xs">LOGOMARK</div>
+                    <div class="flex gap-2 text-[10px] text-slate-400">
+                        ${pages.slice(0, 4).map(p => `<span class="bg-slate-800 px-2 py-0.5 rounded">${p.split(' ')[0]}</span>`).join('')}
+                    </div>
+                    <div class="bg-indigo-600 text-white text-[10px] px-2.5 py-1 rounded font-bold">CTA</div>
+                </div>
+
+                <!-- Wireframe Hero Section -->
+                <div class="p-4 bg-gradient-to-r from-indigo-950/40 to-purple-950/40 rounded-lg border border-indigo-500/20 text-center space-y-2 my-2">
+                    <div class="h-4 bg-indigo-500/30 rounded w-3/4 mx-auto"></div>
+                    <div class="h-2.5 bg-slate-700/50 rounded w-1/2 mx-auto"></div>
+                    <div class="flex justify-center gap-2 pt-1">
+                        <div class="h-6 w-20 bg-indigo-600 rounded"></div>
+                        <div class="h-6 w-20 bg-slate-800 border border-slate-700 rounded"></div>
+                    </div>
+                </div>
+
+                <!-- Wireframe Dynamic Features Bar -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 my-2">
+                    ${features.slice(0, 3).map(f => `
+                        <div class="p-2 bg-slate-900/80 rounded border border-slate-800 text-[10px] text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-check text-emerald-400"></i> ${f.split(' ')[0]} ${f.split(' ')[1] || ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Wireframe Footer -->
+                <div class="p-2 bg-slate-900/40 rounded text-center text-[10px] text-slate-500 border border-slate-800/50">
+                    פוטר האתר • זכויות יוצרים • נגישות • ${wizardData.language}
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Copy Prompt to Clipboard
+        function copyPrompt() {
+            const textarea = document.getElementById('ai-prompt-output');
+            textarea.select();
+            document.execCommand('copy');
+            
+            const toast = document.getElementById('copy-toast');
+            toast.classList.remove('opacity-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        // Download Prompt as File
+        function downloadPrompt() {
+            const text = document.getElementById('ai-prompt-output').value;
+            const element = document.createElement('a');
+            const file = new Blob([text], {type: 'text/plain;charset=utf-8'});
+            element.href = URL.createObjectURL(file);
+            element.download = 'AK-Website-Spec-Prompt.txt';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        // Reset Wizard
+        function resetWizard() {
+            currentStep = 1;
+            wizardData.type = '';
+            wizardData.niche = '';
+            wizardData.description = '';
+            wizardData.style = '';
+            wizardData.palette = '';
+            wizardData.pages = ['דף הבית (Home)', 'צור קשר (Contact Us)'];
+            wizardData.features = [];
+            wizardData.techStack = 'קובץ HTML יחיד (Single-file HTML/JS)';
+            wizardData.integrations = [];
+            wizardData.compliance = ['תקן נגישות ישראלי מלא (ת״י 5568 ברמת AA)', 'מדיניות פרטיות ותנאי שימוש (GDPR & Privacy)'];
+            wizardData.audience = '';
+            wizardData.budget = 'בנייה עצמית / בחינם (DIY / AI Code)';
+            wizardData.timeline = 'מהיר (תוך שבוע-שבועיים)';
+            wizardData.specialInstructions = '';
+
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('step-1').classList.remove('hidden');
+            document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.niche-btn').forEach(b => b.classList.remove('border-indigo-500', 'bg-indigo-600/20', 'text-indigo-300'));
+            
+            updateUI();
+        }
+
+        // Modal Helper (for top bar button)
+        function toggleFeedbackModal() {
+            const starContainer = document.getElementById('star-container');
+            if (starContainer) {
+                starContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>

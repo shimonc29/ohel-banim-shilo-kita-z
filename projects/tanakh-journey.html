@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מסע בתנ"ך - לומדים בכיף</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Rubik:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        },
+                        indigo: {
+                            900: '#1e1b4b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Rubik', 'Varela Round', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Rubik', 'Varela Round', sans-serif;
+            background-color: #fcf8f2;
+        }
+        
+        .card-flip {
+            perspective: 1000px;
+        }
+        .card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-flip.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(217, 119, 6, 0.15);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d97706;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b45309;
+        }
+    </style>
+<style>@media(max-width:640px){html,body{max-width:100%;overflow-x:hidden}img,video,canvas,svg{max-width:100%}input,select,textarea,button{max-width:100%}input,select,textarea{font-size:16px}.overflow-x-auto{max-width:100%}}@media(max-width:640px){#mobile-menu{max-height:65vh;overflow:auto}h1,h2,h3{overflow-wrap:anywhere}}</style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 bg-amber-900 text-amber-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-amber-950 text-2xl shadow-lg border-2 border-amber-200">
+                        <i class="fa-solid font-bold fa-book-bible"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-extrabold tracking-wide block">מסע בתנ"ך</span>
+                        <span class="text-xs text-amber-200 block font-normal">לומדים תנ"ך בכיף ובחוויה</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex space-x-1 space-x-reverse bg-amber-950/40 p-1.5 rounded-2xl border border-amber-700/50">
+                    <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-5 py-2.5 rounded-xl font-bold transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-house"></i> בית
+                    </button>
+                    <button onclick="switchTab('timeline')" id="nav-timeline" class="nav-btn px-5 py-2.5 rounded-xl font-bold transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left"></i> ציר הזמן
+                    </button>
+                    <button onclick="switchTab('quiz')" id="nav-quiz" class="nav-btn px-5 py-2.5 rounded-xl font-bold transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-gamepad"></i> חידון התנ"ך
+                    </button>
+                    <button onclick="switchTab('cards')" id="nav-cards" class="nav-btn px-5 py-2.5 rounded-xl font-bold transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-clone"></i> כרטיסיות זיכרון
+                    </button>
+                    <button onclick="switchTab('characters')" id="nav-characters" class="nav-btn px-5 py-2.5 rounded-xl font-bold transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-users"></i> דמויות
+                    </button>
+                    <button onclick="switchTab('community')" id="nav-community" class="nav-btn px-5 py-2.5 rounded-xl font-bold transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-comments"></i> קהילה ומשוב
+                    </button>
+                </nav>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="p-2 rounded-lg text-amber-200 hover:text-white hover:bg-amber-800 focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-amber-950 px-4 pt-2 pb-4 space-y-2 border-t border-amber-800">
+            <button onclick="switchTab('home'); toggleMobileMenu()" class="w-full text-right px-4 py-3 rounded-lg text-amber-100 font-bold hover:bg-amber-800 flex items-center gap-3">
+                <i class="fa-solid fa-house w-6 text-center"></i> בית
+            </button>
+            <button onclick="switchTab('timeline'); toggleMobileMenu()" class="w-full text-right px-4 py-3 rounded-lg text-amber-100 font-bold hover:bg-amber-800 flex items-center gap-3">
+                <i class="fa-solid fa-clock-rotate-left w-6 text-center"></i> ציר הזמן
+            </button>
+            <button onclick="switchTab('quiz'); toggleMobileMenu()" class="w-full text-right px-4 py-3 rounded-lg text-amber-100 font-bold hover:bg-amber-800 flex items-center gap-3">
+                <i class="fa-solid fa-gamepad w-6 text-center"></i> חידון התנ"ך
+            </button>
+            <button onclick="switchTab('cards'); toggleMobileMenu()" class="w-full text-right px-4 py-3 rounded-lg text-amber-100 font-bold hover:bg-amber-800 flex items-center gap-3">
+                <i class="fa-solid fa-clone w-6 text-center"></i> כרטיסיות זיכרון
+            </button>
+            <button onclick="switchTab('characters'); toggleMobileMenu()" class="w-full text-right px-4 py-3 rounded-lg text-amber-100 font-bold hover:bg-amber-800 flex items-center gap-3">
+                <i class="fa-solid fa-users w-6 text-center"></i> דמויות
+            </button>
+            <button onclick="switchTab('community'); toggleMobileMenu()" class="w-full text-right px-4 py-3 rounded-lg text-amber-100 font-bold hover:bg-amber-800 flex items-center gap-3">
+                <i class="fa-solid fa-comments w-6 text-center"></i> קהילה ומשוב
+            </button>
+        </div>
+    </header>
+
+    <!-- Top Bar Info & Social Actions -->
+    <div class="bg-amber-100 border-b border-amber-200 py-2.5 px-4">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-xs md:text-sm gap-3">
+            <!-- Timer Display -->
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm text-amber-900 border border-amber-300">
+                <i class="fa-regular fa-clock text-amber-600 animate-pulse"></i>
+                <span>זמן הלימוד שלך באתר: <strong id="study-timer" class="font-bold font-mono">00:00</strong></span>
+            </div>
+
+            <!-- Share and Likes Toolbar -->
+            <div class="flex items-center gap-3">
+                <!-- Like Button -->
+                <button id="like-btn" onclick="toggleLike()" class="flex items-center gap-1.5 bg-white hover:bg-red-50 text-red-600 px-3.5 py-1.5 rounded-full border border-red-200 transition shadow-sm font-bold">
+                    <i id="like-icon" class="fa-regular fa-heart text-base"></i>
+                    <span id="like-count">128</span> לייקים
+                </button>
+
+                <!-- Share Buttons -->
+                <button onclick="shareWhatsApp()" class="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-full shadow-sm font-bold transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> שיתוף
+                </button>
+                <button onclick="copyShareLink()" class="flex items-center gap-1 bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-full shadow-sm font-bold transition">
+                    <i class="fa-solid fa-link text-xs"></i> העתק קישור
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+
+        <!-- TAB 1: HOME PAGE -->
+        <section id="tab-home" class="tab-content transition-opacity duration-300">
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl bg-gradient-to-l from-amber-700 via-amber-600 to-yellow-600 text-white p-8 md:p-12 mb-10 overflow-hidden shadow-2xl border-2 border-amber-400/30">
+                <div class="absolute -left-10 -bottom-10 opacity-15 pointer-events-none text-white">
+                    <i class="fa-solid fa-scroll text-[240px]"></i>
+                </div>
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-amber-900/40 text-amber-200 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block border border-amber-400/30">
+                        למידה חווייתית ואינטראקטיבית
+                    </span>
+                    <h1 class="text-4xl md:text-5xl font-black mb-4 leading-tight">גלו את סיפורי התנ"ך בדרך חדשה ומהנה!</h1>
+                    <p class="text-amber-100 text-lg mb-8 leading-relaxed">
+                        בואו לחוות את סיפורי התורה, הנביאים והכתובים בעזרת חידונים, כרטיסיות לימוד, ציר זמן דינמי והכרות מעמיקה עם הגיבורים והגיבורות של ספר הספרים.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="switchTab('quiz')" class="bg-amber-300 text-amber-950 hover:bg-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                            <i class="fa-solid fa-play"></i> התחילו חידון
+                        </button>
+                        <button onclick="switchTab('timeline')" class="bg-amber-950/40 hover:bg-amber-950/60 text-white font-bold px-6 py-3.5 rounded-2xl border border-amber-300/40 transition flex items-center gap-2">
+                            <i class="fa-solid fa-compass"></i> סקרו את ציר הזמן
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div onclick="switchTab('timeline')" class="glass-card rounded-2xl p-6 hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer border-t-4 border-amber-500">
+                    <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-700 text-2xl mb-4">
+                        <i class="fa-solid fa-timeline"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-amber-900 mb-2">ציר הזמן התנכ"י</h3>
+                    <p class="text-gray-600 text-sm">עקבו אחר מהלך ההיסטוריה – מהבריאה ועד שבת ציון וימי הבית השני.</p>
+                </div>
+
+                <div onclick="switchTab('quiz')" class="glass-card rounded-2xl p-6 hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer border-t-4 border-amber-600">
+                    <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-700 text-2xl mb-4">
+                        <i class="fa-solid fa-circle-question"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-amber-900 mb-2">חידון טריוויה</h3>
+                    <p class="text-gray-600 text-sm">בחנו את הידע שלכם בשאלות מגוונות לפי דרגות קושי וקבלו משוב מיידי.</p>
+                </div>
+
+                <div onclick="switchTab('cards')" class="glass-card rounded-2xl p-6 hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer border-t-4 border-amber-700">
+                    <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-700 text-2xl mb-4">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-amber-900 mb-2">כרטיסיות זיכרון</h3>
+                    <p class="text-gray-600 text-sm">למדו מושגים, פסוקים מובילים ואירועים חשובים בשיטה מהירה ואפקטיבית.</p>
+                </div>
+
+                <div onclick="switchTab('characters')" class="glass-card rounded-2xl p-6 hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer border-t-4 border-amber-800">
+                    <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-700 text-2xl mb-4">
+                        <i class="fa-solid fa-users-viewfinder"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-amber-900 mb-2">דמויות מפתח</h3>
+                    <p class="text-gray-600 text-sm">הכירו את האבות, השופטים, המלכים והנביאים שהעבירו את מורשת העם.</p>
+                </div>
+            </div>
+
+            <!-- Daily Quote / Verse Card -->
+            <div class="bg-amber-100/60 rounded-2xl p-6 md:p-8 border border-amber-200 text-center relative overflow-hidden mb-10">
+                <i class="fa-solid fa-quote-right text-amber-300/40 text-6xl absolute top-4 right-6"></i>
+                <h2 class="text-lg font-bold text-amber-800 mb-2 uppercase tracking-wide">פסוק מנחה לדרך</h2>
+                <p class="text-2xl font-black text-amber-950 my-3 font-serif">"חֲנֹךְ לַנַּעַר עַל־פִּי דַרְכּוֹ גַּם כִּי־יַזְקִין לֹא־יָסוּר מִמֶּנָּה"</p>
+                <span class="text-sm font-semibold text-amber-700">משלי כב, ו</span>
+            </div>
+
+            <!-- Daily Challenging Riddle Section -->
+            <div class="glass-card rounded-3xl p-6 md:p-8 border-2 border-amber-400 shadow-xl relative overflow-hidden">
+                <div class="flex items-center justify-between border-b border-amber-200 pb-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-amber-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-md">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-black text-amber-950">החידה היומית המאתגרת! 🧩</h3>
+                            <span class="text-xs font-bold text-amber-700">חידה קשה על נושא רנדומלי מהיסטוריית עם ישראל</span>
+                        </div>
+                    </div>
+                    <button onclick="generateRandomRiddle()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 transition border border-amber-300">
+                        <i class="fa-solid fa-shuffle"></i> חידה חדשה
+                    </button>
+                </div>
+
+                <div id="riddle-container">
+                    <div id="riddle-category" class="bg-amber-800 text-amber-100 text-xs font-extrabold px-3 py-1 rounded-full w-fit mb-3"></div>
+                    <h4 id="riddle-question" class="text-xl font-bold text-amber-950 mb-4 leading-relaxed"></h4>
+                    
+                    <div id="riddle-options" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4"></div>
+
+                    <!-- Hint and Answer Controls -->
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <button id="riddle-hint-btn" onclick="toggleRiddleHint()" class="bg-amber-200 hover:bg-amber-300 text-amber-900 text-xs font-bold px-4 py-2 rounded-xl transition">
+                            <i class="fa-solid fa-lightbulb text-amber-700 ml-1"></i> צריכים רמז?
+                        </button>
+                    </div>
+
+                    <div id="riddle-hint-text" class="hidden mt-3 p-3 bg-yellow-50 text-amber-900 text-sm font-medium rounded-xl border border-yellow-200"></div>
+                    <div id="riddle-explanation" class="hidden mt-4 p-4 rounded-2xl text-sm leading-relaxed"></div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 2: TIMELINE -->
+        <section id="tab-timeline" class="tab-content hidden">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-amber-950 mb-3">ציר הזמן התנכ"י</h2>
+                <p class="text-gray-600 max-w-xl mx-auto">אירועים מרכזיים בהיסטוריה המקראית – מהבריאה ועד שבת ציון (45 אירועים מפורטים!)</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto relative border-r-4 border-amber-500 mr-4 md:mr-auto pr-6 space-y-6" id="timeline-container">
+                <!-- Timeline items rendered dynamically by JavaScript -->
+            </div>
+        </section>
+
+
+        <!-- TAB 3: QUIZ GAME -->
+        <section id="tab-quiz" class="tab-content hidden">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-amber-950 mb-3">חידון התנ"ך האינטראקטיבי</h2>
+                <p class="text-gray-600 max-w-xl mx-auto">בחרו קטגוריה, ענו על השאלות ואספו נקודות!</p>
+            </div>
+
+            <!-- Quiz Start Screen -->
+            <div id="quiz-start-screen" class="glass-card rounded-3xl p-8 max-w-xl mx-auto text-center shadow-xl border border-amber-200">
+                <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 text-4xl mx-auto mb-6">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-amber-950 mb-4">מוכנים למבחן הידע?</h3>
+                
+                <div class="mb-6 text-right">
+                    <label class="block text-sm font-bold text-amber-900 mb-2">בחרו נושא לחידון:</label>
+                    <select id="quiz-category" class="w-full p-3 rounded-xl border border-amber-300 font-bold bg-white text-amber-950">
+                        <option value="all">כל הנושאים (125 שאלות!)</option>
+                        <option value="torah">חומשי תורה</option>
+                        <option value="leaders">מנהיגים ונביאים</option>
+                        <option value="miracles">נסים ואירועים</option>
+                    </select>
+                </div>
+
+                <button onclick="startQuiz()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-extrabold py-4 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 text-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> להתחלת החידון
+                </button>
+            </div>
+
+            <!-- Quiz Game Screen -->
+            <div id="quiz-game-screen" class="hidden glass-card rounded-3xl p-6 md:p-8 max-w-2xl mx-auto shadow-xl border border-amber-200">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-amber-200">
+                    <span id="question-category-tag" class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full"></span>
+                    <div class="flex items-center gap-4 text-sm font-bold text-amber-900">
+                        <span>שאלה <span id="quiz-progress-text">1 / 10</span></span>
+                        <span class="bg-amber-500 text-white px-3 py-1 rounded-full shadow-sm"><i class="fa-solid fa-star text-xs ml-1"></i> <span id="quiz-score">0</span></span>
+                    </div>
+                </div>
+
+                <h3 id="quiz-question-text" class="text-xl md:text-2xl font-bold text-amber-950 mb-6 leading-relaxed"></h3>
+
+                <div id="quiz-options" class="space-y-3 mb-6">
+                    <!-- Options injected dynamically -->
+                </div>
+
+                <div id="quiz-feedback" class="hidden p-4 rounded-2xl mb-6 text-sm font-medium"></div>
+
+                <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3.5 rounded-xl shadow transition flex items-center justify-center gap-2">
+                    לשאלה הבאה <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+
+            <!-- Quiz Result Screen -->
+            <div id="quiz-result-screen" class="hidden glass-card rounded-3xl p-8 max-w-xl mx-auto text-center shadow-xl border border-amber-200">
+                <div class="w-20 h-20 bg-amber-500 text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-lg">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h3 class="text-3xl font-black text-amber-950 mb-2">כל הכבוד!</h3>
+                <p class="text-gray-600 mb-6">סיימת את החידון בהצלחה</p>
+
+                <div class="bg-amber-100/70 p-6 rounded-2xl mb-8">
+                    <span class="text-sm font-bold text-amber-800 block mb-1">הניקוד הסופי שלך:</span>
+                    <span class="text-4xl font-black text-amber-900"><span id="final-score">0</span> / <span id="max-score">100</span></span>
+                </div>
+
+                <button onclick="resetQuiz()" class="bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-8 py-3.5 rounded-2xl shadow transition">
+                    <i class="fa-solid fa-rotate-right ml-2"></i> שחק שוב
+                </button>
+            </div>
+        </section>
+
+
+        <!-- TAB 4: FLASHCARDS -->
+        <section id="tab-cards" class="tab-content hidden">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-amber-950 mb-3">כרטיסיות זיכרון</h2>
+                <p class="text-gray-600 max-w-xl mx-auto">לחצו על הכרטיסייה כדי להפוך אותה ולגלות את התשובה (55 כרטיסיות מגוונות!)</p>
+            </div>
+
+            <div class="max-w-md mx-auto">
+                <div id="card-indicator" class="text-center text-xs font-bold text-amber-700 mb-3 bg-amber-100 py-1 px-4 rounded-full w-fit mx-auto">
+                    כרטיס 1 מתוך 55
+                </div>
+
+                <!-- Interactive Flip Card Container -->
+                <div class="card-flip h-80 w-full cursor-pointer" onclick="this.classList.toggle('flipped')">
+                    <div id="flashcard" class="card-inner relative w-full h-full shadow-xl rounded-3xl">
+                        <!-- Front of Card -->
+                        <div class="card-front absolute w-full h-full glass-card rounded-3xl p-8 flex flex-col justify-between border-2 border-amber-300">
+                            <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full w-fit">שאלה / מושג</span>
+                            <div class="my-auto text-center">
+                                <i class="fa-solid fa-circle-question text-amber-500 text-4xl mb-4"></i>
+                                <h3 id="card-front-text" class="text-2xl font-bold text-amber-950 leading-relaxed"></h3>
+                            </div>
+                            <span class="text-xs text-gray-400 text-center"><i class="fa-solid fa-rotate-right ml-1"></i> לחצו כדי לראות תשובה</span>
+                        </div>
+
+                        <!-- Back of Card -->
+                        <div class="card-back absolute w-full h-full bg-gradient-to-br from-amber-700 to-amber-900 text-white rounded-3xl p-8 flex flex-col justify-between shadow-xl">
+                            <span class="bg-amber-950/40 text-amber-200 text-xs font-bold px-3 py-1 rounded-full w-fit border border-amber-500/30">תשובה ופירוט</span>
+                            <div class="my-auto text-center">
+                                <h3 id="card-back-title" class="text-2xl font-black text-amber-300 mb-3"></h3>
+                                <p id="card-back-desc" class="text-amber-100 text-sm leading-relaxed"></p>
+                            </div>
+                            <span class="text-xs text-amber-300/70 text-center"><i class="fa-solid fa-rotate-right ml-1"></i> לחצו כדי להחזיר</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="flex justify-between items-center mt-6">
+                    <button onclick="prevCard()" class="bg-white hover:bg-amber-50 text-amber-900 font-bold px-5 py-2.5 rounded-xl border border-amber-300 shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-right"></i> הקודם
+                    </button>
+                    <button onclick="nextCard()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
+                        הבא <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 5: CHARACTERS -->
+        <section id="tab-characters" class="tab-content hidden">
+            <!-- ... existing characters section ... -->
+        </section>
+
+        <!-- TAB 6: COMMUNITY & REVIEWS (NEW) -->
+        <section id="tab-community" class="tab-content hidden">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-amber-950 mb-3">קהילה, דירוגים ותגובות</h2>
+                <p class="text-gray-600">דרגו את האתר, שתפו חוויות והשאירו תגובות ללומדים אחרים!</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Rating Card -->
+                <div class="glass-card rounded-3xl p-6 shadow-lg border border-amber-200 text-center h-fit">
+                    <h3 class="text-xl font-bold text-amber-950 mb-2">דירוג האתר</h3>
+                    <div class="text-5xl font-black text-amber-600 mb-1" id="average-rating-num">4.9</div>
+                    
+                    <!-- Stars Display -->
+                    <div class="flex justify-center text-amber-400 text-xl mb-4 gap-1">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-6">מבוסס על <span id="total-ratings-count">42</span> מדרגים</p>
+
+                    <div class="border-t border-amber-200 pt-4">
+                        <p class="text-sm font-bold text-amber-900 mb-2">מה הדירוג שלך?</p>
+                        <div class="flex justify-center text-2xl text-amber-300 gap-2 cursor-pointer mb-3" id="user-star-input">
+                            <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="rateApp(1)"></i>
+                            <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="rateApp(2)"></i>
+                            <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="rateApp(3)"></i>
+                            <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="rateApp(4)"></i>
+                            <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="rateApp(5)"></i>
+                        </div>
+                        <span id="rating-feedback" class="text-xs text-green-700 font-bold block min-h-[1rem]"></span>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="lg:col-span-2 glass-card rounded-3xl p-6 shadow-lg border border-amber-200">
+                    <h3 class="text-xl font-bold text-amber-950 mb-4 flex items-center gap-2">
+                        <i class="fa-regular fa-comments text-amber-600"></i> תגובות של לומדים
+                    </h3>
+
+                    <!-- Add Comment Form -->
+                    <form onsubmit="addComment(event)" class="mb-6 bg-amber-50/80 p-4 rounded-2xl border border-amber-200">
+                        <div class="mb-3">
+                            <input type="text" id="comment-name" required placeholder="השם שלך..." class="w-full p-3 rounded-xl border border-amber-300 focus:ring-2 focus:ring-amber-500 font-medium text-sm">
+                        </div>
+                        <div class="mb-3">
+                            <textarea id="comment-text" required rows="3" placeholder="כתבו תגובה או רשום מה למדתם היום..." class="w-full p-3 rounded-xl border border-amber-300 focus:ring-2 focus:ring-amber-500 font-medium text-sm"></textarea>
+                        </div>
+                        <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white font-bold px-6 py-2.5 rounded-xl shadow transition text-sm">
+                            פרסם תגובה <i class="fa-solid fa-paper-plane mr-1"></i>
+                        </button>
+                    </form>
+
+                    <!-- Comments List -->
+                    <div id="comments-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                        <!-- Dynamic Comments added here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-amber-950 text-amber-200 py-6 border-t border-amber-900 mt-12 text-center text-sm">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="font-bold text-amber-100">מסע בתנ"ך - למידה אינטראקטיבית לכל המשפחה</p>
+            <p class="text-xs text-amber-400/80 mt-1">נוצר באהבה ללמידה מהנה של ספר הספרים</p>
+        </div>
+    </footer>
+
+
+    <script>
+        // --- Timer Logic ---
+        let secondsSpent = 0;
+        function startTimer() {
+            setInterval(() => {
+                secondsSpent++;
+                const mins = String(Math.floor(secondsSpent / 60)).padStart(2, '0');
+                const secs = String(secondsSpent % 60).padStart(2, '0');
+                document.getElementById('study-timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        // --- Like Logic ---
+        let liked = false;
+        let likesCount = 128;
+        function toggleLike() {
+            const btn = document.getElementById('like-btn');
+            const icon = document.getElementById('like-icon');
+            const countEl = document.getElementById('like-count');
+
+            if (!liked) {
+                liked = true;
+                likesCount++;
+                icon.className = 'fa-solid fa-heart text-red-500 text-base';
+                btn.classList.add('bg-red-50', 'border-red-300');
+            } else {
+                liked = false;
+                likesCount--;
+                icon.className = 'fa-regular fa-heart text-base';
+                btn.classList.remove('bg-red-50', 'border-red-300');
+            }
+            countEl.innerText = likesCount;
+        }
+
+        // --- Share Logic ---
+        function shareWhatsApp() {
+            const text = encodeURIComponent("בואו ללמוד תנ\"ך בכיף ובחוויה באתר מסע בתנ\"ך! 📖✨");
+            window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        }
+
+        function copyShareLink() {
+            navigator.clipboard.writeText(window.location.href);
+            showToast("הקישור הועתק בהצלחה! אפשר לשתף לחברים");
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-amber-900 text-white px-6 py-3 rounded-full shadow-2xl z-50 text-sm font-bold animate-bounce";
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // --- Rating Logic ---
+        let ratings = [5, 5, 5, 4, 5, 5];
+        function rateApp(stars) {
+            ratings.push(stars);
+            const sum = ratings.reduce((a, b) => a + b, 0);
+            const avg = (sum / ratings.length).toFixed(1);
+
+            document.getElementById('average-rating-num').innerText = avg;
+            document.getElementById('total-ratings-count').innerText = ratings.length;
+            document.getElementById('rating-feedback').innerText = `תודה! דירגת ${stars} כוכבים ⭐`;
+
+            // Highlight Stars
+            const starsContainer = document.getElementById('user-star-input').children;
+            for (let i = 0; i < 5; i++) {
+                if (i < stars) {
+                    starsContainer[i].className = 'fa-solid fa-star text-amber-400 hover:text-amber-500 transition';
+                } else {
+                    starsContainer[i].className = 'fa-regular fa-star text-amber-300 hover:text-amber-500 transition';
+                }
+            }
+        }
+
+        // --- Comments Logic ---
+        const initialComments = [
+            { name: "נועם", text: "אתר מדהים! החידון מאוד עזר לי למבחן בתנ\"ך.", date: "לפני שעה" },
+            { name: "איילה", text: "כרטיסיות הזיכרון פשוט מעולות, למדתי המון על דבורה הנביאה!", date: "לפני 3 שעות" }
+        ];
+
+        function renderComments() {
+            const container = document.getElementById('comments-list');
+            if(!container) return;
+            container.innerHTML = '';
+            initialComments.forEach(c => {
+                const item = document.createElement('div');
+                item.className = "bg-white p-4 rounded-xl border border-amber-200/80 shadow-sm";
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <strong class="text-amber-950 font-bold text-sm">${c.name}</strong>
+                        <span class="text-xs text-gray-400">${c.date}</span>
+                    </div>
+                    <p class="text-gray-700 text-sm">${c.text}</p>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function addComment(e) {
+            e.preventDefault();
+            const name = document.getElementById('comment-name').value;
+            const text = document.getElementById('comment-text').value;
+
+            initialComments.unshift({ name, text, date: "עכשיו" });
+            renderComments();
+
+            document.getElementById('comment-name').value = '';
+            document.getElementById('comment-text').value = '';
+            showToast("התגובה פורסמה בהצלחה!");
+        }
+
+        // --- Navigation & Tabs Logic ---
+        function switchTab(tabId) {
+            // Hide all tab contents
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            // Show selected tab content
+            const activeTab = document.getElementById('tab-' + tabId);
+            if (activeTab) {
+                activeTab.classList.remove('hidden');
+            }
+
+            // Update Navigation Button Styles
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.classList.remove('bg-amber-800', 'text-amber-100');
+                btn.classList.add('text-amber-200', 'hover:bg-amber-900/60');
+            });
+
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('hover:bg-amber-900/60');
+                activeBtn.classList.add('bg-amber-800', 'text-amber-100');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+
+        // --- Timeline Accordion Logic ---
+        const timelineEvents = [
+            { id: 1, era: 'תקופת הבריאה והאבות', year: 'אדם הראשון עד אברהם', title: 'בריאת העולם והמבול', desc: 'בריאת העולם בשישה ימים, חטא אדם וחוה, והמבול בימי נח שבסופו נכרתה ברית הקשת בענן.', details: 'בריאת העולם מסמלת את ראשית ההיסטוריה המקראית. לאחר המבול, נח ובניו הקמו מחדש את היישוב האנושי.' },
+            { id: 2, era: 'תקופת הבריאה והאבות', year: 'בביקוש האמונה', title: 'ברית בין הבתרים והאבות', desc: 'אברהם ושרה עולים לארץ כנען, נכרתת ברית בין הבתרים ונולדים יצחק ויעקב.', details: 'אברהם אבינו מפיץ את האמונה באל אחד. יעקב אבינו מוליד את 12 שבטי ישראל.' },
+            { id: 3, era: 'תקופת הבריאה והאבות', year: 'דור שביעי לאדם', title: 'חנוך ומתושלח', desc: 'חנוך התהלך את האלוהים ומתושלח חי 969 שנים – השנים הרבות ביותר במקרא.', details: 'מתושלח היה זקן האנשים המוזכרים בתנ"ך וסמל לאריכות ימים.' },
+            { id: 4, era: 'תקופת הבריאה והאבות', year: 'חרן וכנען', title: 'שידוך יצחק ורבקה', desc: 'אליעזר עבד אברהם מוצא את רבקה ליד הבאר בזכות גמילות החסד שלה.', details: 'השידוך המקראי הראשון המפרט את עניין המידות הראויות והכנסת אורחים.' },
+            { id: 5, era: 'תקופת הבריאה והאבות', year: 'באר שבע', title: 'מכירת הבכורה', desc: 'עשו מוכר ליעקב את בכורתו תמורת נזיד עדשים אדום.', details: 'אירוע מכונן בסיפורי יעקב ועשו שהשפיע על ברכות יצחק בהמשך.' },
+            { id: 6, era: 'תקופת הבריאה והאבות', year: 'בית אל', title: 'חלומות יוסף ומכירתו', desc: 'יוסף חולם על אלומום וכוכבים, נמכר למצרים ע"י אחיו והופך למשנה למלך.', details: 'מכירת יוסף מביאה בסופו של דבר לירידת כל בית יעקב למצרים ולשיעבוד.' },
+            { id: 7, era: 'יציאת מצרים והמדבר', year: 'שעבוד וגאולה', title: 'יציאת מצרים ומכות מצרים', desc: 'עשר המכות ניתכות על מצרים, בני ישראל יוצאים לחופשי ובוקעים את ים סוף.', details: 'משה ואהרן מובילים את בני ישראל מחירות לעבדות בנסים גלויים.' },
+            { id: 8, era: 'יציאת מצרים והמדבר', year: 'הר סיני', title: 'מתן תורה בהר סיני', desc: 'מעמד נשגב שבו ניתנו עשרת הדיברות והתורה לעם ישראל במדבר.', details: 'העם עונה "נעשה ונשמע" ומוקם הטרקלין הרוחני של עם ישראל.' },
+            { id: 9, era: 'יציאת מצרים והמדבר', year: 'רפידים', title: 'מלחמת עמלק', desc: 'עמלק תוקף את בני ישראל ברפידים, יהושע נלחם ומשה מרים את ידיו בתפילה.', details: 'נאמר "והיה כאשר ירים משה ידו וגבר ישראל" – ניצחון רוחני ופיזי.' },
+            { id: 10, era: 'יציאת מצרים והמדבר', year: 'הר סיני', title: 'עצת יתרו להקמת השופטים', desc: 'יתרו מייעץ למשה להקים שרי אלפים, שרי מאות ושרי עשרות להקל מעליו.', details: 'הקמת המערכת המשפטית והארגונית הראשונה של עם ישראל במדבר.' },
+            { id: 11, era: 'יציאת מצרים והמדבר', year: 'קליעת 40 שנה', title: 'חטא המרגלים', desc: '10 מרגלים מוציאים דיבה על הארץ, והעם נשאר לנדוד 40 שנה במדבר.', details: 'רק יהושע בן נון וכלב בן יפונה עמדו בנאמנותם לארץ הטובה.' },
+            { id: 12, era: 'יציאת מצרים והמדבר', year: 'מדבר פארן', title: 'עדת קורח ומחלוקתו', desc: 'קורח ועדתו מערערים על מנהיגות משה והכהונה, והאדמה פוצה את פיה.', details: 'מחלוקת קורח הפכה לסמל למחלוקת שאינה לשם שמיים.' },
+            { id: 13, era: 'יציאת מצרים והמדבר', year: 'ערבות מואב', title: 'נבואות בלעם ובלק', desc: 'בלק מלך מואב שוחר את בלעם לקלל את ישראל, אך ברכות יוצאות מפיו.', details: 'מפיו של בלעם נאמרה האמרה המפורסמת: "מה טובו אוהליך יעקב משכנותיך ישראל".' },
+            { id: 14, era: 'כיבוש הארץ והשופטים', year: 'חציית הירדן', title: 'כיבוש יריחו והארץ', desc: 'נפילת חומות יריחו, כיבוש העי והנחלת הארץ לשבטים ע"י יהושע.', details: 'הארץ מחולקת בגרלות בין 12 השבטים והוקם המשכן בשילה.' },
+            { id: 15, era: 'כיבוש הארץ והשופטים', year: 'נחלת בנימין', title: 'רחב ביריחו והמרגלים', desc: 'רחב מסתירה את המרגלים ששלח יהושע ביריחו ומצילה את משפחתה.', details: 'אות שני המרגלים ברחב היה חבל השני בחלון ביתה.' },
+            { id: 16, era: 'כיבוש הארץ והשופטים', year: 'עמק יזרעאל', title: 'ניצחון גדעון על מדין', desc: 'גדעון בוחר 300 לוחמים בלבד שמבריחים את צבא מדין בשופרות וכדים.', details: 'סמל לתושייה ואמונה מעטים מול רבים.' },
+            { id: 17, era: 'כיבוש הארץ והשופטים', year: 'תקופת השופטים', title: 'מנהיגות שמשון ודבורה', desc: 'שופטים ושופטות מובילים את העם מול פלשתים, כנען ומואב.', details: 'תקופה שבה "איש הישר בעיניו יעשה" עד להקמת המלוכה.' },
+            { id: 18, era: 'ממלכת ישראל המאוחדת', year: 'שילה וירושלים', title: 'תפילת חנה והקמת המלוכה', desc: 'חנה מתפללת בשילה, שמואל נולד וממנה את שאול ודוד למלכים.', details: 'תפילת חנה מהווה יסוד לתפילת עמידה ולכוונת הלב במסורת.' },
+            { id: 19, era: 'ממלכת ישראל המאוחדת', year: 'אבן העזר', title: 'נס ארון הברית במחנה פלשתים', desc: 'הפלשתים שובים את ארון הברית אך סובלים מנגעים ומחזירים אותו בעגלה.', details: 'הארון מוחזר לישראל ונשמר בקרית יערים עד עלייתו לירושלים.' },
+            { id: 20, era: 'ממלכת ישראל המאוחדת', year: 'הר הגלבוע', title: 'מות שאול ויהונתן', desc: 'שאול המלך ויהונתן בנו נופלים במלחמה מול הפלשתים בגלבוע.', details: 'דוד מקונן עליהם את קינת הקשת: "איך נפלו גיבורים בתוך המלחמה".' },
+            { id: 21, era: 'ממלכת ישראל המאוחדת', year: 'ירושלים', title: 'איחוד הממלכה בימי דוד', desc: 'דוד כובש את ירושלים, קובע אותה כבירה ומעלה אליה את ארון הברית.', details: 'דוד מקים את השושלת המלכותית ומחבר מזמורי תהילים.' },
+            { id: 22, era: 'ממלכת ישראל המאוחדת', year: 'הר המוריה', title: 'מרד אבשלום', desc: 'אבשלום מנסה לתפוס את המלוכה ממוציא את דוד מירושלים עד למפלתו.', details: 'אירוע דרמטי המציג את מורכבות משפחת המלוכה ונאמנות העם.' },
+            { id: 23, era: 'ממלכת ישראל המאוחדת', year: 'ירושלים', title: 'בניית בית המקדש הראשון', desc: 'שלמה המלך בונה את הבית הראשון בירושלים ומביא לפריחה כלכלית ורוחנית.', details: 'שבע שנות בנייה מביאות לשיא תפארתה של הממלכה המאוחדת.' },
+            { id: 24, era: 'פילוג הממלכה', year: 'יהודה וישראל', title: 'פילוג הממלכה – רחבעם וירבעם', desc: 'הממלכה מתפצלת לממלכת יהודה (בדרום) וממלכת ישראל (בצפון).', details: 'ירבעם מציב עגלי זהב בדן ובבית אל כדי למנוע עלייה לירושלים.' },
+            { id: 25, era: 'פילוג הממלכה', year: 'הר הכרמל', title: 'מעמד אליהו הנביא בכרמל', desc: 'אליהו הנביא מזמין את נביאי הבעל למבחן האש ומשיב את לב העם.', details: 'העם קורא בפה אחד: "ה\' הוא האלוהים, ה\' הוא האלוהים".' },
+            { id: 26, era: 'פילוג הממלכה', year: 'יזרעאל', title: 'סיפור כרם נבות היזרעאלי', desc: 'אחאב ואאיזבל עושקים את נבות, ואליהו הנביא מטיח באחאב: "הרצחת וגם ירשת?".', details: 'סמל מקראי חריף נגד עושק, חמס ופגיעה בזכויות הפרט.' },
+            { era: 'חורבן וגלות', year: '722 לפנה"ס', title: 'חורבן ממלכת ישראל וגלות שומרון', desc: 'סנחריב ומלכי אשור מכניעים את ממלכת ישראל ומגלים את עשרת השבטים.', details: 'עשרת השבטים נעלמים ומיושבים שומרונים בארץ במקומם.' },
+            { era: 'חורבן וגלות', year: 'חזקיהו ויאשיהו', title: 'רפורמת יאשיהו המלך', desc: 'מציאת ספר התורה במקדש מביאה לטיהור עמוק מכל פולחן עבודה זרה.', details: 'יאשיהו מחדש את ברית הפסח בירושלים בהתלהבות רבה.' },
+            { era: 'חורבן וגלות', year: '586 לפנה"ס', title: 'חורבן בית המקדש הראשון', desc: 'נבוכדנאצר מלך בבל מחריב את ירושלים והמקדש ומגלה את העם לבבל.', details: 'תחילת גלות בבל וחיבור ספר איכה ע"י ירמיהו הנביא.' },
+            { era: 'חורבן וגלות', year: 'בבל', title: 'דניאל בגוב האריות', desc: 'דניאל ממשיך להתפלל לה\' בבבל, נזכר לגוב האריות וניצל בנס.', details: 'מופת למסירות נפש ואמונה ללא חת בגלות.' },
+            { era: 'שיבת ציון ובית שני', year: '538 לפנה"ס', title: 'הצהרת כורש ושיבת ציון', desc: 'כורש מלך פרס מאפשר ליהודים לשוב לארצם בהנהגת זרובבל.', details: 'העולים הראשונים מקימים את המזבח ומתחילים את יסודות הבית השני.' },
+            { era: 'שיבת ציון ובית שני', year: 'שושן הבירה', title: 'נס פורים – מגילת אסתר', desc: 'אסתר המלכה ומרדכי היהודי מסכלים את גזירת המן להשמדת היהודים.', details: 'גזירת ההשמדה נהפכת לשמחה, ונקבעו ימי הפורים למשתה ולשמחה.' },
+            { era: 'שיבת ציון ובית שני', year: 'ירושלים', title: 'עזרא, נחמיה ואמנת העם', desc: 'נחמיה בונה את חומות ירושלים, עזרא קורא בתורה והעם חותם על אמנה.', details: 'חידוש הזיקה לתורה והנחת היסודות לימי הבית השני.' }
+        ];
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            if (!container) return;
+
+            container.innerHTML = timelineEvents.map(event => `
+                <div class="relative bg-white rounded-2xl p-5 md:p-6 shadow-md border border-amber-200 hover:shadow-lg transition">
+                    <div class="absolute -right-9 top-6 w-5 h-5 bg-amber-500 rounded-full border-4 border-white shadow"></div>
+                    <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
+                        <span class="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">${event.era}</span>
+                        <span class="text-xs text-amber-700 font-bold bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">${event.year}</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-amber-950 mb-2">${event.title}</h3>
+                    <p class="text-gray-700 text-sm leading-relaxed mb-3">${event.desc}</p>
+                    <button onclick="toggleTimelineDetails(${event.id})" class="text-xs font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1 transition">
+                        <span>קרא עוד ופירוט</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </button>
+                    <div id="timeline-details-${event.id}" class="hidden mt-3 pt-3 border-t border-amber-100 text-xs text-amber-950 bg-amber-50/60 p-3 rounded-xl border border-amber-200/50">
+                        ${event.details}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleTimelineDetails(id) {
+            const details = document.getElementById('timeline-details-' + id);
+            if (details) {
+                details.classList.toggle('hidden');
+            }
+        }
+
+        // --- Quiz Data & Logic ---
+        const quizQuestions = [
+            {
+                category: 'torah',
+                categoryLabel: 'חומשי תורה',
+                question: 'כמה ימים נמשכה יצירת העולם לפי ספר בראשית?',
+                options: ['5 ימים', '6 ימים', '7 ימים', '40 ימים'],
+                correct: 1,
+                explanation: 'הקדוש ברוך הוא ברא את העולם ב-6 ימים וביום השביעי שבת מכל מלאכתו.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'מי הנהיג את בני ישראל בכניסה לארץ כנען לאחר מות משה?',
+                options: ['אהרן הכהן', 'יהושע בן נון', 'גדעון', 'שמואל הנביא'],
+                correct: 1,
+                explanation: 'יהושע בן נון היה תלמידו וממלא מקומו של משה רבנו והוביל את כיבוש הארץ.'
+            },
+            {
+                category: 'miracles',
+                categoryLabel: 'נסים ואירועים',
+                question: 'איזה ים נבקע עבור בני ישראל בצאתם ממצרים?',
+                options: ['הים התיכון', 'ים כנרת', 'ים סוף', 'ים המלח'],
+                correct: 2,
+                explanation: 'בקריעת ים סוף עברו בני ישראל בתוך הים ביבשה מול המצרים.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'מי בנה את בית המקדש הראשון בירושלים?',
+                options: ['דוד המלך', 'שלמה המלך', 'שאול המלך', 'חזקיהו המלך'],
+                correct: 1,
+                explanation: 'שלמה המלך, בנם של דוד ובת שבע, זכה לבנות את בית המקדש הראשון.'
+            },
+            {
+                category: 'torah',
+                categoryLabel: 'חומשי תורה',
+                question: 'איזה ספר מספרי התורה עוסק בעיקר בחוקי הכהנים והקורבנות?',
+                options: ['בראשית', 'שמות', 'ויקרא', 'במדבר'],
+                correct: 2,
+                explanation: 'ספר ויקרא נקרא גם "תורת כהנים" מפני שרוב פרשיותיו עוסקות בעבודת המקדש.'
+            },
+            {
+                category: 'torah',
+                categoryLabel: 'חומשי תורה',
+                question: 'כמה ימים ולילות ירד הגשם בזמן המבול של נח?',
+                options: ['30 יום ולילה', '40 יום ולילה', '70 יום ולילה', '100 יום ולילה'],
+                correct: 1,
+                explanation: 'נאמר בבראשית: "וַיְהִי הַגֶּשֶׁם עַל הָאָרֶץ אַרְבָּעִים יוֹם וְאַרְבָּעִים לָיְלָה".'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'מי הייתה השופטת היחידה המוזכרת בספר שופטים?',
+                options: ['דבורה', 'חנה', 'יעל', 'רחב'],
+                correct: 0,
+                explanation: 'דבורה הנביאה שפטה את ישראל תחת תומר דבורה והובילה לניצחון על סיסרא.'
+            },
+            {
+                category: 'miracles',
+                categoryLabel: 'נסים ואירועים',
+                question: 'איזה אירוע ניסי אירע בעיר יריחו בעת כיבוש הארץ?',
+                options: ['הנהר הפך לדם', 'חומות העיר נפלו במקומן', 'אש ירדה מהשמיים', 'השמש עמדה דום'],
+                correct: 1,
+                explanation: 'לאחר שבני ישראל סבבו את העיר 7 ימים ותקעו בשופרות, חומות יריחו נפלו תחתיהן.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'מי היה המלך הראשון של עם ישראל?',
+                options: ['דוד המלך', 'שלמה המלך', 'שאול המלך', 'חזקיהו המלך'],
+                correct: 2,
+                explanation: 'שאול בן קיש משבט בנימין נמשח על ידי שמואל הנביא למלך הראשון על ישראל.'
+            },
+            {
+                category: 'torah',
+                categoryLabel: 'חומשי תורה',
+                question: 'איזה מכה הייתה המכה הראשונה מבין עשר מכות מצרים?',
+                options: ['צפרדע', 'כינים', 'דם', 'חושך'],
+                correct: 2,
+                explanation: 'מכת דם הייתה הראשונה – אהרן הכה בסגנו על מימי היאור והם הפכו לדם.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'באיזה נשק הצליח דוד הצעיר לנצח את גוליית הפלשתי?',
+                options: ['חרב חדה', 'רומח וקשת', 'קלע ואבן', 'חנית זהב'],
+                correct: 2,
+                explanation: 'דוד לקח חלוק אבנים מן הנחל, קלע ברוגטקה/קלע ופגע במצחו של גוליית הענק.'
+            },
+            {
+                category: 'miracles',
+                categoryLabel: 'נסים ואירועים',
+                question: 'מהו המזון הניסי שירד מן השמיים עבור בני ישראל במדבר?',
+                options: ['חלווה', 'מן', 'שליו', 'לחם הפנים'],
+                correct: 1,
+                explanation: 'הַמָּן ירד מדי בוקר מן השמיים ושימש כמזונם של בני ישראל במשך 40 שנה במדבר.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'איזה נביא עלה בסערה השמיימה ברכב אש וסוסי אש?',
+                options: ['אלישע', 'אליהו הנביא', 'ישעיהו', 'ירמיהו'],
+                correct: 1,
+                explanation: 'אליהו התשבי עלה בסערה השמיימה לעיני תלמידו אלישע.'
+            },
+            {
+                category: 'torah',
+                categoryLabel: 'חומשי תורה',
+                question: 'מי היו הוריו של משה רבנו?',
+                options: ['עמרם ויוכבד', 'אברהם ושרה', 'יצחק ורבקה', 'אלקנה וחנה'],
+                correct: 0,
+                explanation: 'משה נולד לעמרם ויוכבד משבט לוי, ואחותו הגדולה הייתה מרים הנביאה.'
+            },
+            {
+                category: 'miracles',
+                categoryLabel: 'נסים ואירועים',
+                question: 'איזה משפט מפורסם הראה את חכמתו העצומה של שלמה המלך?',
+                options: ['משפט המלך', 'משפט שתי הנשים והתינוק', 'משפט מגדל בבל', 'משפט כרם נבות'],
+                correct: 1,
+                explanation: 'בשתי נשים שטענו לאותו תינוק, שלמה הציע לגזור את הילד וכך גילה מי האם האמיתית.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'איזה מנהיג אמר את הציטוט המפורסם: "שֶׁמֶשׁ בְּגִבְעוֹן דּוֹם וְיָרֵחַ בְּעֵמֶק אַיָּלוֹן"?',
+                options: ['משה', 'יהושע בן נון', 'שמשון', 'גדעון'],
+                correct: 1,
+                explanation: 'יהושע התפלל לה׳ שיעצור את מעוף השמש והירח כדי להשלים את הניצחון בקרב גבעון.'
+            },
+            {
+                category: 'torah',
+                categoryLabel: 'חומשי תורה',
+                question: 'איזה שבט מבין 12 השבטים לא קיבל נחלת קרקע רציפה בארץ ישראל?',
+                options: ['יהודה', 'אפרים', 'לוי', 'ראובן'],
+                correct: 2,
+                explanation: 'שבט לוי הוקדש לעבודת הקודש והמקדש וקיבל ערים מפוזרות במקום נחלה חקלאית.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'מי הוריד את עמודי המקדש הפלשתי על ראשי סרני פלשתים בעזה?',
+                options: ['שמשון הגיבור', 'יפתח הגלעדי', 'אהוד בן גרא', 'ברק בן אבינועם'],
+                correct: 0,
+                explanation: 'שמשון קרא לה׳, לפת את עמודי התווך של הבית ואמר: "תָּמוֹת נַפְשִׁי עִם פְּלִשְׁתִּים".'
+            },
+            {
+                category: 'miracles',
+                categoryLabel: 'נסים ואירועים',
+                question: 'מה קרה ללוחות הברית הראשונים שמשה הורד מהר סיני?',
+                options: ['נשמרו בארון הברית', 'משה שבר אותם למרגלות ההר בגלל חטא העגל', 'נגנבו על ידי העמלקים', 'נעלמו בענן'],
+                correct: 1,
+                explanation: 'כשראה משה את העגל והמחולות, חרה אפו והוא שיבר את הלוחות הראשונים בתחתית ההר.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'איזו מלכה הגיעה מקצה תבל כדי לבחון את שלמה המלך בחידות?',
+                options: ['מלכת שבא', 'הממלכה מאי שפת', 'מלכת מצרים', 'עתליה'],
+                correct: 0,
+                explanation: 'מלכת שבא שמעה על שמע שלמה ובאה לנסותו בחידות והתרשמה מאד מחכמתו ועשרו.'
+            },
+            {
+                category: 'torah',
+                categoryLabel: 'חומשי תורה',
+                question: 'מה שם המקום שבו התרחש בלבלול הלשונות והפצת בני האדם ברחבי העולם?',
+                options: ['סדום', 'מגדל בבל', 'אור כשדים', 'חרן'],
+                correct: 1,
+                explanation: 'בוני מגדל בבל ביקשו לעשות להם שם, וה׳ בלל את שפתם והפיצם על פני כל הארץ.'
+            },
+            {
+                category: 'miracles',
+                categoryLabel: 'נסים ואירועים',
+                question: 'איזה נביא נבלע על ידי דג גדול כשניסה לברוח משליחותו לנינוה?',
+                options: ['יונה הנביא', 'עמוס', 'חבקוק', 'צפניה'],
+                correct: 0,
+                explanation: 'יונה בן אמיתי ניסה לברוח בספינה לתרשיש, נזרק לים ונבלע על ידי דג גדול למשך 3 ימים.'
+            },
+            {
+                category: 'leaders',
+                categoryLabel: 'מנהיגים ונביאים',
+                question: 'מי הייתה הסבתא-רבתא של דוד המלך שסיפורה מסופר במגילה מיוחדת?',
+                options: ['רות המואביה', 'נעמי', 'ערפה', 'אביגיל'],
+                correct: 0,
+                explanation: 'רות הדבקה בחמותה נעמי ואמרה "עַמֵּךְ עַמִּי וֵאלֹהַיִךְ אֱלֹהָי", והייתה מאבות שושלת דוד.'
+            },
+            {
+                category: 'torah',
+                categoryLabel: 'חומשי תורה',
+                question: 'כמה מכות קיבלו המצרים לפני שפרעה הסכים לשלח את בני ישראל?',
+                options: ['7 מכות', '10 מכות', '12 מכות', '40 מכות'],
+                correct: 1,
+                explanation: 'רק לאחר המכה העשירית – מכת בכורות – ניאות פרעה לשלח את בני ישראל לחופשי.'
+            },
+            {
+                category: 'miracles',
+                categoryLabel: 'נסים ואירועים',
+                question: 'איזה שיח בער באש במדבר אך "אֵינֶנּוּ אֻכָּל" (לא נשרף)?',
+                options: ['עץ הזית', 'הסנה', 'עץ התמר', 'האשל'],
+                correct: 1,
+                explanation: 'במראה הסנה הבוער בהר חורב התגלה ה׳ אל משה רבנו לראשונה ושלח אותו לגאול את ישראל.'
+            },
+            // --- 100 שאלות חדשות נוספות ---
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מי היה האדם הראשון שנברא בעולם?', options: ['שת', 'אדם', 'חנוך', 'נוח'], correct: 1, explanation: 'אדם הראשון נברא ביום השישי לבריאה מעפר המן האדמה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מאיזו צלע או חלק מגופו של אדם נבראה חוה?', options: ['מצלעו', 'מראשו', 'מידו', 'מרגלו'], correct: 0, explanation: 'ה׳ הפיל תרדמה על אדם ולקח אחת מצלעותיו כדי לברוא את חוה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מי היו שני הבנים הראשונים של אדם וחוה?', options: ['קיין והבל', 'שם וחם', 'עשו ויעקב', 'יצחק וישמעאל'], correct: 0, explanation: 'קיין היה עובד אדמה והבל היה רועה צאן.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה היה מקצועו של הבל?', options: ['עובד אדמה', 'רועה צאן', 'בונה ערים', 'דייג'], correct: 1, explanation: 'הבל היה רועה צאן וקיין היה עובד אדמה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה הורה ה׳ לנוח לבנות כדי להינצל מהמבול?', options: ['מגדל רם', 'תיבה', 'מבצר אבן', 'ספינת מלחמה'], correct: 1, explanation: 'נוח בנה תיבת עצי גופר לפי ציווי ה׳.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מהו האות ששם ה׳ בענן כהבטחה שלא יביא עוד מבול לעולם?', options: ['הקשת בענן', 'כוכב שביט', 'השמש', 'הירח'], correct: 0, explanation: 'נאמר: "אֶת קַשְׁתִּי נָתַתִּי בֶּעָנָן וְהָיְתָה לְאוֹת בְּרִית בֵּינִי וּבֵין הָאָרֶץ".' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מאיזו עיר יצא אברהם אבינו בדרכו לארץ כנען?', options: ['אור כשדים', 'חברון', 'שכם', 'ירושלים'], correct: 0, explanation: 'אברהם יצא מאור כשדים ולאחר מכן עבר דרך חרן לארץ כנען.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'בת כמה הייתה שרה אימנו כשילדה את יצחק?', options: ['70', '80', '90', '100'], correct: 2, explanation: 'שרה הייתה בת 90 ואברהם היה בן 100 כשנולד יצחק.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איך נקראה שפחתה של שרה שהייתה אם ישמעאל?', options: ['הגר', 'קטורה', 'זלפה', 'בלהה'], correct: 0, explanation: 'הגר המצרית הייתה שפחת שרה ואם ישמעאל.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה מנהיג אמר את הציטוט המפורסם: "שֶׁמֶשׁ בְּגִבְעוֹן דּוֹם וְיָרֵחַ בְּעֵמֶק אַיָּלוֹן"?', options: ['משה', 'יהושע בן נון', 'שמשון', 'גדעון'], correct: 1, explanation: 'יהושע התפלל לה\' שיעצור את מעוף השמש והירח כדי להשלים את הניצחון בקרב גבעון.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה שבט מבין 12 השבטים לא קיבל נחלת קרקע רציפה בארץ ישראל?', options: ['יהודה', 'אפרים', 'לוי', 'ראובן'], correct: 2, explanation: 'שבט לוי הוקדש לעבודת הקודש והמקדש וקיבל ערים מפוזרות במקום נחלה חקלאית.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי הוריד את עמודי המקדש הפלשתי על ראשי סרני פלשתים בעזה?', options: ['שמשון הגיבור', 'יפתח הגלעדי', 'אהוד בן גרא', 'ברק בן אבינועם'], correct: 0, explanation: 'שמשון קרא לה\', לפת את עמודי התווך של הבית ואמר: "תָּמוֹת נַפְשִׁי עִם פְּלִשְׁתִּים".' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'מה קרה ללוחות הברית הראשונים שמשה הורד מהר סיני?', options: ['נשמרו בארון הברית', 'משה שבר אותם למרגלות ההר בגלל חטא העגל', 'נגנבו על ידי העמלקים', 'נעלמו בענן'], correct: 1, explanation: 'כשראה משה את העגל והמחולות, חרה אפו והוא שיבר את הלוחות הראשונים בתחתית ההר.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזו מלכה הגיעה מקצה תבל כדי לבחון את שלמה המלך בחידות?', options: ['מלכת שבא', 'הממלכה מאי שפת', 'מלכת מצרים', 'עתליה'], correct: 0, explanation: 'מלכת שבא שמעה על שמע שלמה ובאה לנסותו בחידות והתרשמה מאד מחכמתו ועשרו.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה שם המקום שבו התרחש בלבלול הלשונות והפצת בני האדם ברחבי העולם?', options: ['סדום', 'מגדל בבל', 'אור כשדים', 'חרן'], correct: 1, explanation: 'בוני מגדל בבל ביקשו לעשות להם שם, וה\' בלל את שפתם והפיצם על פני כל הארץ.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה נביא נבלע על ידי דג גדול כשניסה לברוח משליחותו לנינוה?', options: ['יונה הנביא', 'עמוס', 'חבקוק', 'צפניה'], correct: 0, explanation: 'יונה בן אמיתי ניסה לברוח בספינה לתרשיש, נזרק לים ונבלע על ידי דג גדול למשך 3 ימים.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי הייתה הסבתא-רבתא של דוד המלך שסיפורה מסופר במגילה מיוחדת?', options: ['רות המואביה', 'נעמי', 'ערפה', 'אביגיל'], correct: 0, explanation: 'רות הדבקה בחמותה נעמי ואמרה "עַמֵּךְ עַמִּי וֵאלֹהַיִךְ אֱלֹהָי", והייתה מאבות שושלת דוד.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'כמה מכות קיבלו המצרים לפני שפרעה הסכים לשלח את בני ישראל?', options: ['7 מכות', '10 מכות', '12 מכות', '40 מכות'], correct: 1, explanation: 'רק לאחר המכה העשירית – מכת בכורות – ניאות פרעה לשלח את בני ישראל לחופשי.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה שיח בער באש במדבר אך "אֵינֶנּוּ אֻכָּל" (לא נשרף)?', options: ['עץ הזית', 'הסנה', 'עץ התמר', 'האשל'], correct: 1, explanation: 'במראה הסנה הבוער בהר חורב התגלה ה\' אל משה רבנו לראשונה ושלח אותו לגאול את ישראל.' },
+            // --- 100 שאלות נוספות ---
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מי היה האדם הראשון שנברא בעולם?', options: ['שת', 'אדם', 'חנוך', 'נוח'], correct: 1, explanation: 'אדם הראשון נברא ביום השישי לבריאה מעפר המן האדמה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מאיזו צלע או חלק מגופו של אדם נבראה חוה?', options: ['מצלעו', 'מראשו', 'מידו', 'מרגלו'], correct: 0, explanation: 'ה\' הפיל תרדמה על אדם ולקח אחת מצלעותיו כדי לברוא את חוה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מי היו שני הבנים הראשונים של אדם וחוה?', options: ['קיין והבל', 'שם וחם', 'עשו ויעקב', 'יצחק וישמעאל'], correct: 0, explanation: 'קיין היה עובד אדמה והבל היה רועה צאן.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה היה מקצועו של הבל?', options: ['עובד אדמה', 'רועה צאן', 'בונה ערים', 'דייג'], correct: 1, explanation: 'הבל היה רועה צאן וקיין היה עובד אדמה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה הורה ה\' לנוח לבנות כדי להינצל מהמבול?', options: ['מגדל רם', 'תיבה', 'מבצר אבן', 'ספינת מלחמה'], correct: 1, explanation: 'נוח בנה תיבת עצי גופר לפי ציווי ה\'.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מהו האות ששם ה\' בענן כהבטחה שלא יביא עוד מבול לעולם?', options: ['הקשת בענן', 'כוכב שביט', 'השמש', 'הירח'], correct: 0, explanation: 'נאמר: "אֶת קַשְׁתִּי נָתַתִּי בֶּעָנָן וְהָיְתָה לְאוֹת בְּרִית בֵּינִי וּבֵין הָאָרֶץ".' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה היה שמו של בנו הבכור של יצחק אבינו?', options: ['יעקב', 'עשו', 'יוסף', 'יהודה'], correct: 1, explanation: 'עשו ויעקב היו תאומים, ועשו יצא ראשון.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'תמורת מה מכר עשו ליעקב את בכורתו?', options: ['כסף וזהב', 'נחלת אדמה', 'נזיד עדשים', 'צאן ובקר'], correct: 2, explanation: 'עשו חזר עייף מן השדה ומכר את הבכורה בעבור נזיד עדשים אדום.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה ראו המלאכים עושים בחלום יעקב בבית אל?', options: ['עפים בשמיים', 'עולים ויורדים בסולם', 'שרים שירים', 'בונים המקדש'], correct: 1, explanation: 'יעקב חלם על סולם מוצב ארצה וראשה מגיע השמיימה ומלאכים עולים ויורדים בו.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מי היו ארבע הנשים של יעקב אבינו?', options: ['רחל, לאה, בלהה, זלפה', 'שרה, רבקה, רחל, לאה', 'מרים, דבורה, חנה, רות', 'מיכל, מרב, אביגיל, בת שבע'], correct: 0, explanation: 'מארבע נשים אלו נולדו 12 שבטי ישראל ותמר בת דינה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה שם נוסף ניתן ליעקב אבינו לאחר שנאבק עם המלאך?', options: ['ישראל', 'אברהם', 'ישורון', 'לוי'], correct: 0, explanation: 'נאמר לו: "לֹא יַעֲקֹב יֵאָמֵר עוֹד שִׁמְךָ כִּי אִם יִשְׂרָאֵל".' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה היה שמו של אחי יוסף הצעיר ביותר (בן רחל)?', options: ['בנימין', 'ראובן', 'שמעון', 'זבולון'], correct: 0, explanation: 'בנימין היה בנה השני של רחל ואחיו המלא של יוסף.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'למי נמכר יוסף במצרים והפך לשר בביתו?', options: ['פוטיפר', 'פרעה', 'יניס', 'רעמסס'], correct: 0, explanation: 'יוסף נמכר לפוטיפר סריס פרעה שר הטבחים.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזו מתנה מיוחדת נתן יעקב ליוסף שגרמה לקנאת אחיו?', options: ['טבעת זהב', 'כתונת פסים', 'שרביט מלכות', 'חרב יקרה'], correct: 1, explanation: 'ישראל אהב את יוסף ועשה לו כתונת פסים.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה שבט היה אחראי על עבודת המשכן והמקדש?', options: ['יהודה', 'לוי', 'אפרים', 'בנימין'], correct: 1, explanation: 'בני שבט לוי ונצר אהרן הכהן נבחרו לעבודת הקודש.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איך נקראה אחותם של משה ואהרן?', options: ['מרים', 'דבורה', 'חנה', 'ציפורה'], correct: 0, explanation: 'מרים הנביאה הייתה אחותם הגדולה של משה ואהרן.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איך נקראה אשתו של משה רבנו?', options: ['ציפורה', 'שרה', 'רבקה', 'רחל'], correct: 0, explanation: 'ציפורה בת יתרו כהן מדין הייתה אשת משה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה היה שמו של חותן משה (אבי אשתו)?', options: ['יתרו', 'לבן', 'בתואל', 'בלק'], correct: 0, explanation: 'יתרו (הנקרא גם רעואל) היה כהן מדין וחותן משה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'באיזה הר קיבל משה רבנו את עשרת הדיברות?', options: ['הר סיני', 'הר הכרמל', 'הר נבו', 'הר זיתים'], correct: 0, explanation: 'עשרת הדיברות ניתנו במעמד הר סיני.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מאיזה הר ראה משה את ארץ כנען לפני מותו מבלי להיכנס אליה?', options: ['הר נבו', 'הר תבור', 'הר גריזים', 'הר עיבל'], correct: 0, explanation: 'משה עלה להר נבו (ראש הפסגה) ומשם הראה לו ה\' את כל הארץ.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה חומש מבין חמשת חומשי התורה הוא החומש האחרון?', options: ['דברים', 'במדבר', 'ויקרא', 'שמות'], correct: 0, explanation: 'סדר החומשים הוא: בראשית, שמות, ויקרא, במדבר, דברים.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה הציבו בני ישראל במדבר כשחטאו בהעדר משה בהר סיני?', options: ['עגל זהב', 'פסל אבן', 'מזבח עץ', 'נחש נחושת'], correct: 0, explanation: 'בני ישראל עשו את עגל הזהב ואמרו "אֵלֶּה אֱלֹהֶיךָ יִשְׂרָאֵל".' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה שופט הכה את מדין עם 300 לוחמים בלבד?', options: ['גדעון', 'שמשון', 'יפתח', 'אהוד בן גרא'], correct: 0, explanation: 'גדעון צמצם את צבאו ל-300 איש שלקקו מים בידם שניצחו את המדיינים.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי היה השופט שהשתמש באטר יד ימינו (איטר) והרג את עגלון מלך מואב?', options: ['אהוד בן גרא', 'שמגר בן ענת', 'ברק בן אבינועם', 'גדעון'], correct: 0, explanation: 'אהוד בן גרא הושיע את ישראל מיד מואב.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזו אשה הרגה את סיסרא שר צבא יבין במקבת ויתד האוהל?', options: ['יעל אשת חבר הקיני', 'דבורה', 'רחב', 'אביגיל'], correct: 0, explanation: 'יעל אירחה את סיסרא בביתה כשהוא נס מהקרב והכניעה אותו.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מה היה מקור כוחו של שמשון הגיבור?', options: ['שערו שלא נגזז (נזירות)', 'חגורת הקסם שלו', 'חרבו המוזהבת', 'טבעת המלוכה'], correct: 0, explanation: 'שמשון היה נזיר אלוהים ומקור כוחו היה בשערות ראשו.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזו אשה גילתה את סוד כוחו של שמשון לפלשתים?', options: ['דלילה', 'עדה', 'צילה', 'ערפה'], correct: 0, explanation: 'דלילה שידלה את שמשון עד שגילה לה שגילוח שערו יסיר את כוחו.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזו אשה ערירית התפללה במשכן שילה לילד ונולד לה שמואל הנביא?', options: ['חנה', 'פנינה', 'נעמי', 'ענת'], correct: 0, explanation: 'חנה התפללה מקירות ליבה והבטיחה להקדיש את בנה שמואל לה\'.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי היה הכהן הגדול במשכן שילה שגידל את שמואל הנביא?', options: ['עלי הכהן', 'פנחס', 'אלעזר', 'צדוק'], correct: 0, explanation: 'עלי הכהן קיבל את שמואל הילד לשרת במשכן שילה.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מאיזה שבט בא שאול המלך?', options: ['בנימין', 'יהודה', 'אפרים', 'מנשה'], correct: 0, explanation: 'שאול בן קיש היה משבט בנימין, הקטן שבשבטים.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מה היה שמו של בנו של שאול המלך שהיה חבר נפש של דוד?', options: ['יהונתן', 'אבנר', 'איש בושת', 'מלכישוע'], correct: 0, explanation: 'בין דוד ליהונתן הייתה אהבת אמת ועמוקה.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזו עיר כבש דוד המלך והפך אותה לבירת ממלכת ישראל?', options: ['ירושלים', 'חברון', 'שכם', 'שומרון'], correct: 0, explanation: 'דוד כבש את מצודת ציון (ירושלים) והפך אותה לבירת עמו.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה ספר בתנ"ך מיוחס בעיקרו לשיריו ומזמוריו של דוד המלך?', options: ['תהילים', 'משלי', 'קהלת', 'איכה'], correct: 0, explanation: 'ספר תהילים מכיל מזמורים רבים שחיבר דוד "נעים זמירות ישראל".' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה ספר בתנ"ך מיוחס לדברי חכמתו של שלמה המלך?', options: ['משלי', 'יהושע', 'עמוס', 'תרי עשר'], correct: 0, explanation: 'ספר משלי פותח במילים: "מִשְׁלֵי שְׁלֹמֹה בֶן דָּוִד מֶלֶךְ יִשְׂרָאֵל".' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה נביא חולל ניצחון מול נביאי הבעל בהר הכרמל?', options: ['אליהו הנביא', 'אלישע', 'ישעיהו', 'מיכה'], correct: 0, explanation: 'אליהו הנביא קרא לאש מן השמיים שירדה על המזבח בהר הכרמל.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה נביא ריפא את נעמן שר צבא ארם מצרעתו במי הירדן?', options: ['אלישע', 'אליהו', 'זכריה', 'מלאכי'], correct: 0, explanation: 'אלישע הורו לטבול 7 פעמים בירדן ונעמן נרפא.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה נביא ניבא את נבואת "חזון העצמות היבשות"?', options: ['יחזקאל', 'ירמיהו', 'ישעיהו', 'הושע'], correct: 0, explanation: 'יחזקאל הנביא ניבא בגלות בבל על תחיית העצמות היבשות כסמל לתקומת ישראל.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה נביא מכונה "נביא החורבן" וחיבר את ספר איכה?', options: ['ירמיהו', 'ישעיהו', 'יואל', 'חגי'], correct: 0, explanation: 'ירמיהו ניבא על חורבן בית ראשון וקונן בספר איכה.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה מלך פרס אישר ליהודים לחזור לארצם ולבנות את בית המקדש השני?', options: ['כורש', 'דריווש', 'אחשורוש', 'ארתחששתא'], correct: 0, explanation: 'בשנת 538 לפנה"ס פרסם כורש מלך פרס את הצהרת כורש.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי היה מנהיג העלייה ששיקם את חומות ירושלים בתקופת בית שני?', options: ['נחמיה', 'עזרא', 'זרובבל', 'יהושע בן יהוצדק'], correct: 0, explanation: 'נחמיה בן חכליה כיהן כפחיה (פחוו) ובנה מחדש את חומות ירושלים.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה סופר ומנהיג דתי העלה יהודים מבבל וקרא את התורה לפני העם בשער המים?', options: ['עזרא הסופר', 'נחמיה', 'מרדכי היהודי', 'זכריה'], correct: 0, explanation: 'עזרא הסופר חידש את הזיקה לתורה ולברית.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה דוד של אסתר המלכה גילה את מזימת בגתן ותרש והציל את אחשורוש?', options: ['מרדכי היהודי', 'המן', 'חתוך', 'התך'], correct: 0, explanation: 'מרדכי ישב בשער המלך ודיווח על המזימה להתנקש במלך.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה רשע ביקש להשמיד את כל היהודים בממלכת אחשורוש?', options: ['המן', 'סיסרא', 'גוליית', 'סנחריב'], correct: 0, explanation: 'המן האגגי פעל להשמדת היהודים אך תוכניתו סוכלה בפורים.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה מלך יהודה ביצע רפורמה דתית מקיפה וביער את העבודה הזרה לאחר מציאת ספר תורה במקדש?', options: ['יאשיהו', 'חזקיהו', 'מנשה', 'אחז'], correct: 0, explanation: 'יאשיהו המלך טיהר את יהודה וירושלים מעבודה זרה.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה מלך יהודה נודע בבניית נקבת המים בירושלים (נקבת השילוח) לקראת מצור אשור?', options: ['חזקיהו', 'שלמה', 'דוד', 'אסה'], correct: 0, explanation: 'חזקיהו המלך חצב את נקבת השילוח כדי להביא מים לעיר.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה מלך מואב שכר את בלעם בן בעור לקלל את בני ישראל?', options: ['בלק בן צפור', 'עגלון', 'מישע', 'סיחון'], correct: 0, explanation: 'בלק מלך מואב פחד מבני ישראל ושכר את בלעם לקללם.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מה קרה לאתונו של בלעם בדרך?', options: ['פתחה את פיה ודיברה', 'ברחה להרים', 'הפכה לאבן', 'עפה בשמיים'], correct: 0, explanation: 'ה\' פתח את פי האתון והיא דיברה אל בלעם כשראתה מלאך בדרך.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה נס קרה לאהרן הכהן כדי להוכיח שבחירתו היא מה\'?', options: ['מטהו פרח והוציא שקדים', 'מטהו הפך לנחש זהב', 'אש ירדה על ידו', 'בגדיו להטו'], correct: 0, explanation: 'מטה אהרן לבית לוי פרח, ויצא פרח ויצץ ציץ ויגמול שקדים.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'מה קרה למי מרה כשהשליך משה עץ לתוכם לפי הוראת ה\'?', options: ['המים נהיו מתוקים', 'המים נעלמו', 'המים הפכו ליין', 'המים קפאו'], correct: 0, explanation: 'המים המרים במרה הפכו למתוקים וראויים לשתייה.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה נס חולל אלישע הנביא עבור האלמנה העשירה?', options: ['ריבוי כד השמן', 'הורדת גשם זהב', 'הכפלת הלחם', 'הפיכת אבנים לכסף'], correct: 0, explanation: 'כד השמן הקטן שמילא את כל הכלים ששאלה משכנותיה.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'מה קרה לחנניה, מישאל ועזריה כשנזרקו לכבשן האש הבוער בבבל?', options: ['האש לא נגעה בהם והם ניצלו', 'נעלמו באוויר', 'הפכו למלאכים', 'האש כבתה מיד בכל העיר'], correct: 0, explanation: 'שלושת הרעים ניצלו מכבשן האש של נבוכדנאצר בנס גלוי.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה מכה היכתה את מצרים שבה ירד ברד מעורב באש?', options: ['מכת ברד', 'מכת ארבה', 'מכת דבר', 'מכת שחין'], correct: 0, explanation: 'במכת ברד נאמר: "וַיְהִי בָרָד וְאֵשׁ מִתְלַקַּחַת בְּתוֹךְ הַבָּרָד".' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'מה קרה לצבא סנחריב מלך אשור כשצר על ירושלים בימי חזקיהו?', options: ['מלאך ה\' הכה במחנם בלילה', 'טבעו בים', 'נפלו לבורות', 'ברחו מפחד רעם'], correct: 0, explanation: 'בלילה אחד הוכו 185,000 לוחמי אשור והמצור הוסר.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה נהר נבקע לבני ישראל כשנכנסו לארץ כנען בהנהגת יהושע?', options: ['נהר הירדן', 'נהר פרת', 'נהר חידקל', 'נהר הנילוס'], correct: 0, explanation: 'כברגלי הכהנים נושאי ארון הברית נגעו במים, נעצרו מי הירדן ובני ישראל עברו ביבשה.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'מה קרה לאשת לוט כשלהביטה אחורה לעבר סדום והעמורה?', options: ['הפכה לנציב מלח', 'הפכה לאבן', 'טבעה בים', 'נעלמה בענן'], correct: 0, explanation: 'נאמר: "וַתַּבֵּט אִשְׁתּוֹ מֵאַחֲרָיו וַתְּהִי נְצִיב מֶלַח".' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזו ציפור הביאה לנוח עלה זית בפיה לסמן שהקלו המים מעל הארץ?', options: ['יונה', 'עורב', 'נשר', 'חסידה'], correct: 0, explanation: 'היונה חזרה לעת ערב והנה עלה זית טרף בפיה.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה ציפורים שלח נוח ראשונה מן התיבה לבדוק אם כלו המים?', options: ['עורב', 'יונה', 'דרור', 'תוכי'], correct: 0, explanation: 'נוח יצא וישלח את העורב יצוא ושוב עד יבשת המים.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איך ניצל משה התינוק מגזירת פרעה להשליך כל הבן הילוד היאורה?', options: ['הושם בתיבת גומא ביאור ובת פרעה משתה אותו', 'הוחבא במערה', 'נלקח למדין', 'הורחוק לבבל'], correct: 0, explanation: 'יוכבד שמה אותו בתיבת גומא ובת פרעה משתה אותו מן המים.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'מה הופיע מול משה כ שה\' דיבר אליו לראשונה במדבר?', options: ['סנה בוער באש ולא אוכל', 'ענן כבד', 'קשת מרהיבה', 'הר רועד'], correct: 0, explanation: 'מראה הסנה הבוער באש והאיננו אוכל.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'מה קרה למים במצרים במכה הראשונה?', options: ['נהפכו לדם', 'קפאו', 'התאדו', 'נהפכו למרור'], correct: 0, explanation: 'כל המים ביאור ובכל מקווי המים נהפכו לדם.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה חרק כיסה את כל ארץ מצרים במכה השמינית?', options: ['ארבה', 'כינים', 'זבובים', 'דבורים'], correct: 0, explanation: 'מכת ארבה כיסתה את עין כל הארץ ואכלה את כל עשב הארץ.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'כמה זמן נמשכה מכת חושך על מצרים?', options: ['שלושת ימים', 'שבעה ימים', 'יום אחד', 'ארבעים יום'], correct: 0, explanation: 'נאמר: "וַיְהִי חֹשֶׁךְ-אֲפֵלָה בְּכָל-אֶרֶץ מִצְרַיִם שְׁלֹשֶׁת יָמִים".' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מי היה אביו של אברהם אבינו?', options: ['תרח', 'נחור', 'הרן', 'מתושלח'], correct: 0, explanation: 'תרח היה אביהם של אברם, נחור והרן.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה היה שמה המקורי של שרה אימנו לפני שהוחלף ע"י ה\'?', options: ['שרי', 'שרית', 'שרביט', 'שרהל\'ה'], correct: 0, explanation: 'שמה המקורי היה שרי וה\' שינה אותו לשרה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה היה שמו המקורי של אברהם אבינו לפני שהוחלף ע"י ה\'?', options: ['אברם', 'אבירם', 'אברך', 'אבנר'], correct: 0, explanation: 'שמו המקורי היה אברם וה\' שינה אותו לאברהם.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'כמה שנים חיו בני ישראל בגלות ובשיעבוד מצרים?', options: ['210 (או 400 מברית בין הבתרים)', '40 שנה', '70 שנה', '100 שנה'], correct: 0, explanation: 'לפי המסורת שהות בני ישראל במצרים בפועל הייתה 210 שנים.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה עמוד הנחה את בני ישראל בלילה במהלך נדודיהם במדבר?', options: ['עמוד אש', 'עמוד ענן', 'עמוד אור', 'עמוד כסף'], correct: 0, explanation: 'ה\' הלך לפניהם יומם בעמוד ענן ולילה בעמוד אש להאיר להם.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה עמוד הנחה את בני ישראל ביום במהלך נדודיהם במדבר?', options: ['עמוד ענן', 'עמוד אש', 'עמוד רוח', 'עמוד מים'], correct: 0, explanation: 'יומם בעמוד ענן לנחותם הדרך.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'כמה שנים נדדו בני ישראל במדבר סיני?', options: ['40 שנה', '70 שנה', '12 שנה', '50 שנה'], correct: 0, explanation: 'בגלל חטא המרגלים נגזר על העם לנדוד 40 שנה במדבר.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'כמה מרגלים שלח משה לתור את ארץ כנען?', options: ['12 מרגלים', '2 מרגלים', '10 מרגלים', '7 מרגלים'], correct: 0, explanation: 'משה שלח נשיא אחד מכל שבט – סה"כ 12 מרגלים.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מי היו שני המרגלים היחידים שהביאו דיווח חיובי על הארץ?', options: ['יהושע בן נון וכלב בן יפונה', 'משה ואהרן', 'אלעזר ואיתמר', 'קורח ודתן'], correct: 0, explanation: 'יהושע וכלב אמרו: "טוֹבָה הָאָרֶץ מְאֹד מְאֹד".' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מי הוביל את עדת המורדים נגד מנהיגות משה ואהרן במדבר ונבלע באדמה?', options: ['קורח', 'בלעם', 'סיחון', 'עוג'], correct: 0, explanation: 'קורח ועדתו ערערו על הכהונה והמנהיגות והאדמה פצתה את פיה ובלעה אותם.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה מלך ענק מולך בבשן נלחם בבני ישראל?', options: ['עוג מלך הבשן', 'סיחון מלך האמורי', 'אבימלך', 'גלעד'], correct: 0, explanation: 'עוג מלך הבשן היה משארית הרפאים וערשו ערש ברזל.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מאיזה חומר היו עשויים לוחות הברית שמשה קיבל בהר סיני?', options: ['אבן', 'זהב', 'עץ שיטים', 'נחושת'], correct: 0, explanation: 'הלוחות היו לוחות אבן כתובים באצבע אלוהים.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה הושם בתוך ארון הברית במשכן?', options: ['לוחות הברית', 'ספר התורה בלבד', 'צנצנת המן בלבד', 'מטה משה בלבד'], correct: 0, explanation: 'בתוך ארון הקודש הונחו לוחות הברית (וצנצנת המן ומטה אהרן לצידו).' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי הייתה אשתו הראשונה של דוד המלך (בת שאול)?', options: ['מיכל', 'מרב', 'אביגיל', 'בת שבע'], correct: 0, explanation: 'מיכל בת שאול אהבה את דוד והייתה לו לאישה.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי היה שר הצבא הנאמן של דוד המלך?', options: ['יואב בן צרויה', 'אבנר בן נר', 'עמשי', 'בניהו בן יהוידע'], correct: 0, explanation: 'יואב בן צרויה פיקד על צבא דוד.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה נביא הוכיח את דוד המלך על חטא בת שבע במשל כבשת הרש?', options: ['נתן הנביא', 'שמואל', 'גד החוזה', 'אחיה השילוני'], correct: 0, explanation: 'נתן הנביא סיפר את משל כבשת הרש ואמר לדוד "אַתָּה הָאִישׁ".' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי היה בנו של דוד המלך שמרד באביו ונתלה בשערו על ענפי האלה?', options: ['אבשלום', 'אדוניה', 'אמנון', 'שלמה'], correct: 0, explanation: 'אבשלום מרד בדוד ובעת מנוסתו נתפס שערו בענפי עץ אלה.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי היה המלך הראשון של ממלכת ישראל הצפונית לאחר פיצול הממלכה?', options: ['ירבעם בן נבט', 'רחבעם', 'אחאב', 'יהוא'], correct: 0, explanation: 'ירבעם בן נבט הנהיג את 10 השבטים והקים את ממלכת ישראל.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי היה המלך של ממלכת יהודה הדרומית בזמן פיצול הממלכה (בנו של שלמה)?', options: ['רחבעם', 'ירבעם', 'אסא', 'יהושפט'], correct: 0, explanation: 'רחבעם בן שלמה מלך על יהודה ובנימין.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזו מלכה צידונית הרשעה אשת אחאב הכניסה את פולחן הבעל לישראל?', options: ['איזבל', 'עתליה', 'ושתי', 'גרפית'], correct: 0, explanation: 'איזבל בת אתבעל מלך צידונים רדפה את נביאי ה\'.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה נביא ניבא על העדפת חסד על פני זבחים ואמר "כִּי חֶסֶד חָפַצְתִּי וְלֹא זָבַח"?', options: ['הושע', 'עמוס', 'יואל', 'חבקוק'], correct: 0, explanation: 'הושע הנביא הדגיש את חשיבות הלב והחסד.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה נביא היה בוקר ובולס שקמים וזעק למשפט וצדקה חברתית?', options: ['עמוס', 'מיכה', 'עובדיה', 'נחום'], correct: 0, explanation: 'עמוס הנביא קרא: "וְיִגַּל כַּמַּיִם מִשְׁפָּט וּצְדָקָה כְּנַחַל אֵיתָן".' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי אמר את הפסוק המפורסם "וְכִתְּתוּ חַרְבוֹתָם לְאִתִּים וַחֲנִיתוֹתֵיהֶם לְמַזְמֵרוֹת"?', options: ['ישעיהו (ומצינו גם במיכה)', 'ירמיהו', 'יחזקאל', 'דניאל'], correct: 0, explanation: 'נבואת השלום העולמי של ישעיהו הנביא (פרק ב).' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מי הייתה החמות של רות המואביה?', options: ['נעמי', 'עורפה', 'חנה', 'אלישבע'], correct: 0, explanation: 'נעמי חזרה משדה מואב לבית לחם ורות דבקה בה.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה איש עשיר מבית לחם נשא את רות המואביה לאישה?', options: ['בועז', 'פלוני אלמוני', 'אלימלך', 'מחלון'], correct: 0, explanation: 'בועז גאל את נחלת אלימלך ונשא את רות.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה ספר מקראי נקרא על שם הנערה היהודיה שהפכה למלכת פרס?', options: ['מגילת אסתר', 'מגילת רות', 'שיר השירים', 'איכה'], correct: 0, explanation: 'סיפור הדסה היא אסתר מפורט במגילת אסתר.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'מה היה שמו העברי של אסתר המלכה?', options: ['הדסה', 'תמר', 'שלומית', 'אביגיל'], correct: 0, explanation: 'נאמר במגילה: "וַיְהִי אֹמֵן אֶת הֲדַסָּה הִיא אֶסְתֵּר".' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה איש צדיק פתח את ספרו בסבל נוראי ובחן את אמונתו בה\'?', options: ['איוב', 'דניאל', 'טוביה', 'ברוך בן נריה'], correct: 0, explanation: 'ספר איוב עוסק בשאלת צדיק ורע לו.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה עוף שלח נח מן התיבה ולא יסף שוב אליו?', options: ['היונה (בפעם השלישית)', 'העורב', 'הסנונית', 'הדרור'], correct: 0, explanation: 'בפעם השלישית היונה לא חזרה עוד אליו כי מצאה מנוח לרגלה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'כמה נפשות מבית יעקב ירדו למצרים?', options: ['70 נפש', '60 נפש', '100 נפש', '12 נפש'], correct: 0, explanation: 'נאמר: "כָּל הַנֶּפֶשׁ לְבֵית יַעֲקֹב הַבָּאָה מִצְרַיְמָה שִׁבְעִים".' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'באיזה אזור במצרים הושבו בני ישראל ע"י יוסף?', options: ['ארץ גושן', 'נא אמון', 'ממפיס', 'צידון'], correct: 0, explanation: 'בני ישראל התיישבו בארץ גושן הפורייה.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה היה שמו של אחי אברהם שהיה אביו של לוט?', options: ['הרן', 'נחור', 'תרח', 'תרשיש'], correct: 0, explanation: 'הרן מת על פני תרח אביו באור כשדים ולוט היה בנערו.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה חג חוגגים לזכר יציאת בני ישראל ממצרים?', options: ['פסח', 'סוכות', 'שבועות', 'פורים'], correct: 0, explanation: 'חג הפסח מציין את יציאת מצרים ואכילת המצות.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה חג חוגגים לזכר העננים והסוכות שבהם הושיב ה\' את בני ישראל במדבר?', options: ['סוכות', 'פסח', 'ראש השנה', 'חנוכה'], correct: 0, explanation: 'נאמר: "כִּי בַסֻּכּוֹת הוֹשַׁבְתִּי אֶת בְּנֵי יִשְׂרָאֵל".' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'איזה חג מציין את מתן תורה בהר סיני וביכורי הקציר?', options: ['שבועות', 'פסח', 'סוכות', 'יום כיפור'], correct: 0, explanation: 'חג השבועות הוא חג הקציר ויום מתן תורתנו.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה מלך בבל החריב את בית המקדש הראשון?', options: ['נבוכדנאצר', 'בלשאצר', 'אוויל מרודך', 'סנחריב'], correct: 0, explanation: 'נבוכדנאצר מלך בבל כבש את ירושלים והחריב את המקדש בשנת 586 לפנה"ס.' },
+            { category: 'leaders', categoryLabel: 'מנהיגים ונביאים', question: 'איזה מלך ראה כתובת מיוחדת על כותל ההיכל ("מנא מנא תקל ופרסין")?', options: ['בלשאצר', 'נבוכדנאצר', 'כורש', 'דריווש'], correct: 0, explanation: 'בלשאצר ערך משתה ודניאל פתר את הכתובת על מות הממלכה.' },
+            { category: 'miracles', categoryLabel: 'נסים ואירועים', question: 'איזה נס התרחש בימי חנוכה (המסופר במסורת על מנורת המקדש)?', options: ['פך השמן הספיק ל-8 ימים', 'אש ירדה מהשמיים', 'המנורה נהפכה לזהב', 'הפתיל לא נשרף'], correct: 0, explanation: 'פך שמן קטן שהיה אמור להספיק ליום אחד דלק שמונה ימים.' },
+            { category: 'torah', categoryLabel: 'חומשי תורה', question: 'מה הפירוש של המילה "תנ"ך"?', options: ['תורה, נביאים, כתובים', 'תפילה, ניגון, כוונה', 'תורה, נר, כבוד', 'תורת נביאי כנען'], correct: 0, explanation: 'ראשי התיבות תנ"ך מסמלים את שלושת חלקי הספר: תורה, נביאים, כתובים.' }
+        ];
+
+        let activeQuizQuestions = [];
+        let currentQuestionIdx = 0;
+        let quizScore = 0;
+
+        function startQuiz() {
+            const cat = document.getElementById('quiz-category').value;
+            if (cat === 'all') {
+                activeQuizQuestions = [...quizQuestions];
+            } else {
+                activeQuizQuestions = quizQuestions.filter(q => q.category === cat);
+            }
+
+            if (activeQuizQuestions.length === 0) {
+                activeQuizQuestions = [...quizQuestions];
+            }
+
+            currentQuestionIdx = 0;
+            quizScore = 0;
+
+            document.getElementById('quiz-start-screen').classList.add('hidden');
+            document.getElementById('quiz-result-screen').classList.add('hidden');
+            document.getElementById('quiz-game-screen').classList.remove('hidden');
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = activeQuizQuestions[currentQuestionIdx];
+            document.getElementById('quiz-progress-text').innerText = `${currentQuestionIdx + 1} / ${activeQuizQuestions.length}`;
+            document.getElementById('quiz-score').innerText = quizScore;
+            document.getElementById('question-category-tag').innerText = q.categoryLabel;
+            document.getElementById('quiz-question-text').innerText = q.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            q.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-right p-4 rounded-xl border border-amber-300 font-bold bg-amber-50 hover:bg-amber-100 transition shadow-sm flex justify-between items-center text-amber-950";
+                btn.innerHTML = `<span>${optText}</span> <i class="fa-regular fa-circle text-amber-400"></i>`;
+                btn.onclick = () => selectQuizOption(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectQuizOption(selectedIdx, btnElement) {
+            const q = activeQuizQuestions[currentQuestionIdx];
+            const allBtns = document.getElementById('quiz-options').children;
+
+            for (let b of allBtns) {
+                b.disabled = true;
+                b.classList.remove('hover:bg-amber-100');
+            }
+
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden');
+
+            if (selectedIdx === q.correct) {
+                quizScore += 20;
+                btnElement.classList.remove('bg-amber-50', 'border-amber-300');
+                btnElement.classList.add('bg-green-100', 'border-green-500', 'text-green-900');
+                btnElement.querySelector('i').className = 'fa-solid fa-circle-check text-green-600 text-lg';
+                feedback.className = "p-4 rounded-2xl mb-6 text-sm font-medium bg-green-100 text-green-900 border border-green-300";
+                feedback.innerHTML = `<strong>תשובה נכונה! ✨</strong> ${q.explanation}`;
+            } else {
+                btnElement.classList.remove('bg-amber-50', 'border-amber-300');
+                btnElement.classList.add('bg-red-100', 'border-red-400', 'text-red-900');
+                btnElement.querySelector('i').className = 'fa-solid fa-circle-xmark text-red-600 text-lg';
+
+                const correctBtn = allBtns[q.correct];
+                correctBtn.classList.remove('bg-amber-50', 'border-amber-300');
+                correctBtn.classList.add('bg-green-100', 'border-green-400', 'text-green-900');
+
+                feedback.className = "p-4 rounded-2xl mb-6 text-sm font-medium bg-red-100 text-red-900 border border-red-300";
+                feedback.innerHTML = `<strong>תשובה לא נכונה... </strong> ${q.explanation}`;
+            }
+
+            document.getElementById('quiz-score').innerText = quizScore;
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIdx++;
+            if (currentQuestionIdx < activeQuizQuestions.length) {
+                showQuestion();
+            } else {
+                showQuizResult();
+            }
+        }
+
+        function showQuizResult() {
+            document.getElementById('quiz-game-screen').classList.add('hidden');
+            document.getElementById('quiz-result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = quizScore;
+            document.getElementById('max-score').innerText = activeQuizQuestions.length * 20;
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-result-screen').classList.add('hidden');
+            document.getElementById('quiz-start-screen').classList.remove('hidden');
+        }
+
+        // --- Flashcards Logic ---
+        const flashcardsData = [
+            {
+                question: 'מי קיבל את כתונת הפסים מאביו?',
+                answerTitle: 'יוסף',
+                answerDesc: 'יעקב אבינו אוהב את יוסף מכל בניו ועושה לו כתונת פסים, דבר המעורר את קנאת אחיו.'
+            },
+            {
+                question: 'איזו נביאה והנהיגה את ישראל ושרה שירת ניצחון מפורסמת?',
+                answerTitle: 'דבורה הנביאה',
+                answerDesc: 'דבורה שפטה את ישראל תחת תומר דבורה והובילה את הניצחון על סיסרא ויבין מלך כנען.'
+            },
+            {
+                question: 'איזה מלך נודע בחכמתו הרבה ובבניית בית המקדש?',
+                answerTitle: 'שלמה המלך',
+                answerDesc: 'שלמה ניחן בחכמה אלוהית, חיבר את משלי, שיר השירים וקהלת ובנה את המקדש בירושלים.'
+            },
+            {
+                question: 'מהם חמשת חומשי התורה לפי הסדר?',
+                answerTitle: 'בראשית, שמות, ויקרא, במדבר, דברים',
+                answerDesc: 'חמשת הספרים המהווים את היסוד והבסיס של המקרא והמורשת היהודית.'
+            },
+            {
+                question: 'מי נזרק לגוב האריות וניצל בנס?',
+                answerTitle: 'דניאל',
+                answerDesc: 'דניאל המשיך להתפלל לה׳ למרות גזירת המלך בבבל ונשמר מכל פגע בלוע האריות.'
+            },
+            // --- 50 כרטיסיות זיכרון חדשות ---
+            {
+                question: 'מי היה אבי האומה העברית והראשון שהפיץ את האמונה באל אחד?',
+                answerTitle: 'אברהם אבינו',
+                answerDesc: 'אברהם עזב את בית אביו באור כשדים, עבר לארץ כנען ונודע במידת הכנסת האורחים שלו.'
+            },
+            {
+                question: 'מי היו ארבע האמהות של עם ישראל?',
+                answerTitle: 'שרה, רבקה, רחל ולאה',
+                answerDesc: 'ארבע האמהות המרכזיות מהן נבנה בית ישראל בתקופת האבות.'
+            },
+            {
+                question: 'איזו עיר נחרבה באש וגופרית בגלל רשעות אנשיה?',
+                answerTitle: 'סדום (ועמורה)',
+                answerDesc: 'ה׳ המטיר על סדום ועמורה גופרית ואש מן השמיים בגלל חטאיהן הקשים.'
+            },
+            {
+                question: 'איזה נביא הוציא את בני ישראל ממצרים וקיבל את התורה?',
+                answerTitle: 'משה רבנו',
+                answerDesc: 'גדול הנביאים, הנהיג את העם 40 שנה במדבר והוריד את הלוחות מהר סיני.'
+            },
+            {
+                question: 'מי הייתה אשתו של יצחק אבינו שהובאה מחרן?',
+                answerTitle: 'רבקה אימנו',
+                answerDesc: 'אליעזר עבד אברהם מצא אותה ליד הבאר בזכות חסדה והשקיית הגמלים.'
+            },
+            {
+                question: 'איזה מנהיג הבקיע את נהר הירדן והוביל את כיבוש הארץ?',
+                answerTitle: 'יהושע בן נון',
+                answerDesc: 'ממלא מקומו של משה, הוביל את בני ישראל בחלוקת הארץ ולכידת יריחו.'
+            },
+            {
+                question: 'מהו המקום שבו נטמנו אברהם, שרה, יצחק, רבקה, יעקב ולאה?',
+                answerTitle: 'מערת המכפלה',
+                answerDesc: 'מערה בחברון שקנה אברהם בעפרון החתי בדמים מלאים לקבורת שרה.'
+            },
+            {
+                question: 'מי שפט את ישראל בעזרת 300 לוחמים בלבד?',
+                answerTitle: 'גדעון בן יואש',
+                answerDesc: 'הפחית את לוחמיו לפי מבדק המים בנחל וניצח את צבא מדין העצום.'
+            },
+            {
+                question: 'איזו אשה גיבורה הכניעה את סיסרא שר צבא כנען?',
+                answerTitle: 'יעל אשת חבר הקיני',
+                answerDesc: 'השקתה את סיסרא חלב והכניעה אותו באוהלה בזמן מנוסתו.'
+            },
+            {
+                question: 'מי היה הגיבור המקראי שמקור כוחו היה בשערו?',
+                answerTitle: 'שמשון הגיבור',
+                answerDesc: 'נזיר אלוהים שנלחם בפלשתים במו ידיו ופעל כאיש אחד מול צבאותיהם.'
+            },
+            {
+                question: 'מי הייתה הילדה שצפתה על תיבת משה ביאור?',
+                answerTitle: 'מרים הנביאה',
+                answerDesc: 'אחות משה ואהרן, שהציעה לבת פרעה להביא מינקת עברייה (יוכבד).'
+            },
+            {
+                question: 'מי היה הכהן הגדול הראשון של עם ישראל?',
+                answerTitle: 'אהרן הכהן',
+                answerDesc: 'אחיו הבכור של משה, איש שלום ואוהב שלום, אבי שושלת הכהונה.'
+            },
+            {
+                question: 'איזה מלך ניצח את גוליית הענק בעזרת קלע ואבן?',
+                answerTitle: 'דוד המלך',
+                answerDesc: 'רועה הצאן הצעיר מבית לחם שהפך למלך ישראל ולמשורר ספר תהילים.'
+            },
+            {
+                question: 'מי היה חבר נפשו הנאמן של דוד המלך (בנו של שאול)?',
+                answerTitle: 'יהונתן',
+                answerDesc: 'בנו של שאול המלך שכרת ברית אהבה ונאמנות עמוקה עם דוד.'
+            },
+            {
+                question: 'איזה מלך ראשון נמשך על ידי שמואל הנביא?',
+                answerTitle: 'שאול המלך',
+                answerDesc: 'שאול בן קיש משבט בנימין, שהיה גבוה מכל העם משכמו ומעלה.'
+            },
+            {
+                question: 'איזה נביא עלה השמיימה מרכבת אש וסוסי אש?',
+                answerTitle: 'אליהו הנביא',
+                answerDesc: 'נביא הקנאי לה׳ שנלחם בעבודה זרה ועלה בסערה השמיימה.'
+            },
+            {
+                question: 'מי היה תלמידו וממשיך דרכו של אליהו הנביא?',
+                answerTitle: 'אלישע הנביא',
+                answerDesc: 'מחולל ניסים מפורסם, כגון ריפוי המים, ריבוי השמן והחייאת בן השונמית.'
+            },
+            {
+                question: 'איזו מואביה הדבקה בעם ישראל ואמרה "עמך עמי ואלוהיך אלוהי"?',
+                answerTitle: 'רות המואביה',
+                answerDesc: 'אבי-אביו של דוד המלך נולד מאיחודה עם בועז בבית לחם.'
+            },
+            {
+                question: 'מי הייתה חמותה של רות שחזרה עמה משדה מואב?',
+                answerTitle: 'נעמי',
+                answerDesc: 'אשת אלימלך ששיכלה את אישה ושני בניה ושבה לבית לחם בבחוסר כל.'
+            },
+            {
+                question: 'איזו מלכה הצילה את היהודים מגזירת השמדה בשושן הבירה?',
+                answerTitle: 'אסתר המלכה',
+                answerDesc: 'הדסה (אסתר) אשת אחשורוש שפעלה יחד עם מרדכי לביטול גזירת המן.'
+            },
+            {
+                question: 'מי היה הדוד הנאמן של אסתר שהונף על סוס המלך?',
+                answerTitle: 'מרדכי היהודי',
+                answerDesc: 'ממנהיגי שושן שסירב להשתחוות להמן והציל את המלך מבגתן ותרש.'
+            },
+            {
+                question: 'איזה נביא הושלך לבור טיט מפני שניבא את חורבן ירושלים?',
+                answerTitle: 'ירמיהו הנביא',
+                answerDesc: 'נביא החורבן שקרא לתשובה וקונן על חורבן הבית הראשון.'
+            },
+            {
+                question: 'איזה נביא ראה את חזון מרכבת האש ואת חזון העצמות היבשות?',
+                answerTitle: 'יחזקאל הנביא',
+                answerDesc: 'נביא הנגלה בגלות בבל ובישר על הגאולה ותחיית האומה.'
+            },
+            {
+                question: 'איזה נביא ניבא את נבואת השלום "וכתתו חרבותם לאתים"?',
+                answerTitle: 'ישעיהו הנביא',
+                answerDesc: 'מגדולי נביאי ישראל שניבא על אחרית הימים וגאולת ירושלים.'
+            },
+            {
+                question: 'איזה מלך בבל החריב את בית המקדש הראשון?',
+                answerTitle: 'נבוכדנאצר',
+                answerDesc: 'מלך בבל שצר על ירושלים, החריב את היכל ה׳ והגלה את יהודה לבבל.'
+            },
+            {
+                question: 'איזה מלך פרס אפשר ליהודים לשוב לארצם ולבנות את המקדש?',
+                answerTitle: 'כורש (הצהרת כורש)',
+                answerDesc: 'בשנת 538 לפנה"ס קרא לכל היהודים לעלות לירושלים ולבנות מחדש את בית ה׳.'
+            },
+            {
+                question: 'מי היה המנהיג והסופר שהעלה יהודים מבבל וקרא בתורה בירושלים?',
+                answerTitle: 'עזרא הסופר',
+                answerDesc: 'חידש את הברית בין העם לתורה והקים את אנשי כנסת הגדולה.'
+            },
+            {
+                question: 'מי שחזר מבבל ובנה מחדש את חומות ירושלים ההרוסות?',
+                answerTitle: 'נחמיה בן חכליה',
+                answerDesc: 'כיהן כפחיה מטעם פרס, ארגן את בניית החומות והבטיח את ביטחון העיר.'
+            },
+            {
+                question: 'מה שם המבנה המנייד ששימש כמקדש במדבר?',
+                answerTitle: 'המשכן (משכן העדות)',
+                answerDesc: 'מבנה מקודש עשוי יריעות ועצי שיטים שליווה את בני ישראל בנדודיהם.'
+            },
+            {
+                question: 'מה הושם בתוך ארון הקודש בקודש הקודשים?',
+                answerTitle: 'לוחות הברית',
+                answerDesc: 'לוחות האבן ועליהם עשרת הדיברות שנכתבו באצבע אלוהים.'
+            },
+            {
+                question: 'איזה מזון ניסי ירד מן השמיים מדי יום במדבר?',
+                answerTitle: 'הַמָּן',
+                answerDesc: 'גרגרים לבנים כזרע גד שטעמם כצפיחית בדבש שהזינו את העם במדבר.'
+            },
+            {
+                question: 'מהו השם הניתן ל-10 המכות שהונחתו על המצרים?',
+                answerTitle: 'עשר המכות',
+                answerDesc: 'דם, צפרדע, כינים, ערוב, דבר, שחין, ברד, ארבה, חושך ומכת בכורות.'
+            },
+            {
+                question: 'מה המאכל הסימבולי שאוכלים בפסח לזכר החיפזון ביציאת מצרים?',
+                answerTitle: 'מצה',
+                answerDesc: 'בצק שלא הספיק להחמיץ כשבני ישראל גורשו ממצרים בחיפזון.'
+            },
+            {
+                question: 'איזה הר נרעד ועשן בעת מתן תורה ועשרת הדיברות?',
+                answerTitle: 'הר סיני (הר חורב)',
+                answerDesc: 'ההר במדבר שבו התגלה ה׳ לכל עם ישראל וכרת עמם ברית.'
+            },
+            {
+                question: 'מי היה המלך החכם שהציע לגזור תינוק כדי לגלות את אימו האמיתית?',
+                answerTitle: 'שלמה המלך (משפט שלמה)',
+                answerDesc: 'שתי נשים טענו לאותו ילד, ובהצעתו החכמה התגלתה רחמי האם האמיתית.'
+            },
+            {
+                question: 'מי היה האיש הצדיק שנבחן ביסורים קשים אך נשאר נאמן לה׳?',
+                answerTitle: 'איוב',
+                answerDesc: 'גיבור ספר איוב שאיבד את רכושו וילדיו אך אמר: "ה׳ נתן וה׳ לקח יהי שם ה׳ מבורך".'
+            },
+            {
+                question: 'איזה נביא ננסה לברוח באוניה לתרשיש ונבלע ע"י דג?',
+                answerTitle: 'יונה הנביא',
+                answerDesc: 'נשלח להזכיר לאנשי נינוה לחזור בתשובה, ולאחר 3 ימים בדג ביצע את שליחותו.'
+            },
+            {
+                question: 'מה היה שמו של ההר שבו העלה אברהם את יצחק לעקדה?',
+                answerTitle: 'הר המורג (הר המוריה)',
+                answerDesc: 'ההר שבו נבחן אברהם בעקדת יצחק ולימים נבנה עליו בית המקדש.'
+            },
+            {
+                question: 'איזה חג נקבע לזכר נס הניצחון וההצלה בשושן הבירה?',
+                answerTitle: 'פורים',
+                answerDesc: 'חג שנחוג ב-י"ד ו-ט"ו באדר לזכר ניצחון היהודים על המן הרשע.'
+            },
+            {
+                question: 'מהם 3 הרגלים שבהם עלו בני ישראל לרגל לירושלים?',
+                answerTitle: 'פסח, שבועות וסוכות',
+                answerDesc: 'שלושת החגים שבהם מצווה מצד התורה לעלות לבית המקדש בירושלים.'
+            },
+            {
+                question: 'מהי העיר שנקראה "עיר דוד" והפכה לבירת ישראל הנצחית?',
+                answerTitle: 'ירושלים',
+                answerDesc: 'העיר שנכבשה ע"י דוד המלך והפכה למרכז הרוחני והלאומי של העם.'
+            },
+            {
+                question: 'איזה מלך חצב מנהרת מים תת-קרקעית בירושלים להגנה מפלשתים/אשור?',
+                answerTitle: 'חזקיהו המלך (נקבת השילוח)',
+                answerDesc: 'חצב את נקבת חזקיהו כדי להביא את מי מעיין הגיחון אל תוך חומות העיר.'
+            },
+            {
+                question: 'איזה נביא המחיש את נבואותיו ע"י שבירת כד חרס וקניית שדה?',
+                answerTitle: 'ירמיהו הנביא',
+                answerDesc: 'ביצע מעשים סמליים כדי להראות לעם את חורבן העיר ואת התקווה לשוב אליה.'
+            },
+            {
+                question: 'מי הילד שנולד לחנה לאחר תפילה נרגשת בשילה והפך לנביא ומנהיג?',
+                answerTitle: 'שמואל הנביא',
+                answerDesc: 'שמואל הוקדש לה׳ מקטנותו, שפט את ישראל ומפיו נמשכו שאול ודוד למלכים.'
+            },
+            {
+                question: 'איזו עיר בצפון הארץ הייתה מרכז נבואתו של אליהו מול נביאי הבעל?',
+                answerTitle: 'הר הכרמל',
+                answerDesc: 'על הר הכרמל ירדה אש מן השמיים על מזבח אליהו והעם זעק "ה׳ הוא האלוהים".'
+            },
+            {
+                question: 'מהו השיר המקראי המיוחס לשלמה העוסק באהבה בין דוד לבלעתו?',
+                answerTitle: 'שיר השירים',
+                answerDesc: 'ספר מקראי מלא משלים על יחסי האהבה העמוקים בין ה׳ לעם ישראל.'
+            },
+            {
+                question: 'איזה מלך בבל ראה משתה כותל "מנא מנא תקל ופרסין"?',
+                answerTitle: 'בלשאצר',
+                answerDesc: 'בלשאצר השתמש בכלי המקדש, ודניאל פתר את הכתובת שבישרה את סוף מלכותו.'
+            },
+            {
+                question: 'מה שמה של אשת משה רבנו שהייתה בת יתרו כהן מדין?',
+                answerTitle: 'ציפורה',
+                answerDesc: 'ציפורה מלה את בנם בדרך ממדין למצרים והצילה את משה.'
+            },
+            {
+                question: 'מי היה המלך הצעיר שהחל למלוך בגיל 8 וביער את העבודה הזרה?',
+                answerTitle: 'יאשיהו המלך',
+                answerDesc: 'יאשיהו מצא ספר תורה בהיכל וביצע רפורמה דתית עמוקה בכל נחלות יהודה.'
+            },
+            {
+                question: 'איזה ים נחצה לשניים כדי לאפשר לבני ישראל לעבור ביבשה?',
+                answerTitle: 'ים סוף',
+                answerDesc: 'משה נטה את ידו על הים, והמים נבקעו והיו להם לחומה מימינם ומשמאלם.'
+            }
+        ];
+
+        let currentCardIndex = 0;
+
+        function updateFlashcard() {
+            const card = flashcardsData[currentCardIndex];
+            const fcElem = document.getElementById('flashcard');
+            fcElem.classList.remove('flipped');
+            
+            setTimeout(() => {
+                document.getElementById('card-front-text').innerText = card.question;
+                document.getElementById('card-back-title').innerText = card.answerTitle;
+                document.getElementById('card-back-desc').innerText = card.answerDesc;
+                document.getElementById('card-indicator').innerText = `כרטיס ${currentCardIndex + 1} מתוך ${flashcardsData.length}`;
+            }, 200);
+        }
+
+        function nextCard() {
+            currentCardIndex = (currentCardIndex + 1) % flashcardsData.length;
+            updateFlashcard();
+        }
+
+        function prevCard() {
+            currentCardIndex = (currentCardIndex - 1 + flashcardsData.length) % flashcardsData.length;
+            updateFlashcard();
+        }
+
+        // --- Characters Logic ---
+        const charactersData = [
+            { name: "אברהם אבינו", role: "אבי האומה", desc: "מפיץ האמונה באל אחד ומכניס אורחים נודע.", icon: "fa-user-astronaut" },
+            { name: "משה רבנו", role: "מנהיג ומחוקק", desc: "הוציא את בני ישראל ממצרים וקיבל את התורה בסיני.", icon: "fa-scroll" },
+            { name: "דוד המלך", role: "מלך ישראל", desc: "משורר תהילים, ניצח את גוליית ואיחד את הממלכה.", icon: "fa-crown" },
+            { name: "אסתר המלכה", role: "גיבורת מגילת אסתר", desc: "הצילה את עמה מגזירת המן בממלכת פרס.", icon: "fa-gem" },
+            { name: "שרה אימנו", role: "אם האומה", desc: "אשת אברהם ואם יצחק, נודעה ביופייה ובצדקתה.", icon: "fa-heart" },
+            { name: "יצחק אבינו", role: "אב מאבות האומה", desc: "נעקד על הר המוריה והמשיך את הברית והאמונה.", icon: "fa-fire" },
+            { name: "רבקה אימנו", role: "אם האומה", desc: "אשת יצחק, נודעה במידת החסד המופלאה שלה ליד הבאר.", icon: "fa-hands-holding-water" },
+            { name: "יעקב אבינו (ישראל)", role: "אבי 12 השבטים", desc: "נאבק עם המלאך, חלם את חלום הסולם והוליד את אבות השבטים.", icon: "fa-stairs" },
+            { name: "רחל אימנו", role: "אם האומה", desc: "אשת יעקב האהובה, אמו של יוסף ובנימין, סמל לרחמים ותפילה.", icon: "fa-hand-holding-heart" },
+            { name: "לאה אימנו", role: "אם האומה", desc: "אשת יעקב, אם לשישה משבטי ישראל ולדינה.", icon: "fa-star" },
+            { name: "יוסף הצדיק", role: "משנה למלך מצרים", desc: "בעל החלומות שנמכר למצרים והציל את האזור כולו מרעב.", icon: "fa-shirt" },
+            { name: "אהרן הכהן", role: "הכהן הגדול הראשון", desc: "אחי משה, איש שלום ואוהב שלום שהנהיג את עבודת המקדש והמשכן.", icon: "fa-place-of-worship" },
+            { name: "מרים הנביאה", role: "מנהיגת הנשים", desc: "אחות משה ואהרן, הובילה את הנשים בשירת הים בתופים ובמחולות.", icon: "fa-music" },
+            { name: "יהושע בן נון", role: "מנהיג וכובש הארץ", desc: "תלמידו הנאמן של משה, הבקיע את הירדן והוביל את כיבוש כנען.", icon: "fa-shield-halved" },
+            { name: "דבורה הנביאה", role: "שופטת ומנהיגה", desc: "שפטה את ישראל תחת התומר והובילה לניצחון על סיסרא.", icon: "fa-scale-balanced" },
+            { name: "שמשון הגיבור", role: "שופט ולוחם", desc: "נזיר אלוהים בעל גבורה עילאית שנלחם בפלשתים במו ידיו.", icon: "fa-dumbbell" },
+            { name: "רות המואביה", role: "סבתא-רבתא של דוד", desc: "דבקה בעם ישראל ובנעמי, וזכתה להיות מאבות שושלת המלוכה.", icon: "fa-wheat-awn" },
+            { name: "שמואל הנביא", role: "נביא ושופט", desc: "הוקדש לה' מקטנותו, שפט את ישראל ומשח למלוכה את שאול ואת דוד.", icon: "fa-feather-pointed" },
+            { name: "שאול המלך", role: "המלך הראשון", desc: "משבט בנימין, נמשח על ידי שמואל והיה המלך הראשון על עם ישראל.", icon: "fa-chess-king" },
+            { name: "שלמה המלך", role: "המלך החכם", desc: "בנה את בית המקדש הראשון, נודע בחכמתו העצומה וחיבר את ספר משלי.", icon: "fa-chess-queen" },
+            { name: "אליהו הנביא", role: "נביא הקנאות והניסים", desc: "נלחם בפולחן הבעל בהר הכרמל ועלה בסערה השמיימה ברכב אש.", icon: "fa-bolt-lightning" },
+            { name: "אלישע הנביא", role: "נביא הניסים", desc: "תלמידו של אליהו, מחולל ניסים רבים כגון ריפוי מים והחייאת מתים.", icon: "fa-wand-magic-sparkles" },
+            { name: "ירמיהו הנביא", role: "נביא החורבן", desc: "קרא לתשובה, קונן בספר איכה וניבא על חורבן בית ראשון והגאולה.", icon: "fa-book-open text-amber-700" },
+            { name: "מרדכי היהודי", role: "ממנהיגי שושן", desc: "דוד אסתר שסירב להשתחוות להמן והוביל להצלת היהודים בפרס.", icon: "fa-sun" },
+            // --- 20 דמויות חדשות נוספות ---
+            { name: "נוח הצדיק", role: "בונה התיבה", desc: "איש צדיק ותמים בדורותיו אשר בנה את התיבה וניצל מהמבול.", icon: "fa-ship" },
+            { name: "אליעזר עבד אברהם", role: "נאמן אברהם", desc: "ניהל את בית אברהם ומצא את רבקה ליד הבאר בזכות מידת חסדה.", icon: "fa-ring" },
+            { name: "עשו", role: "אחי יעקב", desc: "איש שדה וציד, בנו הבכור של יצחק שמכר את הבכורה בעבור נזיד עדשים.", icon: "fa-bow-arrow" },
+            { name: "בנימין", role: "צעיר שבטי ישראל", desc: "בנה הקטן של רחל ואחי יוסף המלא, שבחלקו נבנה בית המקדש.", icon: "fa-child" },
+            { name: "יתרו", role: "כהן מדין וחותן משה", desc: "אבי ציפורה, ייעץ למשה להקים מערכת שופטים מוסדרת במדבר.", icon: "fa-users-gear" },
+            { name: "ציפורה", role: "אשת משה רבנו", desc: "בת יתרו, מלה את בנם בדרך ממדין והצילה את משה.", icon: "fa-person-dress" },
+            { name: "כלב בן יפונה", role: "מנשיאי שבט יהודה", desc: "אחד משני המרגלים הנאמנים שהביאו דיווח חיובי על הארץ ונחל את חברון.", icon: "fa-mountain" },
+            { name: "חנה", role: "אם שמואל", desc: "התפללה מעומק הלב במשכן שילה וזכתה ללדת את שמואל הנביא.", icon: "fa-hands-praying" },
+            { name: "יהונתן", role: "נסיך וידיד אמת", desc: "בנו של שאול המלך, כרת ברית אהבה וידידות עמוקה עם דוד.", icon: "fa-handshake" },
+            { name: "גוליית הפלשתי", role: "ענק פלשתי", desc: "גיבור הפלשתים מגת שחירף את מערכות אלוהים חיים ונוצח ע\"י דוד.", icon: "fa-shield-cat" },
+            { name: "אבשלום", role: "בן דוד המלך", desc: "נודע ביופיו ובשערו השופע, מרד באביו דוד ונספה ביער אפרים.", icon: "fa-skull-crossbones" },
+            { name: "חזקיהו המלך", role: "מלך יהודה הצדיק", desc: "חצב את נקבת השילוח, ביער עבודה זרה ונושע ממצור אשור.", icon: "fa-faucet-drip" },
+            { name: "יאשיהו המלך", role: "מלך יהודה", desc: "מלך מגיל 8, חידש את הברית בעקבות מציאת ספר התורה במקדש.", icon: "fa-book-bible" },
+            { name: "ישעיהו הנביא", role: "נביא הנחמה והשלום", desc: "נביא שחזה את נבואת השלום העולמי 'וכתתו חרבותם לאתים'.", icon: "fa-dove" },
+            { name: "יחזקאל הנביא", role: "נביא הגלות", desc: "ראה את חזון מרכבת האש וחזון תחיית העצמות היבשות בבבל.", icon: "fa-bone" },
+            { name: "יונה הנביא", role: "נביא התשובה", desc: "נשלח להחזיר את נינוה בתשובה ונבלע ע\"י דג גדול למשך 3 ימים.", icon: "fa-fish" },
+            { name: "איוב", role: "איש תם וישר", desc: "עמד בייסורים קשים מבלי לאבד את אמונתו התמימה בה'.", icon: "fa-shield-heart" },
+            { name: "דניאל", role: "פותר החלומות בבבל", desc: "איש סודם של מלכי בבל ופרס שניצל בנס מתוך גוב האריות.", icon: "fa-cat" },
+            { name: "עזרא הסופר", role: "מנהיג שיבת ציון", desc: "העלה יהודים מבבל, הקים את אנשי כנסת הגדולה וחידש את הקריאה בתורה.", icon: "fa-feather" },
+            { name: "נחמיה בן חכליה", role: "פחיה ומנהיג", desc: "שיקם ובנה את חומות ירושלים ההרוסות בתחילת ימי הבית השני.", icon: "fa-trowel-bricks" }
+        ];
+
+        function renderCharacters() {
+            const container = document.getElementById('tab-characters');
+            if(!container) return;
+
+            container.innerHTML = `
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-extrabold text-amber-950 mb-3">עולם הדמויות בתנ"ך</h2>
+                    <p class="text-gray-600">הכירו מקרוב את המנהיגים והגיבורים של עם ישראל</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    ${charactersData.map(c => `
+                        <div class="glass-card rounded-2xl p-6 text-center hover:shadow-xl transition">
+                            <div class="w-16 h-16 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto text-2xl mb-4">
+                                <i class="fa-solid ${c.icon}"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-amber-950">${c.name}</h3>
+                            <span class="text-xs font-semibold text-amber-600 bg-amber-100 px-3 py-1 rounded-full inline-block my-2">${c.role}</span>
+                            <p class="text-gray-600 text-sm mt-2">${c.desc}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Initialize App
+        window.onload = function() {
+            switchTab('home');
+            renderTimeline();
+            renderCharacters();
+            renderComments();
+            updateFlashcard();
+            initDailyRiddle();
+            startTimer();
+        };
+
+        // --- Daily Difficult Riddles Engine ---
+        const hardRiddles = [
+            {
+                category: "תקופת הבית השני והמקורות",
+                question: "אני מנהיג עברי שכתבתי ספר היסטוריה שלם ביוונית ברומא, לאחר שבמהלך המרד הגדול נלכדתי במערת יודפת והחלפתי צד. מי אני?",
+                options: ["יוסיפון בן גוריון", "יוסף בן מתתיהו (פלוויוס)", "פילון האלכסנדרוני", "אלעזר בן יאיר"],
+                correct: 1,
+                hint: "ספריו 'מלחמות היהודים' ו'קדמוניות היהודים' הם המקור המרכזי לתקופה זו.",
+                explanation: "יוסף בן מתתיהו (יוספוס פלוויוס) היה מפקד הגליל במרד הגדול. לאחר נפילת יודפת נכנע לרומאים והפך להיסטוריון שתיעד את חורבן בית שני."
+            },
+            {
+                category: "תקופת המלכים והנביאים",
+                question: "חצבתי מנהרת מים באורך 533 מטרים בתוך הסלע כדי להגן על מיה מעיין הגיחון בירושלים מפני מצור סנחריב מלך אשור. מי אני?",
+                options: ["חזקיהו המלך", "יאשיהו המלך", "שלמה המלך", "אחאב המלך"],
+                correct: 0,
+                hint: "בתוך המנהרה נמצאה כתובת מפורסמת בכתב עברי עתיק המתארת את פגישת החוצבים.",
+                explanation: "חזקיהו מלך יהודה חצב את נקבת השילוח (נקבת חזקיהו) לקראת מצור אשור בשנת 701 לפנה\"ס, מפעל הנדסי מרהיב לתקופתו."
+            },
+            {
+                category: "תקופת בית שני",
+                question: "עמדתי בראש סיעת הקנאים במצדה, והובלתי את ההחלטה הדרמטית לבחור במוות על פני נפילה בשבי הרומאי בשנת 73 לספירה. מי אני?",
+                options: ["שמעון בר גיורא", "יוחנן מגוש חלב", "אלעזר בן יאיר", "יהודה המכבי"],
+                correct: 2,
+                hint: "נאומו המפורסם במצדה שמור בספרי יוסף בן מתתיהו.",
+                explanation: "אלעזר בן יאיר היה מנהיג הסיקריים במצדה. בעקבות המצור הרומאי הניע את המגינים לבחור בחרות ובמוות מאשר בעבדות."
+            },
+            {
+                category: "תקופת האבות והמקרא",
+                question: "אני המקום היחיד במקרא שנקנה בדמים מלאים (400 שקל כסף עובר לסוחר) על ידי אברהם אבינו כדי לקבור את שרה. מה שמי?",
+                options: ["גורן ארוונה", "מערת המכפלה", "שכם", "בית אל"],
+                correct: 1,
+                hint: "המקום ממוקם בעיר חברון.",
+                explanation: "אברהם קנה את שדה עפרון החתי ואת מערת המכפלה בחברון ב-400 שקל כסף עובר לסוחר."
+            },
+            {
+                category: "העת החדשה והקמת המדינה",
+                question: "אני הארגון החשאי שנוסד בשנת 1909 בזכרון יעקב ומטרתו הייתה לשמור על השדות והמושבות העבריות בארץ ישראל under המשטר העות'מאני. מה שמי?",
+                options: ["השומר", "בר גיורא", "ההגנה", "אצ\"ל"],
+                correct: 0,
+                hint: "סיסמת הארגון הייתה: 'בדם ואש יהודה נפלה, בדם ואש יהודה תקום'.",
+                explanation: "ארגון 'השומר' הוקם ב-1909 (בהמשך לארגון 'בר גיורא') כדי להעביר את השמירה על הישובים לידיים עבריות."
+            },
+            {
+                category: "תקופת המשנה והתלמוד",
+                question: "הייתי נשיא הסנהדרין שערך וחתם את ששת סדרי המשנה בשנת 220 לספירה בציפורי. מי אני?",
+                options: ["רבי עקיבא", "רבי יהודה הנשיא", "רבן גמליאל", "ריש לקיש"],
+                correct: 1,
+                hint: "כונה פשוט 'רבי' או 'רבנו הקדוש'.",
+                explanation: "רבי יהודה הנשיא עקב את התורה שבעל פה וסידר את המשנה ל-6 סדרים (ש\"ס) מחשש שתשתכח מישראל."
+            }
+        ];
+
+        let currentRiddle = null;
+
+        function initDailyRiddle() {
+            const todayIndex = new Date().getDate() % hardRiddles.length;
+            loadRiddle(hardRiddles[todayIndex]);
+        }
+
+        function generateRandomRiddle() {
+            const randomIdx = Math.floor(Math.random() * hardRiddles.length);
+            loadRiddle(hardRiddles[randomIdx]);
+        }
+
+        function loadRiddle(riddleObj) {
+            currentRiddle = riddleObj;
+            document.getElementById('riddle-category').innerText = riddleObj.category;
+            document.getElementById('riddle-question').innerText = riddleObj.question;
+            
+            const hintText = document.getElementById('riddle-hint-text');
+            hintText.innerText = "רמז: " + riddleObj.hint;
+            hintText.classList.add('hidden');
+
+            const expl = document.getElementById('riddle-explanation');
+            expl.classList.add('hidden');
+
+            const optionsContainer = document.getElementById('riddle-options');
+            optionsContainer.innerHTML = '';
+
+            riddleObj.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-right p-3.5 rounded-2xl border border-amber-300 font-bold bg-white hover:bg-amber-100 transition shadow-sm text-amber-950 text-sm flex justify-between items-center";
+                btn.innerHTML = `<span>${opt}</span> <i class="fa-regular fa-circle text-amber-400"></i>`;
+                btn.onclick = () => checkRiddleAnswer(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function toggleRiddleHint() {
+            const hintText = document.getElementById('riddle-hint-text');
+            hintText.classList.toggle('hidden');
+        }
+
+        function checkRiddleAnswer(selectedIdx, btnElement) {
+            const allBtns = document.getElementById('riddle-options').children;
+            for (let b of allBtns) {
+                b.disabled = true;
+            }
+
+            const expl = document.getElementById('riddle-explanation');
+            expl.classList.remove('hidden');
+
+            if (selectedIdx === currentRiddle.correct) {
+                btnElement.className = "w-full text-right p-3.5 rounded-2xl border-2 border-green-500 font-bold bg-green-100 text-green-950 shadow text-sm flex justify-between items-center";
+                btnElement.querySelector('i').className = "fa-solid fa-circle-check text-green-600 text-lg";
+                expl.className = "mt-4 p-4 rounded-2xl text-sm leading-relaxed bg-green-100 border border-green-300 text-green-950 font-medium";
+                expl.innerHTML = `<strong>תשובה נכונה ביותר! 🧠✨</strong><br>${currentRiddle.explanation}`;
+            } else {
+                btnElement.className = "w-full text-right p-3.5 rounded-2xl border-2 border-red-400 font-bold bg-red-100 text-red-950 shadow text-sm flex justify-between items-center";
+                btnElement.querySelector('i').className = "fa-solid fa-circle-xmark text-red-600 text-lg";
+                
+                const correctBtn = allBtns[currentRiddle.correct];
+                correctBtn.className = "w-full text-right p-3.5 rounded-2xl border-2 border-green-500 font-bold bg-green-100 text-green-950 shadow text-sm flex justify-between items-center";
+                correctBtn.querySelector('i').className = "fa-solid fa-circle-check text-green-600 text-lg";
+
+                expl.className = "mt-4 p-4 rounded-2xl text-sm leading-relaxed bg-red-50 border border-red-200 text-red-950 font-medium";
+                expl.innerHTML = `<strong>תשובה לא מדויקת...</strong><br>${currentRiddle.explanation}`;
+            }
+        }
+
+        // Expose functions explicitly to global scope for inline onclick handlers
+        window.generateRandomRiddle = generateRandomRiddle;
+        window.toggleRiddleHint = toggleRiddleHint;
+        window.initDailyRiddle = initDailyRiddle;
+        window.loadRiddle = loadRiddle;
+        window.checkRiddleAnswer = checkRiddleAnswer;
+    </script>
+</body>
+</html>

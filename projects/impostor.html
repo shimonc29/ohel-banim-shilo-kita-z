@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אימפוסטר - משחק החברה הסודי</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Heebo & Rubik -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Rubik', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#f43f5e',
+                            purple: '#8b5cf6',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            amber: '#f59e0b'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-short': 'bounce 0.8s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: radial-gradient(circle at top center, #1e1b4b 0%, #0f172a 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            user-select: none;
+        }
+
+        /* Card Flip Animation */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Glassmorphism effects */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .glass-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Neon Glow Effects */
+        .glow-red {
+            box-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
+        }
+        .glow-purple {
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);
+        }
+    </style>
+<style>@media(max-width:640px){html,body{max-width:100%;overflow-x:hidden}img,video,canvas,svg{max-width:100%}input,select,textarea,button{max-width:100%}input,select,textarea{font-size:16px}.overflow-x-auto{max-width:100%}}</style>
+</head>
+<body class="font-sans flex flex-col justify-between min-h-screen p-4 md:p-6 overflow-x-hidden">
+
+    <!-- Header / Navbar -->
+    <header class="w-full max-w-4xl mx-auto flex justify-between items-center py-4 mb-2">
+        <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="resetToHome()">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                <i class="fa-solid fa-[#000] fa-user-ninja text-xl"></i>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-rose-400 via-purple-300 to-cyan-400">
+                אימפוסטר
+            </h1>
+        </div>
+        <button onclick="toggleRulesModal(true)" class="p-2.5 px-4 rounded-xl glass-panel text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-2 text-sm font-semibold">
+            <i class="fa-solid fa-circle-question text-cyan-400"></i>
+            <span>חוקים</span>
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-lg mx-auto flex-1 flex flex-col justify-center my-auto">
+
+        <!-- ================= SCREEN 1: SETUP ================= -->
+        <section id="screen-setup" class="glass-panel p-6 md:p-8 rounded-3xl shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold text-white">הגדרות המשחק</h2>
+                <p class="text-slate-400 text-sm">בחרו את מספר השחקנים והקטגוריה להתחלה</p>
+            </div>
+
+            <!-- Number of Players -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <label class="text-sm font-semibold text-slate-300">
+                        <i class="fa-solid fa-users text-purple-400 ml-1"></i> מספר שחקנים:
+                    </label>
+                    <span id="player-count-display" class="text-xl font-bold text-purple-400">4</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="adjustPlayers(-1)" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xl flex items-center justify-center transition border border-slate-700">-</button>
+                    <input type="range" id="player-range" min="3" max="15" value="4" oninput="updatePlayers(this.value)" class="w-full accent-purple-500 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    <button onclick="adjustPlayers(1)" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xl flex items-center justify-center transition border border-slate-700">+</button>
+                </div>
+            </div>
+
+            <!-- Number of Impostors -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <label class="text-sm font-semibold text-slate-300">
+                        <i class="fa-solid fa-[#000] fa-user-secret text-rose-400 ml-1"></i> מספר אימפוסטרים:
+                    </label>
+                    <span id="impostor-count-display" class="text-xl font-bold text-rose-400">1</span>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <button type="button" onclick="setImpostorCount(1)" id="btn-imp-1" class="imp-btn py-2.5 rounded-xl border border-rose-500/50 bg-rose-500/20 text-white font-bold transition">1 אימפוסטר</button>
+                    <button type="button" onclick="setImpostorCount(2)" id="btn-imp-2" class="imp-btn py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 font-bold transition">2 אימפוסטרים</button>
+                    <button type="button" onclick="setImpostorCount(3)" id="btn-imp-3" class="imp-btn py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 font-bold transition">3 אימפוסטרים</button>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="space-y-3">
+                <label class="text-sm font-semibold text-slate-300 block">
+                    <i class="fa-solid fa-shapes text-cyan-400 ml-1"></i> בחרו קטגוריה:
+                </label>
+                <div class="grid grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1" id="category-container">
+                    <!-- Categories injected via JS -->
+                </div>
+            </div>
+
+            <!-- Timer Setting -->
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-300 flex justify-between">
+                    <span><i class="fa-solid fa-stopwatch text-amber-400 ml-1"></i> זמן לדיון (דקות):</span>
+                    <span id="timer-display-val" class="text-amber-400 font-bold">3:00</span>
+                </label>
+                <select id="timer-select" onchange="updateTimerVal(this.value)" class="w-full bg-slate-800 text-slate-200 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-amber-400">
+                    <option value="120">2 דקות</option>
+                    <option value="180" selected>3 דקות</option>
+                    <option value="300">5 דקות</option>
+                    <option value="0">ללא טיימר</option>
+                </select>
+            </div>
+
+            <!-- Start Game Button -->
+            <button onclick="startGame()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-500 via-purple-600 to-cyan-500 hover:opacity-95 text-white font-black text-lg tracking-wide glass-btn glow-purple flex items-center justify-center gap-3">
+                <i class="fa-solid fa-play"></i>
+                <span>התחל משחק</span>
+            </button>
+        </section>
+
+        <!-- ================= SCREEN 2: CARD REVEAL ================= -->
+        <section id="screen-reveal" class="hidden flex-col items-center space-y-6">
+            <div class="text-center space-y-2">
+                <span class="text-xs uppercase tracking-widest text-slate-400 font-bold">שלב החשיפה</span>
+                <h2 id="current-player-title" class="text-3xl font-black text-cyan-300">שחקן 1</h2>
+                <p class="text-sm text-slate-400">לחץ על הקלף כדי לראות את התפקיד שלך</p>
+            </div>
+
+            <!-- Flip Card Container -->
+            <div class="w-full max-w-xs h-96 perspective-1000 cursor-pointer group" onclick="flipCard()">
+                <div id="card-inner" class="relative w-full h-full duration-500 transform-style-3d shadow-2xl rounded-3xl">
+                    
+                    <!-- Card Front (Hidden State) -->
+                    <div class="absolute inset-0 w-full h-full glass-panel rounded-3xl border-2 border-slate-600/50 flex flex-col items-center justify-center p-6 backface-hidden text-center space-y-4">
+                        <div class="w-20 h-20 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-4xl text-purple-400">
+                            <i class="fa-solid fa-question"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-1">לחץ על הקלף</h3>
+                            <p class="text-xs text-slate-400">ודא שאף אחד אחר לא מסתכל!</p>
+                        </div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 text-xs text-slate-300 border border-slate-700">
+                            <i class="fa-solid fa-eye-slash text-rose-400"></i> סודי ביותר
+                        </div>
+                    </div>
+
+                    <!-- Card Back (Revealed State) -->
+                    <div id="card-back" class="absolute inset-0 w-full h-full rounded-3xl flex flex-col items-center justify-between p-6 backface-hidden rotate-y-180 text-center shadow-2xl">
+                        <!-- Content generated dynamically -->
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Next Player / Action Button -->
+            <button id="btn-next-player" onclick="nextPlayer()" class="w-full max-w-xs py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold glass-btn border border-slate-700 opacity-50 cursor-not-allowed transition flex items-center justify-center gap-2" disabled>
+                <span>העבר לשחקן הבא</span>
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+        </section>
+
+        <!-- ================= SCREEN 3: DISCUSSION & TIMER ================= -->
+        <section id="screen-discussion" class="hidden glass-panel p-6 md:p-8 rounded-3xl shadow-2xl space-y-6 text-center">
+            <div class="space-y-2">
+                <span class="inline-block px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-xs font-bold uppercase tracking-wider">
+                    שלב הדיון
+                </span>
+                <h2 class="text-3xl font-black text-white">מי האימפוסטר?</h2>
+                <p class="text-slate-400 text-sm">שאלו שאלות זה את זה בזהירות כדי למצוא את המתחזה!</p>
+            </div>
+
+            <!-- Timer Display -->
+            <div id="timer-box" class="py-6 px-4 bg-slate-900/60 rounded-2xl border border-slate-800 flex flex-col items-center justify-center space-y-2">
+                <div class="text-5xl font-black tracking-wider text-cyan-400 font-mono" id="timer-clock">
+                    03:00
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleTimer()" id="btn-timer-toggle" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700">
+                        <i class="fa-solid fa-pause ml-1"></i> השהה
+                    </button>
+                    <button onclick="addMinute()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700">
+                        +1 דקה
+                    </button>
+                </div>
+            </div>
+
+            <!-- Starting Player Suggestion -->
+            <div class="bg-purple-950/40 border border-purple-800/40 rounded-2xl p-4 text-slate-300 text-sm">
+                <i class="fa-solid fa-dice text-purple-400 ml-1"></i> 
+                השחקן הראשון שמתחיל לשאול: <strong id="first-asker-name" class="text-purple-300 font-bold">שחקן 1</strong>
+            </div>
+
+            <button onclick="goToVoting()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-purple-600 hover:opacity-95 text-white font-bold text-lg glass-btn glow-red flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check-to-slot"></i>
+                <span>עבור להצבעה וחשיפה</span>
+            </button>
+        </section>
+
+        <!-- ================= SCREEN 4: VOTING / RESULTS ================= -->
+        <section id="screen-results" class="hidden glass-panel p-6 md:p-8 rounded-3xl shadow-2xl space-y-6 text-center">
+            <div class="space-y-2">
+                <h2 class="text-3xl font-black text-white">סיום המשחק וחשיפה</h2>
+                <p class="text-slate-400 text-sm">לחצו על שחקן כדי לחשוף את זהותו או גלו את כל האימפוסטרים!</p>
+            </div>
+
+            <!-- Secret Word Reveal Box -->
+            <div class="p-4 bg-slate-900/80 rounded-2xl border border-slate-700 space-y-1">
+                <span class="text-xs text-slate-400 font-semibold block">המילה הסודית הייתה:</span>
+                <span id="revealed-secret-word" class="text-2xl font-black text-cyan-400 tracking-wide">---</span>
+            </div>
+
+            <!-- Player List Reveal -->
+            <div class="space-y-2 text-right">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">רשימת השחקנים והתפקידים:</label>
+                <div id="players-reveal-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-3 pt-2">
+                <button onclick="startGame()" class="w-full py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold glass-btn flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>סיבוב נוסף (אותן הגדרות)</span>
+                </button>
+                <button onclick="resetToHome()" class="w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold border border-slate-700 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>שינוי הגדרות</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-4xl mx-auto text-center py-4 text-xs text-slate-500">
+        אימפוסטר - משחק החברה האולטימטיבי &copy; 2026
+    </footer>
+
+    <!-- Rules Modal -->
+    <div id="rules-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel bg-slate-900/95 border border-slate-700 max-w-md w-full rounded-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-cyan-400"></i> הוראות המשחק
+                </h3>
+                <button onclick="toggleRulesModal(false)" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+                    <p><strong>המטרה:</strong> השחקנים הרגילים צריכים לגלות מי האימפוסטר. האימפוסטר צריך להשתלב ולא להיתפס, או לנחש את המילה הסודית.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+                    <p><strong>החשיפה:</strong> המכשיר עובר בין כל השחקנים. כל אחד מציץ בקלף שלו. הרגילים רואים את המילה הסודית, והאימפוסטר רואה אזהרה שהוא המתחזה!</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+                    <p><strong>הדיון:</strong> לפי התור, כל שחקן שואל שחקן אחר שאלה הקשורה למילה (דוגמה: "האם זה משהו שמשתמשים בו בבית?"). תהיו זהירים! אם תשאלו שאלה ברורה מדי, האימפוסטר יבין מה המילה.</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 font-bold flex items-center justify-center flex-shrink-0 mt-0.5">4</div>
+                    <p><strong>ההצבעה:</strong> בתום הזמן (או כשמוכנים), כולם מצביעים ביחד על מי שחשוד כאימפוסטר!</p>
+                </div>
+            </div>
+
+            <button onclick="toggleRulesModal(false)" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl mt-4">
+                הבנתי, בואו נשחק!
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Game Categories & Words Database
+        const WORD_CATEGORIES = [
+            {
+                id: 'food',
+                name: 'אוכל ואירוח',
+                icon: 'fa-utensils',
+                words: ['פיצה', 'המבורגר', 'סושי', 'פלאפל', 'שקשוקה', 'גלידה', 'עוגת שוקולד', 'חומוס', 'סלט יווני', 'פאנקייק', 'שוארמה', 'קפה הפוך', 'מלוואח', 'ספגטי', 'קוסקוס']
+            },
+            {
+                id: 'animals',
+                name: 'חיות',
+                icon: 'fa-paw',
+                words: ['אריה', 'פיל', 'פינגווין', 'כלב', 'חתול', 'ג׳רפה', 'דולפין', 'נחש', 'תוכי', 'קוף', 'עטלף', 'זאב', 'תרנגול', 'כריש', 'קנגורו']
+            },
+            {
+                id: 'places',
+                name: 'מקומות בעולם ובארץ',
+                icon: 'fa-earth-americas',
+                words: ['אילת', 'פריז', 'ניו יורק', 'חוף הים', 'בית ספר', 'בית חולים', 'שדה תעופה', 'סופרמרקט', 'לונה פארק', 'חרמון', 'בריכה', 'מוזיאון', 'קולנוע', 'חדר כושר']
+            },
+            {
+                id: 'objects',
+                name: 'חפצים יומיומיים',
+                icon: 'fa-couch',
+                words: ['טלפון נייד', 'מקרר', 'טלוויזיה', 'מיקרוגל', 'מברשת שיניים', 'ספה', 'משקפי שמש', 'מפתח', 'שעון מעורר', 'מחשב נייד', 'מזגן', 'אופניים', 'מחברת', 'מצלמה']
+            },
+            {
+                id: 'professions',
+                name: 'מקצועות',
+                icon: 'fa-briefcase',
+                words: ['רופא', 'שוטר', 'טייס', 'מורה', 'טבח', 'כבאות', 'קוסם', 'שחקן כדורגל', 'זמר', 'אדריכל', 'ספר', 'וטרינר', 'שופט', 'אסטרונאוט']
+            },
+            {
+                id: 'movies',
+                name: 'סרטים ותכניות',
+                icon: 'fa-film',
+                words: ['הארי פוטר', 'מלך האריות', 'ספיידרמן', 'בובספוג', 'משחקי הדיונון', 'מלחמת הכוכבים', 'מואנה', 'סטארט-אפ', 'מאסטר שף', 'אווטאר', 'שרק']
+            }
+        ];
+
+        // State Variables
+        let gameState = {
+            totalPlayers: 4,
+            impostorCount: 1,
+            selectedCategory: WORD_CATEGORIES[0].id,
+            timerDuration: 180, // in seconds
+            
+            // Current Game Instance Data
+            players: [], // Array of objects: { id: 1, role: 'citizen'|'impostor', revealed: false }
+            secretWord: '',
+            currentPlayerIndex: 0,
+            isCardFlipped: false,
+            timerInterval: null,
+            timerRemaining: 180,
+            isTimerRunning: false
+        };
+
+        // DOM Elements
+        const screens = {
+            setup: document.getElementById('screen-setup'),
+            reveal: document.getElementById('screen-reveal'),
+            discussion: document.getElementById('screen-discussion'),
+            results: document.getElementById('screen-results')
+        };
+
+        // Init App
+        window.onload = function() {
+            renderCategories();
+            updatePlayers(gameState.totalPlayers);
+        };
+
+        // Category Rendering
+        function renderCategories() {
+            const container = document.getElementById('category-container');
+            container.innerHTML = WORD_CATEGORIES.map(cat => `
+                <button type="button" 
+                        onclick="selectCategory('${cat.id}')" 
+                        id="cat-${cat.id}"
+                        class="cat-btn p-3 rounded-2xl border text-right transition flex items-center justify-start gap-2.5 ${cat.id === gameState.selectedCategory ? 'border-cyan-400 bg-cyan-500/20 text-white font-bold' : 'border-slate-800 bg-slate-800/60 text-slate-400 hover:bg-slate-800'}">
+                    <i class="fa-solid ${cat.icon} text-cyan-400 text-base"></i>
+                    <span class="text-xs md:text-sm truncate">${cat.name}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(catId) {
+            gameState.selectedCategory = catId;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('border-cyan-400', 'bg-cyan-500/20', 'text-white', 'font-bold');
+                btn.classList.add('border-slate-800', 'bg-slate-800/60', 'text-slate-400');
+            });
+            const selectedBtn = document.getElementById(`cat-${catId}`);
+            if (selectedBtn) {
+                selectedBtn.classList.remove('border-slate-800', 'bg-slate-800/60', 'text-slate-400');
+                selectedBtn.classList.add('border-cyan-400', 'bg-cyan-500/20', 'text-white', 'font-bold');
+            }
+        }
+
+        // Setup Controls
+        function updatePlayers(val) {
+            val = parseInt(val);
+            gameState.totalPlayers = val;
+            document.getElementById('player-count-display').innerText = val;
+            document.getElementById('player-range').value = val;
+
+            // Ensure impostors do not exceed logical limit (max half the players - 1)
+            const maxImpostors = Math.max(1, Math.floor((val - 1) / 2));
+            if (gameState.impostorCount > maxImpostors) {
+                setImpostorCount(maxImpostors);
+            }
+
+            // Disable unavailable impostor buttons
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`btn-imp-${i}`);
+                if (btn) {
+                    if (i > maxImpostors) {
+                        btn.classList.add('opacity-40', 'cursor-not-allowed');
+                        btn.disabled = true;
+                    } else {
+                        btn.classList.remove('opacity-40', 'cursor-not-allowed');
+                        btn.disabled = false;
+                    }
+                }
+            }
+        }
+
+        function adjustPlayers(delta) {
+            const newVal = gameState.totalPlayers + delta;
+            if (newVal >= 3 && newVal <= 15) {
+                updatePlayers(newVal);
+            }
+        }
+
+        function setImpostorCount(count) {
+            gameState.impostorCount = count;
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`btn-imp-${i}`);
+                if (btn) {
+                    if (i === count) {
+                        btn.className = "imp-btn py-2.5 rounded-xl border border-rose-500/50 bg-rose-500/20 text-white font-bold transition";
+                    } else {
+                        btn.className = "imp-btn py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 font-bold transition";
+                    }
+                }
+            }
+        }
+
+        function updateTimerVal(val) {
+            gameState.timerDuration = parseInt(val);
+            const mins = Math.floor(gameState.timerDuration / 60);
+            const secs = gameState.timerDuration % 60;
+            document.getElementById('timer-display-val').innerText = 
+                gameState.timerDuration === 0 ? 'ללא' : `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Game Flow Navigation
+        function showScreen(screenKey) {
+            Object.keys(screens).forEach(key => {
+                screens[key].classList.add('hidden');
+                screens[key].classList.remove('flex');
+            });
+            screens[screenKey].classList.remove('hidden');
+            if (screenKey === 'reveal') {
+                screens[screenKey].classList.add('flex');
+            }
+        }
+
+        function resetToHome() {
+            clearInterval(gameState.timerInterval);
+            gameState.isTimerRunning = false;
+            showScreen('setup');
+        }
+
+        // Start Game Logic
+        function startGame() {
+            // Pick Random Word from Selected Category
+            const categoryObj = WORD_CATEGORIES.find(c => c.id === gameState.selectedCategory) || WORD_CATEGORIES[0];
+            const randomIndex = Math.floor(Math.random() * categoryObj.words.length);
+            gameState.secretWord = categoryObj.words[randomIndex];
+
+            // Setup Players Array
+            gameState.players = Array.from({ length: gameState.totalPlayers }, (_, i) => ({
+                id: i + 1,
+                role: 'citizen',
+                revealed: false
+            }));
+
+            // Assign Impostors Randomly
+            let assignedImpostors = 0;
+            while (assignedImpostors < gameState.impostorCount) {
+                const randPlayerIndex = Math.floor(Math.random() * gameState.totalPlayers);
+                if (gameState.players[randPlayerIndex].role !== 'impostor') {
+                    gameState.players[randPlayerIndex].role = 'impostor';
+                    assignedImpostors++;
+                }
+            }
+
+            // Reset State for Reveal
+            gameState.currentPlayerIndex = 0;
+            gameState.isCardFlipped = false;
+            
+            showScreen('reveal');
+            updateRevealCardUI();
+        }
+
+        // Card Reveal Logic
+        function updateRevealCardUI() {
+            const player = gameState.players[gameState.currentPlayerIndex];
+            document.getElementById('current-player-title').innerText = `שחקן ${player.id}`;
+            
+            // Ensure card is flipped front side up
+            const cardInner = document.getElementById('card-inner');
+            cardInner.classList.remove('rotate-y-180');
+            gameState.isCardFlipped = false;
+
+            // Prepare Back of Card content
+            const cardBack = document.getElementById('card-back');
+            if (player.role === 'impostor') {
+                cardBack.className = "absolute inset-0 w-full h-full rounded-3xl flex flex-col items-center justify-between p-6 backface-hidden rotate-y-180 text-center shadow-2xl bg-gradient-to-b from-rose-950 via-slate-900 to-slate-950 border-2 border-rose-500/80 glow-red";
+                cardBack.innerHTML = `
+                    <div class="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500 flex items-center justify-center text-3xl text-rose-500 mt-4">
+                        <i class="fa-solid fa-[#000] fa-user-ninja"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold uppercase tracking-wider">תפקיד סודי</span>
+                        <h3 class="text-3xl font-black text-rose-500 tracking-wide">אתה האימפוסטר!</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed px-2">
+                            אינך יודע את המילה הסודית. הקשב היטב לתשובות השחקנים, נסה להשתלב ולא להיתפס!
+                        </p>
+                    </div>
+                    <div class="text-xs text-slate-500 pb-2">לחץ שוב כדי להסתיר</div>
+                `;
+            } else {
+                cardBack.className = "absolute inset-0 w-full h-full rounded-3xl flex flex-col items-center justify-between p-6 backface-hidden rotate-y-180 text-center shadow-2xl bg-gradient-to-b from-purple-950 via-slate-900 to-slate-950 border-2 border-purple-500/80 glow-purple";
+                cardBack.innerHTML = `
+                    <div class="w-16 h-16 rounded-full bg-purple-500/20 border border-purple-500 flex items-center justify-center text-3xl text-purple-400 mt-4">
+                        <i class="fa-solid fa-key"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold uppercase tracking-wider">המילה הסודית</span>
+                        <h3 class="text-3xl font-black text-white tracking-wide">${gameState.secretWord}</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed px-2">
+                            אתה אזרח רגיל. ענה על שאלות בצורה חכמה כך שהאימפוסטר לא ינחש את המילה!
+                        </p>
+                    </div>
+                    <div class="text-xs text-slate-500 pb-2">לחץ שוב כדי להסתיר</div>
+                `;
+            }
+
+            // Disable Next Button until flipped at least once
+            const nextBtn = document.getElementById('btn-next-player');
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        function flipCard() {
+            const cardInner = document.getElementById('card-inner');
+            gameState.isCardFlipped = !gameState.isCardFlipped;
+            
+            if (gameState.isCardFlipped) {
+                cardInner.classList.add('rotate-y-180');
+                // Enable next button
+                const nextBtn = document.getElementById('btn-next-player');
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                cardInner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function nextPlayer() {
+            gameState.currentPlayerIndex++;
+            if (gameState.currentPlayerIndex < gameState.totalPlayers) {
+                updateRevealCardUI();
+            } else {
+                startDiscussion();
+            }
+        }
+
+        // Discussion & Timer Logic
+        function startDiscussion() {
+            showScreen('discussion');
+
+            // Pick Random First Asker
+            const randomStarter = Math.floor(Math.random() * gameState.totalPlayers) + 1;
+            document.getElementById('first-asker-name').innerText = `שחקן ${randomStarter}`;
+
+            // Setup Timer
+            const timerBox = document.getElementById('timer-box');
+            if (gameState.timerDuration === 0) {
+                timerBox.classList.add('hidden');
+            } else {
+                timerBox.classList.remove('hidden');
+                gameState.timerRemaining = gameState.timerDuration;
+                updateTimerClockDisplay();
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            clearInterval(gameState.timerInterval);
+            gameState.isTimerRunning = true;
+            document.getElementById('btn-timer-toggle').innerHTML = `<i class="fa-solid fa-pause ml-1"></i> השהה`;
+
+            gameState.timerInterval = setInterval(() => {
+                if (gameState.timerRemaining > 0) {
+                    gameState.timerRemaining--;
+                    updateTimerClockDisplay();
+                } else {
+                    clearInterval(gameState.timerInterval);
+                    gameState.isTimerRunning = false;
+                    // Play simple alert sound or pulse UI
+                    document.getElementById('timer-clock').classList.add('animate-bounce-short', 'text-rose-500');
+                }
+            }, 1000);
+        }
+
+        function toggleTimer() {
+            if (gameState.isTimerRunning) {
+                clearInterval(gameState.timerInterval);
+                gameState.isTimerRunning = false;
+                document.getElementById('btn-timer-toggle').innerHTML = `<i class="fa-solid fa-play ml-1"></i> המשך`;
+            } else {
+                startTimer();
+            }
+        }
+
+        function addMinute() {
+            gameState.timerRemaining += 60;
+            updateTimerClockDisplay();
+        }
+
+        function updateTimerClockDisplay() {
+            const mins = Math.floor(gameState.timerRemaining / 60);
+            const secs = gameState.timerRemaining % 60;
+            const clockEl = document.getElementById('timer-clock');
+            clockEl.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            if (gameState.timerRemaining <= 30) {
+                clockEl.classList.add('text-rose-500');
+                clockEl.classList.remove('text-cyan-400');
+            } else {
+                clockEl.classList.remove('text-rose-500');
+                clockEl.classList.add('text-cyan-400');
+            }
+        }
+
+        // Voting and Results
+        function goToVoting() {
+            clearInterval(gameState.timerInterval);
+            showScreen('results');
+
+            // Render Secret Word
+            document.getElementById('revealed-secret-word').innerText = gameState.secretWord;
+
+            // Render Player Cards List for reveal
+            const listContainer = document.getElementById('players-reveal-list');
+            listContainer.innerHTML = gameState.players.map(player => `
+                <div id="player-reveal-card-${player.id}" 
+                     onclick="toggleSinglePlayerRole(${player.id})" 
+                     class="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex justify-between items-center cursor-pointer hover:bg-slate-700/60 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-slate-700 text-slate-300 font-bold flex items-center justify-center text-sm">
+                            ${player.id}
+                        </div>
+                        <span class="font-bold text-white text-sm">שחקן ${player.id}</span>
+                    </div>
+                    <div class="player-role-badge">
+                        <span class="text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-lock text-xs"></i> לחץ לחשיפה
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleSinglePlayerRole(playerId) {
+            const player = gameState.players.find(p => p.id === playerId);
+            if (!player) return;
+
+            const cardEl = document.getElementById(`player-reveal-card-${playerId}`);
+            const badgeContainer = cardEl.querySelector('.player-role-badge');
+
+            if (player.role === 'impostor') {
+                cardEl.className = "p-3.5 rounded-2xl bg-rose-950/60 border border-rose-500/60 flex justify-between items-center transition glow-red";
+                badgeContainer.innerHTML = `
+                    <span class="text-xs px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-[#000] fa-user-ninja"></i> אימפוסטר!
+                    </span>
+                `;
+            } else {
+                cardEl.className = "p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 flex justify-between items-center transition";
+                badgeContainer.innerHTML = `
+                    <span class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-check"></i> אזרח רגיל
+                    </span>
+                `;
+            }
+        }
+
+        // Rules Modal Utility
+        function toggleRulesModal(show) {
+            const modal = document.getElementById('rules-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

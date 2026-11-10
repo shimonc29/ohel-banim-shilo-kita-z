@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoMaster Pro - אנציקלופדיה והשוואת מכוניות</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Rubik -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Rubik', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: #080C14;
+            color: #F3F4F6;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card-hover {
+            transition: all 0.3s ease;
+        }
+        .glass-card-hover:hover {
+            transform: translateY(-4px);
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 12px 30px -10px rgba(239, 68, 68, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #FF4D4D 0%, #F97316 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E293B;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+<style>@media(max-width:640px){html,body{max-width:100%;overflow-x:hidden}img,video,canvas,svg{max-width:100%}input,select,textarea,button{max-width:100%}input,select,textarea{font-size:16px}.overflow-x-auto{max-width:100%}}@media(max-width:640px){#searchForm{display:flex;flex-direction:column;gap:8px}#searchForm input{padding:13px 16px!important;font-size:16px!important}#searchForm>div{display:none}#searchForm button{position:static!important;width:100%;justify-content:center}.glass-card{min-width:0}}</style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-slate-800/80 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showSection('search')">
+                <div class="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-red-500/30">
+                    <i class="fa-solid fa-car-side text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight">Auto<span class="gradient-text">Master</span> <span class="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded-full font-bold">PRO</span></h1>
+                    <p class="text-xs text-slate-400">פורטל ומנוע השוואת רכבים מתקדם</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <nav class="hidden md:flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800">
+                <button onclick="showSection('search')" id="nav-search" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-white bg-slate-800 shadow-sm transition-all">
+                    <i class="fa-solid fa-magnifying-glass ml-1.5 text-red-400"></i>חיפוש ומפרט
+                </button>
+                <button onclick="showSection('compare')" id="nav-compare" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-slate-400 hover:text-white transition-all">
+                    <i class="fa-solid fa-code-compare ml-1.5 text-indigo-400"></i>השוואת רכבים
+                </button>
+                <button onclick="showSection('calculator')" id="nav-calculator" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-slate-400 hover:text-white transition-all">
+                    <i class="fa-solid fa-calculator ml-1.5 text-emerald-400"></i>מחשבון מימון
+                </button>
+            </nav>
+
+            <div class="flex items-center gap-2">
+                <button onclick="openApiModal()" class="text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 px-3 py-2.5 rounded-xl border border-slate-800 transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-key text-amber-400"></i>
+                    <span class="hidden sm:inline">הגדרות API</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Sub-bar -->
+        <div class="flex md:hidden border-t border-slate-800/60 bg-slate-900/90 px-2 py-2 justify-around">
+            <button onclick="showSection('search')" class="text-xs px-3 py-2 text-white font-medium flex items-center gap-1">
+                <i class="fa-solid fa-magnifying-glass text-red-400"></i> חיפוש
+            </button>
+            <button onclick="showSection('compare')" class="text-xs px-3 py-2 text-slate-400 font-medium flex items-center gap-1">
+                <i class="fa-solid fa-code-compare text-indigo-400"></i> השוואה
+            </button>
+            <button onclick="showSection('calculator')" class="text-xs px-3 py-2 text-slate-400 font-medium flex items-center gap-1">
+                <i class="fa-solid fa-calculator text-emerald-400"></i> מימון
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= SECTION 1: SEARCH & CAR DETAILS ================= -->
+        <div id="section-search" class="space-y-8">
+            <!-- Hero Section & Search -->
+            <section id="heroSection" class="text-center py-6 transition-all duration-500">
+                <h2 class="text-3xl sm:text-5xl font-black mb-3 leading-tight">
+                    מצא את המכונית הבאה שלך, <span class="gradient-text">בדיוק לפי הפרטים</span>
+                </h2>
+                <p class="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto mb-8">
+                    הקלד שם רכב (בעברית או באנגלית) וגלה מפרט מלא, ביצועים, מידות וסקירת מומחה אובייקטיבית.
+                </p>
+
+                <!-- Search Bar Form -->
+                <div class="max-w-2xl mx-auto relative">
+                    <form id="searchForm" class="relative flex items-center">
+                        <input type="text" id="carQuery" required
+                            placeholder="איזו מכונית מעניינת אותך? (למשל: מאזדה 3, טסלה מודל Y, פורשה)..."
+                            class="w-full bg-slate-900/90 text-white placeholder-slate-500 rounded-2xl py-4 pr-14 pl-36 border border-slate-800 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-lg shadow-2xl transition-all">
+                        
+                        <div class="absolute right-4 text-slate-500 text-xl pointer-events-none">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+
+                        <button type="submit" id="searchBtn"
+                            class="absolute left-2 gradient-bg hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg transition-all duration-200 flex items-center gap-2">
+                            <span>חפש</span>
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Category Filters & Quick Searches -->
+                <div class="flex flex-wrap items-center justify-center gap-2 mt-6 text-xs text-slate-400">
+                    <span class="ml-2 font-medium text-slate-300"><i class="fa-solid fa-fire text-red-500"></i> פופולריים:</span>
+                    <button onclick="quickSearch('מאזדה 3')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all hover:text-white">מאזדה 3</button>
+                    <button onclick="quickSearch('טסלה מודל Y')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all hover:text-white">טסלה מודל Y</button>
+                    <button onclick="quickSearch('יונדאי איוניק 5')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all hover:text-white">יונדאי איוניק 5</button>
+                    <button onclick="quickSearch('טויוטה ראב4')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all hover:text-white">טויוטה ראב4</button>
+                    <button onclick="quickSearch('פורשה 911 GT3')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all hover:text-white">פורשה 911</button>
+                    <button onclick="quickSearch('קיה ספורטאז\'')" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all hover:text-white">קיה ספורטאז'</button>
+                </div>
+            </section>
+
+            <!-- Loading Spinner State -->
+            <div id="loadingState" class="hidden flex-col items-center justify-center py-16">
+                <div class="relative w-20 h-20">
+                    <div class="absolute top-0 left-0 w-full h-full border-4 border-red-500/20 rounded-full"></div>
+                    <div class="absolute top-0 left-0 w-full h-full border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
+                    <div class="absolute inset-0 flex items-center justify-center text-red-500">
+                        <i class="fa-solid fa-car text-xl"></i>
+                    </div>
+                </div>
+                <p id="loadingText" class="mt-4 text-slate-300 font-semibold text-lg">אוסף נתונים ומכין מפרט...</p>
+            </div>
+
+            <!-- Car Details Result Display -->
+            <div id="carResult" class="hidden space-y-8">
+                
+                <!-- Top Hero Card with Image and Summary -->
+                <div class="glass-card rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl">
+                    <!-- Car Image Column -->
+                    <div class="lg:col-span-7 relative min-h-[300px] sm:min-h-[420px] bg-slate-950 flex items-center justify-center overflow-hidden group">
+                        <img id="carImage" src="" alt="תמונת המכונית" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent lg:hidden"></div>
+                    </div>
+
+                    <!-- Basic Info Summary Column -->
+                    <div class="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span id="carCategory" class="px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold rounded-full uppercase tracking-wider">משפחתית</span>
+                                <span id="carYear" class="text-slate-400 text-sm font-semibold">2024</span>
+                            </div>
+                            <h2 id="carTitle" class="text-3xl sm:text-4xl font-extrabold text-white mb-2">שם המכונית</h2>
+                            <p id="carTagline" class="text-slate-400 text-sm mb-6 leading-relaxed">תיאור קצר ותמציתי על המכונית.</p>
+                            
+                            <!-- Quick Stats Badges Grid -->
+                            <div class="grid grid-cols-2 gap-3 mb-6">
+                                <div class="bg-slate-900/80 border border-slate-800 p-3.5 rounded-2xl">
+                                    <div class="text-xs text-slate-400 mb-1 flex items-center gap-1.5 font-medium">
+                                        <i class="fa-solid fa-gauge-high text-red-400"></i> הספק מנוע
+                                    </div>
+                                    <div id="statHorsepower" class="text-xl font-black text-white">-- כ"ס</div>
+                                </div>
+                                <div class="bg-slate-900/80 border border-slate-800 p-3.5 rounded-2xl">
+                                    <div class="text-xs text-slate-400 mb-1 flex items-center gap-1.5 font-medium">
+                                        <i class="fa-solid fa-stopwatch text-amber-400"></i> 0 ל-100 קמ"ש
+                                    </div>
+                                    <div id="statAcceleration" class="text-xl font-black text-white">-- שניות</div>
+                                </div>
+                                <div class="bg-slate-900/80 border border-slate-800 p-3.5 rounded-2xl">
+                                    <div class="text-xs text-slate-400 mb-1 flex items-center gap-1.5 font-medium">
+                                        <i class="fa-solid fa-tachometer-alt text-blue-400"></i> מהירות מרבית
+                                    </div>
+                                    <div id="statTopSpeed" class="text-xl font-black text-white">-- קמ"ש</div>
+                                </div>
+                                <div class="bg-slate-900/80 border border-slate-800 p-3.5 rounded-2xl">
+                                    <div class="text-xs text-slate-400 mb-1 flex items-center gap-1.5 font-medium">
+                                        <i class="fa-solid fa-shekel-sign text-emerald-400"></i> מחיר משוער
+                                    </div>
+                                    <div id="statPrice" class="text-xl font-black text-white">-- ₪</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-4 border-t border-slate-800">
+                            <button onclick="setForComparisonCurrent()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20">
+                                <i class="fa-solid fa-code-compare"></i> הוסף להשוואה
+                            </button>
+                            <button onclick="window.print()" class="px-4 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl font-medium text-xs transition-colors flex items-center justify-center gap-2 border border-slate-800">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button onclick="shareCar()" class="px-4 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl font-medium text-xs transition-colors flex items-center justify-center gap-2 border border-slate-800">
+                                <i class="fa-solid fa-share-nodes"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Specifications Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Engine & Performance Card -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center gap-3 border-b border-slate-800/80 pb-3">
+                            <div class="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-engine"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">מנוע וביצועים</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex justify-between"><span class="text-slate-400">סוג מנוע:</span> <span id="specEngineType" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">נפח מנוע:</span> <span id="specDisplacement" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">מומנט מרבי:</span> <span id="specTorque" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">תיבת הילוכים:</span> <span id="specTransmission" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">סוג הנעה:</span> <span id="specDrivetrain" class="font-medium text-white text-left">--</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Dimensions & Weight -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center gap-3 border-b border-slate-800/80 pb-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-ruler-combined"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">ממדים ומשקל</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex justify-between"><span class="text-slate-400">אורך x רוחב x גובה:</span> <span id="specDimensions" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">בסיס גלגלים:</span> <span id="specWheelbase" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">משקל עצמי:</span> <span id="specWeight" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">נפח תא מטען:</span> <span id="specTrunk" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">מספר מושבים:</span> <span id="specSeats" class="font-medium text-white text-left">--</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Fuel Economy / Battery & Charging -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <div class="flex items-center gap-3 border-b border-slate-800/80 pb-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-gas-pump"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">דלק / סוללה וטעינה</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex justify-between"><span class="text-slate-400">צריכת דלק / טווח:</span> <span id="specConsumption" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">קיבולת מיכל / סוללה:</span> <span id="specTankCapacity" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">מהירות טעינה מרבית:</span> <span id="specChargingSpeed" class="font-medium text-white text-left">--</span></li>
+                            <li class="flex justify-between"><span class="text-slate-400">דרגת זיהום אוויר:</span> <span id="specEmissions" class="font-medium text-white text-left">--</span></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- Pros, Cons & Overview -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- Pros & Cons Card -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-lg font-bold text-white border-b border-slate-800/80 pb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-indigo-400"></i> יתרונות וחסרונות עיקריים
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4">
+                                <h4 class="text-emerald-400 font-bold mb-2 flex items-center gap-1.5 text-sm">
+                                    <i class="fa-solid fa-circle-check"></i> יתרונות
+                                </h4>
+                                <ul id="prosList" class="space-y-1.5 text-slate-300 text-xs list-disc list-inside">
+                                </ul>
+                            </div>
+                            <div class="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4">
+                                <h4 class="text-rose-400 font-bold mb-2 flex items-center gap-1.5 text-sm">
+                                    <i class="fa-solid fa-circle-xmark"></i> חסרונות
+                                </h4>
+                                <ul id="consList" class="space-y-1.5 text-slate-300 text-xs list-disc list-inside">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Summary & Review -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4">
+                        <h3 class="text-lg font-bold text-white border-b border-slate-800/80 pb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-feather-pointed text-amber-400"></i> סיכום וסקירת מומחה
+                        </h3>
+                        <p id="fullReview" class="text-slate-300 text-sm leading-relaxed">
+                            --
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= SECTION 2: COMPARISON TOOL ================= -->
+        <div id="section-compare" class="hidden space-y-8">
+            <div class="text-center py-4">
+                <h2 class="text-3xl font-black text-white">השוואת רכבים ראש בראש</h2>
+                <p class="text-slate-400 text-sm mt-1">בחר שני רכבים והשווה מפרטים טכניים, ביצועים ומחירים.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+                <!-- Select Car 1 -->
+                <div class="glass-card p-4 rounded-2xl space-y-3">
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">רכב ראשון (1)</label>
+                    <select id="compareSelect1" onchange="updateComparison()" class="w-full bg-slate-900 border border-slate-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500">
+                    </select>
+                </div>
+                <!-- Select Car 2 -->
+                <div class="glass-card p-4 rounded-2xl space-y-3">
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">רכב שני (2)</label>
+                    <select id="compareSelect2" onchange="updateComparison()" class="w-full bg-slate-900 border border-slate-800 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500">
+                    </select>
+                </div>
+            </div>
+
+            <!-- Comparison Table Render -->
+            <div id="comparisonContainer" class="glass-card rounded-3xl overflow-hidden p-6 max-w-5xl mx-auto shadow-2xl">
+                <!-- Dynamically Inserted -->
+            </div>
+        </div>
+
+        <!-- ================= SECTION 3: FINANCING CALCULATOR ================= -->
+        <div id="section-calculator" class="hidden space-y-8">
+            <div class="text-center py-4">
+                <h2 class="text-3xl font-black text-white">מחשבון מימון והחזר חודשי לרכב</h2>
+                <p class="text-slate-400 text-sm mt-1">חשב את ההחזר החודשי המשוער בהתאם למחיר הרכב, מקדמה ופריסת תשלומים.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto">
+                <!-- Controls -->
+                <div class="lg:col-span-7 glass-card p-6 sm:p-8 rounded-3xl space-y-6">
+                    <div>
+                        <div class="flex justify-between text-sm font-bold text-white mb-2">
+                            <span>מחיר הרכב</span>
+                            <span id="calcPriceVal" class="text-emerald-400 font-extrabold text-lg">160,000 ₪</span>
+                        </div>
+                        <input type="range" id="calcPrice" min="30000" max="1000000" step="5000" value="160000" oninput="calculateLoan()"
+                            class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm font-bold text-white mb-2">
+                            <span>מקדמה / טרייד אין</span>
+                            <span id="calcDownVal" class="text-indigo-400 font-extrabold text-lg">40,000 ₪</span>
+                        </div>
+                        <input type="range" id="calcDown" min="0" max="500000" step="5000" value="40000" oninput="calculateLoan()"
+                            class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm font-bold text-white mb-2">
+                            <span>תקופת הלוואה (חודשים)</span>
+                            <span id="calcMonthsVal" class="text-amber-400 font-extrabold text-lg">60 חודשים (5 שנים)</span>
+                        </div>
+                        <input type="range" id="calcMonths" min="12" max="84" step="6" value="60" oninput="calculateLoan()"
+                            class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm font-bold text-white mb-2">
+                            <span>ריבית שנתית משוערת (%)</span>
+                            <span id="calcInterestVal" class="text-rose-400 font-extrabold text-lg">4.5%</span>
+                        </div>
+                        <input type="range" id="calcInterest" min="1" max="12" step="0.5" value="4.5" oninput="calculateLoan()"
+                            class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-500">
+                    </div>
+                </div>
+
+                <!-- Result Display Card -->
+                <div class="lg:col-span-5 glass-card p-8 rounded-3xl flex flex-col justify-between text-center border-indigo-500/20">
+                    <div class="space-y-6 my-auto">
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mx-auto">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">החזר חודשי משוער</span>
+                            <div id="monthlyPaymentResult" class="text-4xl sm:text-5xl font-black text-white mt-2 gradient-text">2,238 ₪</div>
+                            <span class="text-xs text-slate-500 block mt-1">לחודש</span>
+                        </div>
+
+                        <div class="border-t border-slate-800 pt-6 space-y-3 text-sm">
+                            <div class="flex justify-between text-slate-400">
+                                <span>סכום המימן:</span>
+                                <span id="loanAmountSummary" class="font-bold text-white">120,000 ₪</span>
+                            </div>
+                            <div class="flex justify-between text-slate-400">
+                                <span>סה"כ ריבית משוערת:</span>
+                                <span id="totalInterestSummary" class="font-bold text-rose-400">14,280 ₪</span>
+                            </div>
+                            <div class="flex justify-between text-slate-400">
+                                <span>סה"כ לתשלום (כולל מקדמה):</span>
+                                <span id="totalPaidSummary" class="font-bold text-white">174,280 ₪</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Box -->
+        <div id="toast" class="fixed bottom-5 left-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 border border-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+            <i id="toastIcon" class="fa-solid fa-circle-info text-blue-400 text-xl"></i>
+            <span id="toastMessage" class="text-sm font-medium">הודעה</span>
+        </div>
+
+    </main>
+
+    <!-- Modal for API Key configuration -->
+    <div id="apiModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-key text-amber-400"></i> הגדרת מפתח Gemini API
+            </h3>
+            <p class="text-slate-400 text-xs mb-4 leading-relaxed">
+                האתר פועל באופן מלא עם מאגר מובנה! אם ברשותך מפתח Gemini API, תוכל להזינו כאן כדי לשלוף מפרט וביקורת בזמן אמת עבור **כל רכב בעולם**.
+            </p>
+            <input type="password" id="userApiKey" placeholder="הדבק מפתח Gemini API..." 
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500 mb-4">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeApiModal()" class="px-4 py-2.5 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-xs font-semibold">סגור</button>
+                <button onclick="saveApiKey()" class="px-5 py-2.5 gradient-bg text-white rounded-xl text-xs font-bold">שמור מפתח</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-6 mt-12 text-center text-slate-500 text-xs">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>© AutoMaster Pro - הפורטל המתקדם למפרטי רכבים והשוואות.</p>
+        </div>
+    </footer>
+
+    <!-- Database & Script Logic -->
+    <script>
+        // Expanded Local Car Database for standalone offline usage
+        const CAR_DATABASE = [
+            {
+                id: "mazda3",
+                keywords: ["מאזדה 3", "מאזדה3", "mazda 3", "mazda3"],
+                title: "מאזדה 3 (Mazda 3)",
+                category: "משפחתית קומפקטית",
+                year: "2024",
+                tagline: "עיצוב פרימיום יפני עם חווית נהיגה ספורטיבית ואיכותית.",
+                horsepower: "165 כ\"ס",
+                acceleration: "8.2",
+                topSpeed: "208",
+                price: "157,000 ₪",
+                numericPrice: 157000,
+                engineType: "2.0 ליטר אטמוספרי (SkyActiv-G)",
+                displacement: "1,998 סמ\"ק",
+                torque: "21.7 קג\"מ",
+                transmission: "אוטומטית 6 הילוכים",
+                drivetrain: "הנעה קדמית (FWD)",
+                dimensions: "4,660 x 1,795 x 1,440 מ\"מ",
+                wheelbase: "2,725 מ\"מ",
+                weight: "1,320 ק\"ג",
+                trunk: "444 ליטר",
+                seats: "5",
+                consumption: "14.5 ק\"מ לליטר",
+                tankCapacity: "51 ליטר",
+                chargingSpeed: "לא רלוונטי",
+                emissions: "דרגה 6",
+                pros: ["עיצוב חיצוני ופנימי מרהיב", "חווית נהיגה מהנה וחדה", "בידוד רעשים מצוין", "מערכת שמע איכותית"],
+                cons: ["מרווח מצומצם במושב האחורי", "מנוע אטמוספרי דורש סל\"ד גבוה לביצועים"],
+                review: "מאזדה 3 מציעה תחושת פרימיום כמעט אירופאית במחיר של משפחתית יפנית. תא הנוסעים בנוי ברמה גבוהה מאוד עם חומרים איכותיים, והנהיגה בה מעודנת ומהנה.",
+                image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                id: "tesla3",
+                keywords: ["טסלה מודל 3", "טסלה 3", "tesla model 3", "tesla 3"],
+                title: "טסלה מודל 3 (Tesla Model 3)",
+                category: "חשמלית סדאן",
+                year: "2024",
+                tagline: "המכונית החשמלית הנמכרת בעולם - טכנולוגיה מתקדמת וביצועים מרהיבים.",
+                horsepower: "283 כ\"ס",
+                acceleration: "6.1",
+                topSpeed: "201",
+                price: "205,000 ₪",
+                numericPrice: 205000,
+                engineType: "חשמלי מלא (Single Motor)",
+                displacement: "חשמלי",
+                torque: "42.8 קג\"מ",
+                transmission: "תמסורת ישירה (הילוך יחיד)",
+                drivetrain: "הנעה אחורית (RWD)",
+                dimensions: "4,720 x 1,850 x 1,440 מ\"מ",
+                wheelbase: "2,875 מ\"מ",
+                weight: "1,765 ק\"ג",
+                trunk: "594 ליטר",
+                seats: "5",
+                consumption: "טווח 513 ק\"מ (WLTP)",
+                tankCapacity: "סוללה 60 kWh",
+                chargingSpeed: "עד 170 kW DC",
+                emissions: "דרגה 1 (אפס פליטות)",
+                pros: ["תאוצה מיידית וחזקה", "רשת מטעני סופרצ'ארג'ר היקפית", "מערכת מולטימדיה טכנולוגית"],
+                cons: ["תפעול כל המערכות ממסך אחד", "איכות הרכבה בחלק מהדגמים"],
+                review: "טסלה מודל 3 שינתה את עולם הרכב החשמלי. היא מציעה ביצועים מעולים, טווח נסיעה ריאלי גבוה וטכנולוגיית תוכנה שמתעדכנת מרחוק.",
+                image: "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                id: "teslay",
+                keywords: ["טסלה מודל y", "טסלה y", "tesla model y", "tesla y"],
+                title: "טסלה מודל Y (Tesla Model Y)",
+                category: "קרוסאובר חשמלי",
+                year: "2024",
+                tagline: "קרוסאובר חשמלי מרווח, מהיר ובעל טכנולוגיה מתוחכמת.",
+                horsepower: "299 כ\"ס",
+                acceleration: "6.9",
+                topSpeed: "217",
+                price: "235,000 ₪",
+                numericPrice: 235000,
+                engineType: "חשמלי מלא",
+                displacement: "חשמלי",
+                torque: "43.0 קג\"מ",
+                transmission: "תמסורת ישירה",
+                drivetrain: "הנעה אחורית (RWD)",
+                dimensions: "4,751 x 1,921 x 1,624 מ\"מ",
+                wheelbase: "2,890 מ\"מ",
+                weight: "1,909 ק\"ג",
+                trunk: "854 ליטר",
+                seats: "5",
+                consumption: "טווח 455 ק\"מ (WLTP)",
+                tankCapacity: "סוללה 60 kWh",
+                chargingSpeed: "עד 170 kW DC",
+                emissions: "דרגה 1",
+                pros: ["תא מטען וחלל נוסעים עצום", "טווח נסיעה מעולה", "רשת טעינה ייעודית"],
+                cons: ["כיול מתלים נוקשה", "היעדר כפתורים פיזיים"],
+                review: "הקרוסאובר הפופולרי ביותר בעולם. מציע מרחב פנימי מצוין, תא מטען ענקי וביצועים מעולים.",
+                image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                id: "ionic5",
+                keywords: ["יונדאי איוניק 5", "איוניק 5", "ioniq 5"],
+                title: "יונדאי איוניק 5 (Hyundai Ioniq 5)",
+                category: "קרוסאובר חשמלי",
+                year: "2024",
+                tagline: "עיצוב עתידני רטרו-מודרני עם טעינה אולטרה-מהירה.",
+                horsepower: "229 כ\"ס",
+                acceleration: "7.3",
+                topSpeed: "185",
+                price: "220,000 ₪",
+                numericPrice: 220000,
+                engineType: "חשמלי מלא",
+                displacement: "חשמלי",
+                torque: "35.7 קג\"מ",
+                transmission: "תמסורת ישירה",
+                drivetrain: "הנעה אחורית (RWD)",
+                dimensions: "4,635 x 1,890 x 1,605 מ\"מ",
+                wheelbase: "3,000 מ\"מ",
+                weight: "1,935 ק\"ג",
+                trunk: "527 ליטר",
+                seats: "5",
+                consumption: "טווח 481 ק\"מ (WLTP)",
+                tankCapacity: "סוללה 77.4 kWh",
+                chargingSpeed: "עד 350 kW DC (800V)",
+                emissions: "דרגה 1",
+                pros: ["טעינה סופר-מהירה ב-800V", "מרווח פנימי ענק בזכות בסיס גלגלים של 3 מטר", "עיצוב יוצא דופן"],
+                cons: ["צריכת אנרגיה גבוהה בכביש מהיר", "ללא מגב חלון אחורי"],
+                review: "איוניק 5 מציבה רף חדש בעיצוב וטכנולוגיית טעינה. תא הנוסעים שלה מרגיש כמו סלון נייד ויוקרתי.",
+                image: "https://images.unsplash.com/photo-1662915806686-77876a445d31?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                id: "corolla",
+                keywords: ["טויוטה קורולה", "קורולה", "toyota corolla", "corolla"],
+                title: "טויוטה קורולה (Toyota Corolla)",
+                category: "משפחתית היברידית",
+                year: "2024",
+                tagline: "המכונית האמינה והפופולרית בעולם עם מנוע היברידי חסכוני במיוחד.",
+                horsepower: "140 כ\"ס",
+                acceleration: "9.2",
+                topSpeed: "180",
+                price: "160,000 ₪",
+                numericPrice: 160000,
+                engineType: "1.8 ליטר בנזין + חשמלי (Hybrid)",
+                displacement: "1,798 סמ\"ק",
+                torque: "14.5 קג\"מ",
+                transmission: "רציפה (e-CVT)",
+                drivetrain: "הנעה קדמית (FWD)",
+                dimensions: "4,630 x 1,780 x 1,435 מ\"מ",
+                wheelbase: "2,700 מ\"מ",
+                weight: "1,385 ק\"ג",
+                trunk: "471 ליטר",
+                seats: "5",
+                consumption: "22.2 ק\"מ לליטר",
+                tankCapacity: "43 ליטר",
+                chargingSpeed: "טעינה עצמית",
+                emissions: "דרגה 2",
+                pros: ["צריכת דלק נמוכה מאוד", "אמינות מופלגת ושמירת ערך", "נוחות נסיעה יומיומית"],
+                cons: ["תיבת הילוכים רציפה מרעישה במאמץ", "תא מטען בינוני"],
+                review: "טויוטה קורולה ההיברידית היא הבחירה המושכלת והבטוחה ביותר למשפחה. חסכונית מאוד בדלק ושומרת על ערכה בשוק.",
+                image: "https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&w=1200&q=80"
+            },
+            {
+                id: "porsche911",
+                keywords: ["פורשה 911", "911", "porsche 911"],
+                title: "פורשה 911 GT3 (Porsche 911 GT3)",
+                category: "ספורט על",
+                year: "2024",
+                tagline: "אגדת מסלול חוקית לכביש - הנדסה גרמנית בשיאה.",
+                horsepower: "510 כ\"ס",
+                acceleration: "3.4",
+                topSpeed: "318",
+                price: "1,650,000 ₪",
+                numericPrice: 1650000,
+                engineType: "4.0 ליטר בוקסר 6 צילינדרים אטמוספרי",
+                displacement: "3,996 סמ\"ק",
+                torque: "47.9 קג\"מ",
+                transmission: "PDK כפול מצמדים 7 הילוכים",
+                drivetrain: "הנעה אחורית (RWD)",
+                dimensions: "4,573 x 1,852 x 1,279 מ\"מ",
+                wheelbase: "2,457 מ\"מ",
+                weight: "1,435 ק\"ג",
+                trunk: "132 ליטר",
+                seats: "2",
+                consumption: "7.8 ק\"מ לליטר",
+                tankCapacity: "64 ליטר",
+                chargingSpeed: "לא רלוונטי",
+                emissions: "דרגה 15",
+                pros: ["סאונד מנוע מדהים עד 9,000 סל\"ד", "אחיזת כביש והיגוי פנומנליים", "תגובת מצערת מיידית"],
+                cons: ["נוקשה מאוד בנסיעה יומיומית", "מחיר גבוה"],
+                review: "פורשה 911 GT3 היא אחת ממכוניות הספורט הטהורות והמרגשות ביותר שיוצרו אי פעם.",
+                image: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=80"
+            }
+        ];
+
+        let currentActiveCar = CAR_DATABASE[0];
+
+        // Init App
+        window.onload = function() {
+            populateComparisonSelects();
+            calculateLoan();
+        };
+
+        // Navigation Switcher
+        function showSection(sectionId) {
+            ['search', 'compare', 'calculator'].forEach(sec => {
+                document.getElementById(`section-${sec}`).classList.add('hidden');
+                document.getElementById(`nav-${sec}`).classList.remove('bg-slate-800', 'text-white', 'shadow-sm');
+                document.getElementById(`nav-${sec}`).classList.add('text-slate-400');
+            });
+
+            document.getElementById(`section-${sectionId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${sectionId}`);
+            activeNav.classList.add('bg-slate-800', 'text-white', 'shadow-sm');
+            activeNav.classList.remove('text-slate-400');
+        }
+
+        // Search Logic
+        document.getElementById('searchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = document.getElementById('carQuery').value.trim();
+            if (query) fetchCarData(query);
+        });
+
+        function quickSearch(query) {
+            document.getElementById('carQuery').value = query;
+            fetchCarData(query);
+        }
+
+        async function fetchCarData(query) {
+            const loadingState = document.getElementById('loadingState');
+            const carResult = document.getElementById('carResult');
+            
+            carResult.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            loadingState.classList.add('flex');
+            document.getElementById('loadingText').innerText = `מחפש נתונים עבור "${query}"...`;
+
+            const normalizedQuery = query.toLowerCase();
+            const localCar = CAR_DATABASE.find(car => 
+                car.keywords.some(k => normalizedQuery.includes(k.toLowerCase())) ||
+                car.title.toLowerCase().includes(normalizedQuery)
+            );
+
+            const storedApiKey = localStorage.getItem('auto_master_api_key');
+
+            if (storedApiKey) {
+                try {
+                    const carData = await fetchCarFromGemini(query, storedApiKey);
+                    currentActiveCar = carData;
+                    renderCarData(carData, `https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80`);
+                    showResultUI();
+                    return;
+                } catch (e) {
+                    console.warn("API Error, fallback to internal database", e);
+                }
+            }
+
+            setTimeout(() => {
+                if (localCar) {
+                    currentActiveCar = localCar;
+                    renderCarData(localCar, localCar.image);
+                } else {
+                    const generatedMock = generateDynamicCarData(query);
+                    currentActiveCar = generatedMock;
+                    renderCarData(generatedMock, `https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80`);
+                }
+                showResultUI();
+            }, 500);
+        }
+
+        function showResultUI() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('flex');
+            document.getElementById('carResult').classList.remove('hidden');
+            document.getElementById('carResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function renderCarData(car, imageUrl) {
+            document.getElementById('carImage').src = imageUrl || car.image;
+            document.getElementById('carTitle').innerText = car.title || car.name;
+            document.getElementById('carCategory').innerText = car.category || 'רכב';
+            document.getElementById('carYear').innerText = car.year || '2024';
+            document.getElementById('carTagline').innerText = car.tagline || '';
+
+            document.getElementById('statHorsepower').innerText = car.horsepower || '--';
+            document.getElementById('statAcceleration').innerText = car.acceleration ? `${car.acceleration} שניות` : '--';
+            document.getElementById('statTopSpeed').innerText = car.topSpeed ? `${car.topSpeed} קמ"ש` : '--';
+            document.getElementById('statPrice').innerText = car.price || '--';
+
+            document.getElementById('specEngineType').innerText = car.engineType || '--';
+            document.getElementById('specDisplacement').innerText = car.displacement || '--';
+            document.getElementById('specTorque').innerText = car.torque || '--';
+            document.getElementById('specTransmission').innerText = car.transmission || '--';
+            document.getElementById('specDrivetrain').innerText = car.drivetrain || '--';
+
+            document.getElementById('specDimensions').innerText = car.dimensions || '--';
+            document.getElementById('specWheelbase').innerText = car.wheelbase || '--';
+            document.getElementById('specWeight').innerText = car.weight || '--';
+            document.getElementById('specTrunk').innerText = car.trunk || '--';
+            document.getElementById('specSeats').innerText = car.seats || '--';
+
+            document.getElementById('specConsumption').innerText = car.consumption || '--';
+            document.getElementById('specTankCapacity').innerText = car.tankCapacity || '--';
+            document.getElementById('specChargingSpeed').innerText = car.chargingSpeed || '--';
+            document.getElementById('specEmissions').innerText = car.emissions || '--';
+
+            const prosList = document.getElementById('prosList');
+            prosList.innerHTML = '';
+            (car.pros || []).forEach(p => {
+                const li = document.createElement('li');
+                li.innerText = p;
+                prosList.appendChild(li);
+            });
+
+            const consList = document.getElementById('consList');
+            consList.innerHTML = '';
+            (car.cons || []).forEach(c => {
+                const li = document.createElement('li');
+                li.innerText = c;
+                consList.appendChild(li);
+            });
+
+            document.getElementById('fullReview').innerText = car.review || '';
+
+            // Update financing calculator price to match car price if available
+            if (car.numericPrice) {
+                document.getElementById('calcPrice').value = car.numericPrice;
+                calculateLoan();
+            }
+        }
+
+        function setForComparisonCurrent() {
+            showSection('compare');
+            document.getElementById('compareSelect1').value = currentActiveCar.id || CAR_DATABASE[0].id;
+            updateComparison();
+            showToast(`הוספת את ${currentActiveCar.title} להשוואה!`, "success");
+        }
+
+        // ================= COMPARISON FEATURE =================
+        function populateComparisonSelects() {
+            const s1 = document.getElementById('compareSelect1');
+            const s2 = document.getElementById('compareSelect2');
+            s1.innerHTML = '';
+            s2.innerHTML = '';
+
+            CAR_DATABASE.forEach((car, idx) => {
+                const opt1 = new Option(car.title, car.id);
+                const opt2 = new Option(car.title, car.id);
+                s1.add(opt1);
+                s2.add(opt2);
+            });
+
+            if (CAR_DATABASE.length > 1) {
+                s2.selectedIndex = 1;
+            }
+            updateComparison();
+        }
+
+        function updateComparison() {
+            const id1 = document.getElementById('compareSelect1').value;
+            const id2 = document.getElementById('compareSelect2').value;
+
+            const car1 = CAR_DATABASE.find(c => c.id === id1) || currentActiveCar;
+            const car2 = CAR_DATABASE.find(c => c.id === id2) || CAR_DATABASE[1];
+
+            const container = document.getElementById('comparisonContainer');
+            container.innerHTML = `
+                <div class="grid grid-cols-3 gap-4 border-b border-slate-800 pb-6 text-center">
+                    <div class="text-right text-xs font-bold text-slate-400 self-end">מאפיין</div>
+                    <div class="space-y-2">
+                        <img src="${car1.image}" class="w-full h-24 object-cover rounded-xl border border-slate-800">
+                        <h4 class="font-bold text-white text-sm">${car1.title}</h4>
+                        <span class="text-xs text-emerald-400 font-extrabold block">${car1.price}</span>
+                    </div>
+                    <div class="space-y-2">
+                        <img src="${car2.image}" class="w-full h-24 object-cover rounded-xl border border-slate-800">
+                        <h4 class="font-bold text-white text-sm">${car2.title}</h4>
+                        <span class="text-xs text-emerald-400 font-extrabold block">${car2.price}</span>
+                    </div>
+                </div>
+
+                <div class="divide-y divide-slate-800/60 text-sm">
+                    ${renderCompareRow("קטגוריה", car1.category, car2.category)}
+                    ${renderCompareRow("הספק מנוע", car1.horsepower, car2.horsepower)}
+                    ${renderCompareRow("0 ל-100 קמ\"ש", car1.acceleration + " שניות", car2.acceleration + " שניות")}
+                    ${renderCompareRow("מהירות מרבית", car1.topSpeed + " קמ\"ש", car2.topSpeed + " קמ\"ש")}
+                    ${renderCompareRow("סוג מנוע", car1.engineType, car2.engineType)}
+                    ${renderCompareRow("תיבת הילוכים", car1.transmission, car2.transmission)}
+                    ${renderCompareRow("צריכת דלק / טווח", car1.consumption, car2.consumption)}
+                    ${renderCompareRow("בסיס גלגלים", car1.wheelbase, car2.wheelbase)}
+                    ${renderCompareRow("תא מטען", car1.trunk, car2.trunk)}
+                </div>
+            `;
+        }
+
+        function renderCompareRow(label, val1, val2) {
+            return `
+                <div class="grid grid-cols-3 gap-4 py-3 items-center">
+                    <div class="text-slate-400 text-xs font-medium">${label}</div>
+                    <div class="font-semibold text-white text-center">${val1 || '--'}</div>
+                    <div class="font-semibold text-white text-center">${val2 || '--'}</div>
+                </div>
+            `;
+        }
+
+        // ================= LOAN CALCULATOR =================
+        function calculateLoan() {
+            const price = parseFloat(document.getElementById('calcPrice').value);
+            const down = parseFloat(document.getElementById('calcDown').value);
+            const months = parseInt(document.getElementById('calcMonths').value);
+            const rate = parseFloat(document.getElementById('calcInterest').value);
+
+            document.getElementById('calcPriceVal').innerText = price.toLocaleString() + " ₪";
+            document.getElementById('calcDownVal').innerText = down.toLocaleString() + " ₪";
+            document.getElementById('calcMonthsVal').innerText = `${months} חודשים (${(months/12).toFixed(1)} שנים)`;
+            document.getElementById('calcInterestVal').innerText = rate.toFixed(1) + "%";
+
+            const principal = Math.max(0, price - down);
+            const monthlyRate = (rate / 100) / 12;
+
+            let monthlyPayment = 0;
+            if (principal > 0 && monthlyRate > 0) {
+                monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+            } else if (principal > 0) {
+                monthlyPayment = principal / months;
+            }
+
+            const totalPaid = (monthlyPayment * months) + down;
+            const totalInterest = Math.max(0, (monthlyPayment * months) - principal);
+
+            document.getElementById('monthlyPaymentResult').innerText = Math.round(monthlyPayment).toLocaleString() + " ₪";
+            document.getElementById('loanAmountSummary').innerText = principal.toLocaleString() + " ₪";
+            document.getElementById('totalInterestSummary').innerText = Math.round(totalInterest).toLocaleString() + " ₪";
+            document.getElementById('totalPaidSummary').innerText = Math.round(totalPaid).toLocaleString() + " ₪";
+        }
+
+        // ================= DYNAMIC FALLBACK DATA =================
+        function generateDynamicCarData(query) {
+            return {
+                id: "dyn_" + Date.now(),
+                title: query,
+                category: "משפחתית / קרוסאובר",
+                year: "2024",
+                tagline: `מפרט טכני וסקירה מפורטת עבור ${query}`,
+                horsepower: "180 כ\"ס",
+                acceleration: "7.9",
+                topSpeed: "210",
+                price: "175,000 ₪",
+                numericPrice: 175000,
+                engineType: "2.0 ליטר טורבו בנזין",
+                displacement: "1,998 סמ\"ק",
+                torque: "30.6 קג\"מ",
+                transmission: "אוטומטית 8 הילוכים",
+                drivetrain: "הנעה קדמית (FWD)",
+                dimensions: "4,600 x 1,800 x 1,450 מ\"מ",
+                wheelbase: "2,700 מ\"מ",
+                weight: "1,450 ק\"ג",
+                trunk: "450 ליטר",
+                seats: "5",
+                consumption: "13.8 ק\"מ לליטר",
+                tankCapacity: "50 ליטר",
+                chargingSpeed: "לא רלוונטי",
+                emissions: "דרגה 8",
+                pros: ["עיצוב עדכני ומודרני", "אבזור בטיחות מקיף מקורי", "נוחות נסיעה גבוהה"],
+                cons: ["תא מטען ממוצע לקטגוריה", "צריכת דלק בינונית במאמץ"],
+                review: `${query} מציגה שילוב מנצח בין שימושיות יומיומית לביצועים דינמיים. תא הנוסעים מרווח ומאובזר בטכנולוגיה עדכנית.`,
+                image: "https://images.unsplash.com/photo-1541348263662-e082662d82da?auto=format&fit=crop&w=1200&q=80"
+            };
+        }
+
+        // Gemini API Fetcher
+        async function fetchCarFromGemini(query, key) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${key}`;
+            const systemPrompt = "אתה מומחה רכב. החזר מפרט JSON בלבד בעברית.";
+            const userPrompt = `החזר JSON של מפרט עבור "${query}": {"id":"${query}","title":"","category":"","year":"","tagline":"","horsepower":"","acceleration":"","topSpeed":"","price":"","numericPrice":150000,"engineType":"","displacement":"","torque":"","transmission":"","drivetrain":"","dimensions":"","wheelbase":"","weight":"","trunk":"","seats":"","consumption":"","tankCapacity":"","chargingSpeed":"","emissions":"","pros":[],"cons":[],"review":""}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+
+            const data = await res.json();
+            const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            return JSON.parse(jsonText);
+        }
+
+        // Utility Functions
+        function shareCar() {
+            const title = document.getElementById('carTitle').innerText;
+            const text = `בדוק את המפרט של ${title} באתר AutoMaster Pro!`;
+            if (navigator.share) {
+                navigator.share({ title, text, url: window.location.href }).catch(() => {});
+            } else {
+                document.execCommand('copy');
+                showToast("הקישור הועתק ללוח!", "success");
+            }
+        }
+
+        function openApiModal() {
+            document.getElementById('apiModal').classList.remove('hidden');
+            document.getElementById('userApiKey').value = localStorage.getItem('auto_master_api_key') || '';
+        }
+
+        function closeApiModal() {
+            document.getElementById('apiModal').classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('userApiKey').value.trim();
+            if (key) {
+                localStorage.setItem('auto_master_api_key', key);
+                showToast("מפתח API נשמר בהצלחה!", "success");
+            } else {
+                localStorage.removeItem('auto_master_api_key');
+                showToast("המפתח הוסר.", "info");
+            }
+            closeApiModal();
+        }
+
+        function showToast(message, type = "info") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

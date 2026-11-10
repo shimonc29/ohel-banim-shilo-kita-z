@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מילון ותרגום מילים מהיר</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap');
+        body {
+            font-family: 'Heebo', sans-serif;
+        }
+        .custom-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+<style>@media(max-width:640px){html,body{max-width:100%;overflow-x:hidden}img,video,canvas,svg{max-width:100%}input,select,textarea,button{max-width:100%}input,select,textarea{font-size:16px}.overflow-x-auto{max-width:100%}}@media(max-width:640px){#sourceLang,#targetLang{font-size:13px!important}#swapLangsBtn{padding:9px!important}.flex-1{min-width:0}}</style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-slate-900 to-blue-900 min-h-screen text-slate-100 flex flex-col items-center justify-between p-4 md:p-8">
+
+    <!-- Header -->
+    <header class="w-full max-w-4xl text-center my-6">
+        <div class="inline-flex items-center justify-center space-x-3 space-x-reverse bg-indigo-500/20 border border-indigo-400/30 px-5 py-2 rounded-full mb-3 shadow-lg">
+            <i class="fa-solid font-black fa-language text-indigo-400 text-xl"></i>
+            <span class="text-sm font-semibold tracking-wide text-indigo-200">מילון ותרגום דו-כיווני</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-md">
+            תרגום מילים בלחיצת כפתור
+        </h1>
+        <p class="text-slate-300 mt-2 text-base md:text-lg max-w-xl mx-auto font-light">
+            תרגם מילים ומשפטים מעברית לכל שפה, או מכל שפה לעברית באופן מיידי.
+        </p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl bg-slate-800/90 border border-slate-700/80 rounded-3xl p-5 md:p-8 shadow-2xl backdrop-blur-lg">
+        
+        <!-- Language Switcher Bar -->
+        <div class="flex items-center justify-between bg-slate-900/80 p-3 rounded-2xl border border-slate-700 mb-6">
+            <!-- Source Language -->
+            <div class="flex-1 flex items-center justify-center">
+                <select id="sourceLang" class="bg-transparent text-indigo-300 font-bold text-lg md:text-xl focus:outline-none cursor-pointer text-center w-full">
+                    <option value="auto" class="bg-slate-900 text-white" selected>🌐 זיהוי שפה אוטומטי</option>
+                    <option value="he" class="bg-slate-900 text-white">🇮🇱 עברית</option>
+                    <option value="en" class="bg-slate-900 text-white">🇺🇸 אנגלית</option>
+                    <option value="es" class="bg-slate-900 text-white">🇪🇸 ספרדית</option>
+                    <option value="fr" class="bg-slate-900 text-white">🇫🇷 צרפתית</option>
+                    <option value="ar" class="bg-slate-900 text-white">🇸🇦 ערבית</option>
+                    <option value="ru" class="bg-slate-900 text-white">🇷🇺 רוסית</option>
+                    <option value="de" class="bg-slate-900 text-white">🇩🇪 גרמנית</option>
+                    <option value="it" class="bg-slate-900 text-white">🇮🇹 איטלקית</option>
+                </select>
+            </div>
+
+            <!-- Swap Button -->
+            <button id="swapLangsBtn" class="p-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl shadow-md transition-all mx-2 flex items-center justify-center">
+                <i class="fa-solid fa-arrows-rotate text-lg"></i>
+            </button>
+
+            <!-- Target Language -->
+            <div class="flex-1 flex items-center justify-center">
+                <select id="targetLang" class="bg-transparent text-emerald-400 font-bold text-lg md:text-xl focus:outline-none cursor-pointer text-center w-full">
+                    <option value="he" class="bg-slate-900 text-white" selected>🇮🇱 עברית</option>
+                    <option value="en" class="bg-slate-900 text-white">🇺🇸 אנגלית</option>
+                    <option value="es" class="bg-slate-900 text-white">🇪🇸 ספרדית</option>
+                    <option value="fr" class="bg-slate-900 text-white">🇫🇷 צרפתית</option>
+                    <option value="ar" class="bg-slate-900 text-white">🇸🇦 ערבית</option>
+                    <option value="ru" class="bg-slate-900 text-white">🇷🇺 רוסית</option>
+                    <option value="de" class="bg-slate-900 text-white">🇩🇪 גרמנית</option>
+                    <option value="it" class="bg-slate-900 text-white">🇮🇹 איטלקית</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Input / Output Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            
+            <!-- Source Input Box -->
+            <div class="bg-slate-900/60 border border-slate-700/70 rounded-2xl p-4 flex flex-col justify-between focus-within:border-indigo-500 transition-colors">
+                <div class="flex justify-between items-center mb-2 text-xs text-slate-400">
+                    <span>טקסט לקלט:</span>
+                    <button id="clearInputBtn" class="hover:text-red-400 transition" title="נקה טקסט">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+                <textarea id="inputText" rows="5" class="w-full bg-transparent text-white text-xl md:text-2xl placeholder-slate-500 focus:outline-none resize-none" placeholder="הקלד מילה או משפט כאן..."></textarea>
+                
+                <div class="flex justify-between items-center pt-3 border-t border-slate-800 text-slate-400">
+                    <div class="flex items-center space-x-2 space-x-reverse">
+                        <button id="speakInputBtn" class="hover:text-indigo-400 p-2 rounded-lg hover:bg-slate-800 transition" title="הקרא טקסט">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <button id="micBtn" class="hover:text-red-400 p-2 rounded-lg hover:bg-slate-800 transition" title="דיבור קולי">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                    </div>
+                    <span id="charCount" class="text-xs">0 / 500</span>
+                </div>
+            </div>
+
+            <!-- Target Output Box -->
+            <div class="bg-slate-900/90 border border-slate-700/70 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden">
+                <div class="flex justify-between items-center mb-2 text-xs text-emerald-400 font-bold">
+                    <span>תוצאת התרגום:</span>
+                    <span id="detectedLangTag" class="text-indigo-300 font-normal hidden">זיהה: עברית</span>
+                </div>
+                
+                <div id="outputContainer" class="min-h-[120px] flex items-center">
+                    <p id="outputText" class="text-emerald-400 text-xl md:text-2xl font-bold break-words w-full">
+                        התרגום יופיע כאן...
+                    </p>
+                    <!-- Loader Spinner -->
+                    <div id="loader" class="hidden mx-auto">
+                        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-indigo-400"></i>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t border-slate-800 text-slate-400">
+                    <div class="flex items-center space-x-2 space-x-reverse">
+                        <button id="speakOutputBtn" class="hover:text-emerald-400 p-2 rounded-lg hover:bg-slate-800 transition" title="הקרא תרגום">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <button id="copyBtn" class="hover:text-emerald-400 p-2 rounded-lg hover:bg-slate-800 transition" title="העתק ללוח">
+                            <i class="fa-solid fa-copy"></i>
+                        </button>
+                        <button id="shareBtn" class="hover:text-blue-400 p-2 rounded-lg hover:bg-slate-800 transition" title="שתף תרגום">
+                            <i class="fa-solid fa-share-nodes"></i>
+                        </button>
+                    </div>
+                    <span id="copyToast" class="text-xs text-emerald-400 font-semibold opacity-0 transition-opacity">הועתק!</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Action Translate Button -->
+        <button id="translateBtn" class="w-full py-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white font-black text-xl rounded-2xl shadow-xl transition-all active:scale-[0.99] flex items-center justify-center space-x-2 space-x-reverse">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>תרגם מילה / משפט</span>
+        </button>
+
+        <!-- Interactive Engagement Section: Rating, Likes, Share & Watch Time -->
+        <div class="mt-8 pt-6 border-t border-slate-700/60 grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- Rating & Likes Card -->
+            <div class="bg-slate-900/70 border border-slate-700/80 p-4 rounded-2xl flex flex-col justify-between items-center text-center">
+                <span class="text-xs text-slate-400 font-bold mb-1">דירוג האתר ומספר לייקים</span>
+                <div id="starRating" class="flex items-center justify-center space-x-1 space-x-reverse text-amber-400 text-xl cursor-pointer my-2">
+                    <i class="fa-solid fa-star star-btn" data-val="1"></i>
+                    <i class="fa-solid fa-star star-btn" data-val="2"></i>
+                    <i class="fa-solid fa-star star-btn" data-val="3"></i>
+                    <i class="fa-solid fa-star star-btn" data-val="4"></i>
+                    <i class="fa-solid fa-star star-btn" data-val="5"></i>
+                </div>
+                <div class="flex items-center space-x-3 space-x-reverse mt-1">
+                    <button id="likeBtn" class="bg-pink-600/20 border border-pink-500/40 text-pink-400 px-4 py-1.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-pink-600 hover:text-white transition active:scale-95">
+                        <i class="fa-solid fa-heart"></i>
+                        <span id="likeCount">124</span>
+                    </button>
+                    <span id="ratingStatus" class="text-xs text-slate-400">4.9/5 (180 מדרגים)</span>
+                </div>
+            </div>
+
+            <!-- Watch Time Counter Card -->
+            <div class="bg-slate-900/70 border border-slate-700/80 p-4 rounded-2xl flex flex-col justify-between items-center text-center">
+                <span class="text-xs text-slate-400 font-bold mb-1">משך זמן צפייה ושהייה</span>
+                <div class="text-3xl font-black text-indigo-400 my-2 font-mono" id="watchTimerDisplay">
+                    00:00
+                </div>
+                <span class="text-xs text-slate-400">לומד ומתרגם בזמן אמת ⏱️</span>
+            </div>
+
+            <!-- Quick Content Share Card -->
+            <div class="bg-slate-900/70 border border-slate-700/80 p-4 rounded-2xl flex flex-col justify-between items-center text-center">
+                <span class="text-xs text-slate-400 font-bold mb-1">שיתוף התוכן והאתר</span>
+                <div class="flex items-center justify-center space-x-2 space-x-reverse my-2">
+                    <button onclick="shareTo('whatsapp')" class="p-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition text-base" title="שיתוף ב-WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+                    <button onclick="shareTo('facebook')" class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition text-base" title="שיתוף ב-Facebook">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </button>
+                    <button onclick="shareTo('telegram')" class="p-2.5 bg-sky-500 hover:bg-sky-400 text-white rounded-xl transition text-base" title="שיתוף ב-Telegram">
+                        <i class="fa-brands fa-telegram"></i>
+                    </button>
+                </div>
+                <span class="text-xs text-slate-400">שתף מילים עם חברים</span>
+            </div>
+
+        </div>
+
+        <!-- Comments Section -->
+        <div class="mt-8 pt-6 border-t border-slate-700/60">
+            <h3 class="text-slate-300 font-bold text-sm flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-comments text-indigo-400"></i>
+                תגובות משתמשים והצעות לתרגום
+            </h3>
+
+            <!-- Add Comment Input -->
+            <div class="flex gap-2 mb-6">
+                <input id="commentInput" type="text" placeholder="כתוב תגובה או הערה על התרגום..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <button id="addCommentBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl font-bold text-sm transition">
+                    שלח
+                </button>
+            </div>
+
+            <!-- Comments List Container -->
+            <div id="commentsList" class="space-y-3 max-h-56 overflow-y-auto pr-1">
+                <!-- Comments dynamically rendered here -->
+            </div>
+        </div>
+
+        <!-- Search History Section -->
+        <div class="mt-8 pt-6 border-t border-slate-700/60">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-slate-300 font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i>
+                    היסטוריית חיפושים אחרונים
+                </h3>
+                <button id="clearHistoryBtn" class="text-xs text-slate-500 hover:text-slate-300 transition">נקה היסטוריה</button>
+            </div>
+            <div id="historyList" class="flex flex-wrap gap-2">
+                <!-- History Items will load here -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-slate-500 text-xs">
+        מילון ותרגום מהיר © 2026 | מונע על ידי API תרגום מתקדם
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const sourceLang = document.getElementById('sourceLang');
+        const targetLang = document.getElementById('targetLang');
+        const swapLangsBtn = document.getElementById('swapLangsBtn');
+        const translateBtn = document.getElementById('translateBtn');
+        const loader = document.getElementById('loader');
+        const charCount = document.getElementById('charCount');
+        const clearInputBtn = document.getElementById('clearInputBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const copyToast = document.getElementById('copyToast');
+        const speakInputBtn = document.getElementById('speakInputBtn');
+        const speakOutputBtn = document.getElementById('speakOutputBtn');
+        const micBtn = document.getElementById('micBtn');
+        const historyList = document.getElementById('historyList');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const shareBtn = document.getElementById('shareBtn');
+
+        // Watch Time Timer
+        let secondsSpent = 0;
+        const watchTimerDisplay = document.getElementById('watchTimerDisplay');
+        setInterval(() => {
+            secondsSpent++;
+            const m = String(Math.floor(secondsSpent / 60)).padStart(2, '0');
+            const s = String(secondsSpent % 60).padStart(2, '0');
+            watchTimerDisplay.innerText = `${m}:${s}`;
+        }, 1000);
+
+        // Likes & Rating Logic
+        let likes = parseInt(localStorage.getItem('dict_likes') || '124');
+        let userLiked = localStorage.getItem('dict_user_liked') === 'true';
+        const likeBtn = document.getElementById('likeBtn');
+        const likeCount = document.getElementById('likeCount');
+        
+        likeCount.innerText = likes;
+        if (userLiked) {
+            likeBtn.classList.add('bg-pink-600', 'text-white');
+            likeBtn.classList.remove('bg-pink-600/20', 'text-pink-400');
+        }
+
+        likeBtn.onclick = () => {
+            if (!userLiked) {
+                likes++;
+                userLiked = true;
+                likeBtn.classList.add('bg-pink-600', 'text-white');
+                likeBtn.classList.remove('bg-pink-600/20', 'text-pink-400');
+            } else {
+                likes--;
+                userLiked = false;
+                likeBtn.classList.remove('bg-pink-600', 'text-white');
+                likeBtn.classList.add('bg-pink-600/20', 'text-pink-400');
+            }
+            likeCount.innerText = likes;
+            localStorage.setItem('dict_likes', likes);
+            localStorage.setItem('dict_user_liked', userLiked);
+        };
+
+        // Star Rating System
+        const stars = document.querySelectorAll('.star-btn');
+        let currentRating = parseInt(localStorage.getItem('dict_user_rating') || '5');
+
+        function updateStars(val) {
+            stars.forEach(star => {
+                const starVal = parseInt(star.getAttribute('data-val'));
+                if (starVal <= val) {
+                    star.classList.remove('fa-regular');
+                    star.classList.add('fa-solid');
+                } else {
+                    star.classList.remove('fa-solid');
+                    star.classList.add('fa-regular');
+                }
+            });
+        }
+        updateStars(currentRating);
+
+        stars.forEach(star => {
+            star.onclick = () => {
+                const val = parseInt(star.getAttribute('data-val'));
+                currentRating = val;
+                localStorage.setItem('dict_user_rating', val);
+                updateStars(val);
+            };
+        });
+
+        // Comments System
+        let comments = JSON.parse(localStorage.getItem('dict_comments') || JSON.stringify([
+            { name: "דניאל", text: "מילון תרגום מעולה ומהיר מאוד!", time: "לפני 10 דקות" },
+            { name: "מיכל", text: "נוח מאוד שההקראה הקולית עובדת חלק בכל השפות.", time: "לפני שעה" }
+        ]));
+        
+        const commentsList = document.getElementById('commentsList');
+        const commentInput = document.getElementById('commentInput');
+        const addCommentBtn = document.getElementById('addCommentBtn');
+
+        function renderComments() {
+            commentsList.innerHTML = '';
+            comments.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-900/80 border border-slate-700/60 p-3 rounded-xl flex flex-col text-xs';
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-indigo-300">${c.name}</span>
+                        <span class="text-[10px] text-slate-500">${c.time}</span>
+                    </div>
+                    <p class="text-slate-200">${c.text}</p>
+                `;
+                commentsList.appendChild(div);
+            });
+        }
+        renderComments();
+
+        addCommentBtn.onclick = () => {
+            const val = commentInput.value.trim();
+            if (!val) return;
+            comments.unshift({ name: "משתמש אנונימי", text: val, time: "עכשיו" });
+            commentInput.value = '';
+            localStorage.setItem('dict_comments', JSON.stringify(comments));
+            renderComments();
+        };
+
+        // Content Sharing
+        function shareTo(platform) {
+            const text = `תרגום מילוני: ${inputText.value || 'מילון מעולה'} -> ${outputText.innerText !== 'התרגום יופיע כאן...' ? outputText.innerText : ''}`;
+            const url = window.location.href;
+            let shareUrl = '';
+
+            if (platform === 'whatsapp') {
+                shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`;
+            } else if (platform === 'facebook') {
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            } else if (platform === 'telegram') {
+                shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+            }
+            window.open(shareUrl, '_blank');
+        }
+
+        shareBtn.onclick = () => shareTo('whatsapp');
+
+        let debounceTimer;
+        let searchHistory = JSON.parse(localStorage.getItem('dict_history') || '[]');
+
+        // Render Search History
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (searchHistory.length === 0) {
+                historyList.innerHTML = '<span class="text-xs text-slate-500">אין חיפושים אחרונים</span>';
+                return;
+            }
+            searchHistory.forEach((item, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-slate-900/80 border border-slate-700/80 hover:border-indigo-500 text-xs text-slate-300 px-3 py-1.5 rounded-xl transition flex items-center space-x-2 space-x-reverse';
+                btn.innerHTML = `<span class="font-bold text-white">${item.fromText}</span> <i class="fa-solid fa-arrow-left text-[10px] text-slate-500"></i> <span class="text-emerald-400">${item.toText}</span>`;
+                btn.onclick = () => {
+                    inputText.value = item.fromText;
+                    outputText.innerText = item.toText;
+                };
+                historyList.appendChild(btn);
+            });
+        }
+        renderHistory();
+
+        // Save to History
+        function saveToHistory(fromText, toText) {
+            if (!fromText.trim() || !toText.trim()) return;
+            searchHistory = searchHistory.filter(h => h.fromText.toLowerCase() !== fromText.toLowerCase());
+            searchHistory.unshift({ fromText, toText });
+            if (searchHistory.length > 8) searchHistory.pop();
+            localStorage.setItem('dict_history', JSON.stringify(searchHistory));
+            renderHistory();
+        }
+
+        clearHistoryBtn.onclick = () => {
+            searchHistory = [];
+            localStorage.removeItem('dict_history');
+            renderHistory();
+        };
+
+        // Live Character Counter
+        inputText.addEventListener('input', () => {
+            const length = inputText.value.length;
+            charCount.innerText = `${length} / 500`;
+            
+            // Auto translate on typing (Debounced)
+            clearTimeout(debounceTimer);
+            if (inputText.value.trim().length > 0) {
+                debounceTimer = setTimeout(() => {
+                    performTranslation();
+                }, 600);
+            } else {
+                outputText.innerText = 'התרגום יופיע כאן...';
+            }
+        });
+
+        // Swap Languages
+        swapLangsBtn.addEventListener('click', () => {
+            const srcVal = sourceLang.value;
+            const tgtVal = targetLang.value;
+
+            if (srcVal === 'auto') {
+                sourceLang.value = 'he';
+                targetLang.value = 'en';
+            } else {
+                sourceLang.value = tgtVal;
+                targetLang.value = srcVal;
+            }
+
+            // Swap text if available
+            const currentInput = inputText.value;
+            const currentOutput = outputText.innerText;
+
+            if (currentOutput && currentOutput !== 'התרגום יופיע כאן...') {
+                inputText.value = currentOutput;
+                outputText.innerText = currentInput;
+                performTranslation();
+            }
+        });
+
+        // Main Translation Function via MyMemory / Free Translation API
+        async function performTranslation() {
+            const text = inputText.value.trim();
+            if (!text) return;
+
+            const from = sourceLang.value === 'auto' ? 'autodetect' : sourceLang.value;
+            const to = targetLang.value;
+
+            // UI Loading state
+            loader.classList.remove('hidden');
+            outputText.classList.add('hidden');
+
+            try {
+                // Free Translation API Endpoint
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`);
+                const data = await response.json();
+
+                if (data && data.responseData) {
+                    const resultText = data.responseData.translatedText;
+                    outputText.innerText = resultText;
+                    saveToHistory(text, resultText);
+                } else {
+                    outputText.innerText = "שגיאה בביצוע התרגום. נסה שוב.";
+                }
+            } catch (error) {
+                outputText.innerText = "תקלת תקשורת. בדק את חיבור האינטרנט שלך.";
+            } finally {
+                loader.classList.add('hidden');
+                outputText.classList.remove('hidden');
+            }
+        }
+
+        translateBtn.addEventListener('click', performTranslation);
+
+        // Clear Button
+        clearInputBtn.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.innerText = 'התרגום יופיע כאן...';
+            charCount.innerText = '0 / 500';
+        });
+
+        // Copy Text
+        copyBtn.addEventListener('click', () => {
+            const textToCopy = outputText.innerText;
+            if (textToCopy && textToCopy !== 'התרגום יופיע כאן...') {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+
+                copyToast.classList.remove('opacity-0');
+                setTimeout(() => copyToast.classList.add('opacity-0'), 2000);
+            }
+        });
+
+        // Text-To-Speech (Speech Synthesis)
+        function speak(text, langCode) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = langCode === 'auto' ? 'he-IL' : langCode;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        speakInputBtn.addEventListener('click', () => {
+            if (inputText.value.trim()) speak(inputText.value, sourceLang.value);
+        });
+
+        speakOutputBtn.addEventListener('click', () => {
+            if (outputText.innerText && outputText.innerText !== 'התרגום יופיע כאן...') {
+                speak(outputText.innerText, targetLang.value);
+            }
+        });
+
+        // Speech Recognition (Microphone input)
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+
+            micBtn.addEventListener('click', () => {
+                recognition.lang = sourceLang.value === 'auto' ? 'he-IL' : sourceLang.value;
+                recognition.start();
+                micBtn.classList.add('text-red-500', 'animate-pulse');
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                inputText.value = transcript;
+                micBtn.classList.remove('text-red-500', 'animate-pulse');
+                performTranslation();
+            };
+
+            recognition.onerror = () => {
+                micBtn.classList.remove('text-red-500', 'animate-pulse');
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('text-red-500', 'animate-pulse');
+            };
+        } else {
+            micBtn.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
